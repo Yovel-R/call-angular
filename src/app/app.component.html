@@ -283,6 +283,11 @@
   <nav class="navbar dashboard-nav">
     <div class="nav-container">
       <div class="nav-brand">
+        <button class="dash-hamburger" (click)="toggleSidebar()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/>
+          </svg>
+        </button>
         <div class="brand-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/>
@@ -298,17 +303,20 @@
   </nav>
 
   <div class="dash-body">
+    <!-- Mobile Sidebar Overlay -->
+    <div class="dash-sidebar-overlay" [class.active]="sidebarOpen" (click)="sidebarOpen = false"></div>
+
     <!-- Sidebar -->
-    <aside class="dash-sidebar">
-      <button class="sidebar-item" [class.active]="dashTab==='overview'" (click)="dashTab='overview'">
+    <aside class="dash-sidebar" [class.active]="sidebarOpen">
+      <button class="sidebar-item" [class.active]="dashTab==='overview'" (click)="dashTab='overview'; sidebarOpen=false">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
         Dashboard
       </button>
-      <button class="sidebar-item" [class.active]="dashTab==='employees'" (click)="dashTab='employees'">
+      <button class="sidebar-item" [class.active]="dashTab==='employees'" (click)="dashTab='employees'; sidebarOpen=false">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M2 21c0-4 3.134-7 7-7h4c3.866 0 7 3 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         Employees
       </button>
-      <button class="sidebar-item" [class.active]="dashTab==='company'" (click)="dashTab='company'">
+      <button class="sidebar-item" [class.active]="dashTab==='company'" (click)="dashTab='company'; sidebarOpen=false">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V21M3 21H21M9 7H11M9 11H11M9 15H11M13 7H15M13 11H15M13 15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Company
       </button>
@@ -357,10 +365,11 @@
                   <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
                   <circle class="progress-ring__circle val" stroke="var(--green)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
                     [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * (summaryStats.total ? summaryStats.connected / summaryStats.total : 0))"/>
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.connectRate)"/>
                 </svg>
-                <div class="kpi-progress-text" style="color:var(--green)">
-                  {{ (summaryStats.total ? (summaryStats.connected / summaryStats.total * 100) : 0) | number:'1.0-0' }}%
+                <div class="kpi-progress-text"
+                     [style.color]="kpiMetrics.trends.connected >= 0 ? 'var(--green)' : 'var(--red)'">
+                  {{ kpiMetrics.connectRate * 100 | number:'1.0-0' }}%
                 </div>
               </div>
             </div>
@@ -376,9 +385,11 @@
                   <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
                   <circle class="progress-ring__circle val" stroke="var(--pink)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
                     [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * 0.7)"/>
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.durationProgress)"/>
                 </svg>
-                <div class="kpi-progress-text" style="color:var(--pink)">-2%</div>
+                <div class="kpi-progress-text" [style.color]="kpiMetrics.trends.duration >= 0 ? 'var(--green)' : 'var(--red)'">
+                  {{ kpiMetrics.trends.duration >= 0 ? '+' : '' }}{{ kpiMetrics.trends.duration }}%
+                </div>
               </div>
             </div>
 
@@ -393,9 +404,11 @@
                   <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
                   <circle class="progress-ring__circle val" stroke="#84cc16" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
                     [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * 0.85)"/>
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.totalCallsProgress)"/>
                 </svg>
-                <div class="kpi-progress-text" style="color:#84cc16">+13%</div>
+                <div class="kpi-progress-text" [style.color]="kpiMetrics.trends.total >= 0 ? '#84cc16' : '#ef4444'">
+                   {{ kpiMetrics.trends.total >= 0 ? '+' : '' }}{{ kpiMetrics.trends.total }}%
+                </div>
               </div>
             </div>
 
@@ -410,9 +423,11 @@
                   <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
                   <circle class="progress-ring__circle val" stroke="#f87171" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
                     [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * (summaryStats.total ? summaryStats.missed / summaryStats.total : 0))"/>
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.missedRate)"/>
                 </svg>
-                <div class="kpi-progress-text" style="color:#f87171">+1%</div>
+                <div class="kpi-progress-text" [style.color]="kpiMetrics.trends.missed <= 0 ? 'var(--green)' : 'var(--red)'">
+                  {{ kpiMetrics.trends.missed >= 0 ? '+' : '' }}{{ kpiMetrics.trends.missed }}%
+                </div>
               </div>
             </div>
 
@@ -434,7 +449,7 @@
                       <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Total Calls</div>
                     </div>
                     <div>
-                      <div style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">{{ summaryStats.totalDuration ? (summaryStats.totalDuration / summaryStats.total | number:'1.0-0') : '0' }}s</div>
+                      <div style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">{{ fmtAvgDur(summaryStats.totalDuration, summaryStats.connected) }}</div>
                       <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Avg Duration</div>
                     </div>
                   </div>
@@ -446,35 +461,21 @@
                 </div>
               </div>
 
-              <!-- Two-column body with explicit height -->
-              <div style="display:flex;align-items:stretch;height:280px;gap:0;">
-
-                <!-- Line chart — 60% width -->
-                <!-- <div style="flex:1.6;min-width:0;position:relative;height:100%;">
-                  <canvas id="timelineChart" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
-                </div> -->
-
-                <!-- Vertical divider -->
-                <!-- <div style="width:1px;background:var(--border);margin:0 1.25rem;flex-shrink:0;opacity:0.4;"></div> -->
-
-                <!-- Donut + legend — 40% width -->
-                <div style="flex:1;min-width:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
-                  <!-- <div style="font-size:0.8rem;font-weight:600;color:var(--text-2);align-self:flex-start;letter-spacing:0.02em;">Call Types</div> -->
-                  <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
-                    <canvas id="donutChart" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
-                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
-                      <div style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1;">{{ summaryStats.total }}</div>
-                      <div style="font-size:0.68rem;color:var(--text-3);font-weight:500;margin-top:2px;">Total</div>
-                    </div>
-                  </div>
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.35rem 0.6rem;width:100%;max-width:155px;">
-                    <div class="legend-item"><span class="lg-dot" style="background:#3b82f6;"></span><span class="lg-label">In</span><span class="lg-val">{{ summaryStats.incoming }}</span></div>
-                    <div class="legend-item"><span class="lg-dot" style="background:#22c55e;"></span><span class="lg-label">Out</span><span class="lg-val">{{ summaryStats.outgoing }}</span></div>
-                    <div class="legend-item"><span class="lg-dot" style="background:#f87171;"></span><span class="lg-label">Missed</span><span class="lg-val">{{ summaryStats.missed }}</span></div>
-                    <div class="legend-item"><span class="lg-dot" style="background:#f59e0b;"></span><span class="lg-label">Rej</span><span class="lg-val">{{ summaryStats.rejected }}</span></div>
+              <!-- Chart body: centered donut + legend grid -->
+              <div class="stats-chart-body">
+                <div class="donut-chart-wrap">
+                  <canvas id="donutChart" width="160" height="160"></canvas>
+                  <div class="donut-center-label">
+                    <div class="donut-center-val">{{ summaryStats.total }}</div>
+                    <div class="donut-center-sub">Total</div>
                   </div>
                 </div>
-
+                <div class="donut-legend-grid">
+                  <div class="legend-item"><span class="lg-dot" style="background:#3b82f6;"></span><span class="lg-label">In</span><span class="lg-val">{{ summaryStats.incoming }}</span></div>
+                  <div class="legend-item"><span class="lg-dot" style="background:#22c55e;"></span><span class="lg-label">Out</span><span class="lg-val">{{ summaryStats.outgoing }}</span></div>
+                  <div class="legend-item"><span class="lg-dot" style="background:#f87171;"></span><span class="lg-label">Missed</span><span class="lg-val">{{ summaryStats.missed }}</span></div>
+                  <div class="legend-item"><span class="lg-dot" style="background:#f59e0b;"></span><span class="lg-label">Rej</span><span class="lg-val">{{ summaryStats.rejected }}</span></div>
+                </div>
               </div>
             </div>
 
@@ -484,34 +485,37 @@
                 <h3 style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">Top Employees</h3>
                 <button class="pill-btn dark" (click)="dashTab='employees'">See All<span style="font-size:0.7rem;margin-left:4px;">-></span></button>
               </div>
-              <table class="top-list-table">
-                <thead>
-                  <tr>
-                    <th>Employee</th>
-                    <th style="text-align:right">Calls</th>
-                    <th style="text-align:right">Duration</th>
-                    <th style="text-align:center">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let row of (employeeCallRows | slice:0:8)" style="cursor:pointer" (click)="selectEmployee(row.emp)">
-                    <td>
-                      <div class="emp-cell">
-                        <div class="emp-avatar small shadow">{{ row.emp.name.charAt(0).toUpperCase() }}</div>
-                        <span style="font-weight:500;color:var(--text-2);font-size:0.85rem;">{{ row.emp.name || row.emp.mobile }}</span>
-                      </div>
-                    </td>
-                    <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.total || 0 }}</td>
-                    <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.totalDuration ? (row.stats.totalDuration / 60 | number:'1.0-0') : '0' }}m</td>
-                    <td style="text-align:center">
-                      <button class="pill-btn outline" (click)="openEmployee(row.emp); $event.stopPropagation()">View Details</button>
-                    </td>
-                  </tr>
-                  <tr *ngIf="!employeeCallRows || !employeeCallRows.length">
-                    <td colspan="4" style="text-align:center;color:var(--text-3);padding:1.5rem 0;">No employee data</td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="top-list-table-container">
+                <table class="top-list-table">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th style="text-align:right">Calls</th>
+                      <th style="text-align:right">Duration</th>
+                      <th style="text-align:center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of (employeeCallRows | slice:0:8)" style="cursor:pointer" (click)="selectEmployee(row.emp)">
+                      <td>
+                        <div class="emp-cell">
+                          <div class="emp-avatar small shadow">{{ row.emp.name.charAt(0).toUpperCase() }}</div>
+                          <span style="font-weight:500;color:var(--text-2);font-size:0.85rem;">{{ row.emp.name || row.emp.mobile }}</span>
+                        </div>
+                      </td>
+                      <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.total || 0 }}</td>
+                      <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.totalDuration ? fmtDur(row.stats.totalDuration) : '0s' }}</td>
+                      <td style="text-align:center">
+                        <button class="pill-btn outline" (click)="openEmployee(row.emp); $event.stopPropagation()">View Details</button>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!employeeCallRows || !employeeCallRows.length">
+                      <td colspan="4" style="text-align:center;color:var(--text-3);padding:1.5rem 0;">No employee data</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
             </div>
 
           </div><!-- /charts-row -->

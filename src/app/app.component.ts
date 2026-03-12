@@ -62,14 +62,14 @@ export class AppComponent implements OnInit {
   customFrom = '';
   customTo = '';
   readonly periods = [
-    { key: 'today',     label: 'Today' },
+    { key: 'today', label: 'Today' },
     { key: 'yesterday', label: 'Yesterday' },
-    { key: 'lastweek',  label: 'Last Week' },
-    { key: 'custom',    label: 'Custom' },
+    { key: 'lastweek', label: 'Last Week' },
+    { key: 'custom', label: 'Custom' },
   ];
   get todayIso(): string {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
 
   // ── Stats ──────────────────────────────────────────────────
@@ -90,6 +90,7 @@ export class AppComponent implements OnInit {
   empCallError = '';
   syncAllLoading = false;
   syncEmpLoading = false;
+  sidebarOpen = false;
 
   // ── Employee drilldown ─────────────────────────────────────
   selectedEmployee: Employee | null = null;
@@ -153,7 +154,19 @@ export class AppComponent implements OnInit {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
-    return `${h}h ${m}m ${s}s`;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  // Returns avg call duration formatted as Xm Ys (based on connected calls)
+  fmtAvgDur(totalDuration: number, connectedCalls: number): string {
+    if (!connectedCalls || !totalDuration) return '0s';
+    const avg = Math.round(totalDuration / connectedCalls);
+    const m = Math.floor(avg / 60);
+    const s = avg % 60;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
   }
 
   fmtDate(d: string | undefined | null): string {
@@ -186,9 +199,8 @@ export class AppComponent implements OnInit {
     this.summaryLoading = true;
     this.summaryStats = null;
 
-    // Destroy existing charts immediately
     if (this.timelineChart) { this.timelineChart.destroy(); this.timelineChart = null; }
-    if (this.donutChart)    { this.donutChart.destroy();    this.donutChart = null; }
+    if (this.donutChart) { this.donutChart.destroy(); this.donutChart = null; }
 
     this.callLogService.getSummary(
       this.dashboardCode, this.selectedPeriod,
@@ -196,14 +208,18 @@ export class AppComponent implements OnInit {
       this.selectedPeriod === 'custom' ? (this.customTo || undefined) : undefined,
     ).subscribe({
       next: (res: any) => {
-        this.summaryLoading = false;
         if (res.success) {
           this.summaryStats = res.stats;
-          // 300ms gives Angular time to render *ngIf block and canvases
+          this.fetchPreviousStats(res.from, res.to);
+          
+          // Increase timeout to ensure *ngIf has rendered the canvas
           setTimeout(() => {
             this.renderDonutChart();
             if (this.timelineData.length) this.renderTimelineChart();
-          }, 300);
+          }, 500); // bump from 300 → 500
+          
+        } else {
+          this.summaryLoading = false;
         }
       },
       error: () => { this.summaryLoading = false; }
@@ -217,7 +233,6 @@ export class AppComponent implements OnInit {
       next: (res: any) => {
         if (res.success) {
           this.timelineData = res.timeline;
-          // Render after summaryStats is also set (use 350ms to be safe)
           setTimeout(() => this.renderTimelineChart(), 350);
         }
       },
@@ -225,10 +240,74 @@ export class AppComponent implements OnInit {
     });
   }
 
+  kpiMetrics = {
+    connectRate: 0,
+    durationProgress: 0,
+    totalCallsProgress: 0,
+    missedRate: 0,
+    trends: { connected: 0, duration: 0, total: 0, missed: 0 }
+  };
+
+  fetchPreviousStats(currentFrom: string, currentTo: string): void {
+    const fromDate = new Date(currentFrom);
+    const toDate = new Date(currentTo || currentFrom);
+    const diff = toDate.getTime() - fromDate.getTime();
+    const prevTo = new Date(fromDate.getTime() - (24 * 60 * 60 * 1000));
+    const prevFrom = new Date(prevTo.getTime() - diff);
+
+    const fromStr = prevFrom.toISOString().split('T')[0];
+    const toStr = prevTo.toISOString().split('T')[0];
+
+    this.callLogService.getSummary(this.dashboardCode, 'custom', fromStr, toStr).subscribe({
+      next: (res: any) => {
+        this.summaryLoading = false;
+        if (res.success && res.stats) {
+          this.calculateMetrics(this.summaryStats!, res.stats);
+        } else {
+          this.calculateMetrics(this.summaryStats!, null);
+        }
+      },
+      error: () => {
+        this.summaryLoading = false;
+        this.calculateMetrics(this.summaryStats!, null);
+      }
+    });
+  }
+
+  calculateMetrics(curr: CallStats, prev: CallStats | null): void {
+    const total = curr.total || 0;
+    const connected = curr.connected || 0;
+
+    // Rates (0–1)
+    this.kpiMetrics.connectRate = total ? (connected / total) : 0;
+    this.kpiMetrics.missedRate = total ? (curr.missed / total) : 0;
+
+    if (prev && prev.total) {
+      // Progress relative to previous period (capped at 1.0 = 100%)
+      this.kpiMetrics.durationProgress = Math.min(curr.totalDuration / Math.max(prev.totalDuration, 1), 1);
+      this.kpiMetrics.totalCallsProgress = Math.min(total / Math.max(prev.total, 1), 1);
+      // Trends vs previous period
+      this.kpiMetrics.trends.connected = this.calcTrend(connected, prev.connected);
+      this.kpiMetrics.trends.total = this.calcTrend(curr.total, prev.total);
+      this.kpiMetrics.trends.duration = this.calcTrend(curr.totalDuration, prev.totalDuration);
+      this.kpiMetrics.trends.missed = this.calcTrend(curr.missed, prev.missed);
+    } else {
+      // No previous data — use rates as progress indicators
+      this.kpiMetrics.durationProgress = this.kpiMetrics.connectRate; // fallback: mirror connect rate
+      this.kpiMetrics.totalCallsProgress = total > 0 ? 1 : 0;           // full if there are calls
+      this.kpiMetrics.trends = { connected: 0, duration: 0, total: 0, missed: 0 };
+    }
+  }
+
+  calcTrend(curr: number, prev: number): number {
+    if (!prev) return curr > 0 ? 100 : 0;
+    return Math.round(((curr - prev) / prev) * 100);
+  }
+
   onPeriodChange(p: string): void {
     this.selectedPeriod = p as any;
     if (this.timelineChart) { this.timelineChart.destroy(); this.timelineChart = null; }
-    if (this.donutChart)    { this.donutChart.destroy();    this.donutChart = null; }
+    if (this.donutChart) { this.donutChart.destroy(); this.donutChart = null; }
     if (p !== 'custom') {
       this.fetchSummary();
       this.fetchEmployeeCallRows();
@@ -374,7 +453,7 @@ export class AppComponent implements OnInit {
     const s = this.summaryStats;
     const counts = {
       incoming: s.incoming || 0, outgoing: s.outgoing || 0,
-      missed: s.missed || 0,     rejected: s.rejected || 0
+      missed: s.missed || 0, rejected: s.rejected || 0
     };
 
     const data = {
@@ -415,7 +494,7 @@ export class AppComponent implements OnInit {
       new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' })
     );
     const totalCalls = this.timelineData.map(d =>
-      (d.incoming || 0) + (d.outgoing || 0) + (d.missed || 0)
+      (d.incoming || 0) + (d.outgoing || 0) + (d.missed || 0) + (d.rejected || 0)
     );
 
     const textColor = 'rgba(80,80,100,0.6)';
@@ -477,9 +556,20 @@ export class AppComponent implements OnInit {
   }
 
   renderDonutChart(): void {
-    if (this.donutChart) { this.donutChart.destroy(); this.donutChart = null; }
+    if (this.donutChart) { 
+      this.donutChart.destroy(); 
+      this.donutChart = null; 
+    }
+    
     const canvas = document.getElementById('donutChart') as HTMLCanvasElement;
-    if (!canvas || !this.summaryStats) return;
+    
+    // Guard: canvas not in DOM yet
+    if (!canvas) {
+      setTimeout(() => this.renderDonutChart(), 200);
+      return;
+    }
+    
+    if (!this.summaryStats) return;
 
     const s = this.summaryStats;
     this.donutChart = new Chart(canvas, {
@@ -495,8 +585,7 @@ export class AppComponent implements OnInit {
         }]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: false,
         cutout: '72%',
         plugins: {
           legend: { display: false },
@@ -602,16 +691,22 @@ export class AppComponent implements OnInit {
   }
 
   // ── Auth flows ────────────────────────────────────────────
-  toggleMobileMenu(): void { this.isMobileMenuOpen = !this.isMobileMenuOpen; }
-  openLogin():  void { this.isLoginOpen = true;  this.isSignupOpen = false; }
-  openSignup(): void { this.isSignupOpen = true; this.isLoginOpen = false;  }
-  closeModals():void { this.isLoginOpen = false; this.isSignupOpen = false; }
+  toggleSidebar(): void {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+  openLogin(): void { this.isLoginOpen = true; this.isSignupOpen = false; }
+  openSignup(): void { this.isSignupOpen = true; this.isLoginOpen = false; }
+  closeModals(): void { this.isLoginOpen = false; this.isSignupOpen = false; }
 
   onPasswordInput(value: string): void {
     this.signupForm.password = value;
     this.pwdChecks = {
       length: value.length >= 8,
-      upper:  /[A-Z]/.test(value),
+      upper: /[A-Z]/.test(value),
       number: /[0-9]/.test(value),
       symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value),
     };
@@ -648,12 +743,12 @@ export class AppComponent implements OnInit {
           this.closeModals();
           this.loggedIn = true;
           this.dashboardCompany = res.user.companyName || 'Your Company';
-          this.dashboardCode    = res.user.companyCode  || 'N/A';
+          this.dashboardCode = res.user.companyCode || 'N/A';
           localStorage.setItem('tracecall_user', JSON.stringify(res.user));
           setTimeout(() => window.scrollTo(0, 0), 0);
           this._loadDashboard();
-        } else { 
-          this.loginError = res.message; 
+        } else {
+          this.loginError = res.message;
         }
       },
       error: (err) => {
@@ -678,12 +773,12 @@ export class AppComponent implements OnInit {
     this.summaryStats = null;
     this.selectedEmployee = null;
     if (this.timelineChart) { this.timelineChart.destroy(); this.timelineChart = null; }
-    if (this.donutChart)    { this.donutChart.destroy();    this.donutChart = null; }
+    if (this.donutChart) { this.donutChart.destroy(); this.donutChart = null; }
     localStorage.removeItem('tracecall_user');
     window.scrollTo(0, 0);
   }
 
-  openAddEmployee():  void { this.isAddEmployeeOpen = true;  this.addEmployeeError = ''; this.newEmployee = { name: '', mobile: '' }; }
+  openAddEmployee(): void { this.isAddEmployeeOpen = true; this.addEmployeeError = ''; this.newEmployee = { name: '', mobile: '' }; }
   closeAddEmployee(): void { this.isAddEmployeeOpen = false; }
 
   onAddEmployeeSubmit(event: Event): void {
@@ -739,7 +834,7 @@ export class AppComponent implements OnInit {
 
   saveAddress(): void {
     this.saveAddressLoading = true;
-    this.saveAddressError   = '';
+    this.saveAddressError = '';
     this.saveAddressSuccess = '';
     this.authService.updateAddress(this.dashboardCode, this.editAddressValue).subscribe({
       next: (res: any) => {
@@ -770,7 +865,7 @@ export class AppComponent implements OnInit {
     this.changePwdForm.newPassword = value;
     this.changePwdChecks = {
       length: value.length >= 8,
-      upper:  /[A-Z]/.test(value),
+      upper: /[A-Z]/.test(value),
       number: /[0-9]/.test(value),
       symbol: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(value),
     };
@@ -780,7 +875,7 @@ export class AppComponent implements OnInit {
 
   onChangePasswordSubmit(event: Event): void {
     event.preventDefault();
-    this.changePwdError   = '';
+    this.changePwdError = '';
     this.changePwdSuccess = '';
     if (this.changePwdForm.newPassword !== this.changePwdForm.confirmPassword) {
       this.changePwdError = 'New passwords do not match.'; return;
@@ -795,8 +890,8 @@ export class AppComponent implements OnInit {
         this.changePwdLoading = false;
         if (res.success) {
           this.changePwdSuccess = 'Password updated successfully!';
-          this.changePwdForm    = { oldPassword: '', newPassword: '', confirmPassword: '' };
-          this.changePwdChecks  = { length: false, upper: false, number: false, symbol: false };
+          this.changePwdForm = { oldPassword: '', newPassword: '', confirmPassword: '' };
+          this.changePwdChecks = { length: false, upper: false, number: false, symbol: false };
         } else { this.changePwdError = res.message; }
       },
       error: (err: any) => {
