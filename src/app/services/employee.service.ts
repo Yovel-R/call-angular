@@ -1,0 +1,37 @@
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
+
+export interface Employee {
+  _id?: string;
+  name: string;
+  mobile: string;
+  companyCode: string;
+  employeeCode?: string;
+  tags?: string[];
+  deviceModel?: string;
+  appVersion?: string;
+  lastCallTime?: string;
+  lastSyncTime?: string;
+  createdAt?: string;
+}
+
+export interface EmployeeResponse {
+  success: boolean;
+  message?: string;
+  employee?: Employee;
+  employees?: Employee[];
+}
+
+@Injectable({ providedIn: 'root' })
+export class EmployeeService {
+  constructor(private api: ApiService) {}
+
+  addEmployee(payload: { name: string; mobile: string; companyCode: string }): Observable<EmployeeResponse> {
+    return this.api.post<EmployeeResponse>('/api/employees', payload);
+  }
+
+  getEmployees(companyCode: string): Observable<EmployeeResponse> {
+    return this.api.get<EmployeeResponse>(`/api/employees?companyCode=${companyCode}`);
+  }
+}

@@ -1,336 +1,773 @@
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
-<!-- * * * * * * * to get started with your project! * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<div class="page-wrapper" *ngIf="!loggedIn">
 
-<style>
-  :host {
-    --bright-blue: oklch(51.01% 0.274 263.83);
-    --electric-violet: oklch(53.18% 0.28 296.97);
-    --french-violet: oklch(47.66% 0.246 305.88);
-    --vivid-pink: oklch(69.02% 0.277 332.77);
-    --hot-red: oklch(61.42% 0.238 15.34);
-    --orange-red: oklch(63.32% 0.24 31.68);
-
-    --gray-900: oklch(19.37% 0.006 300.98);
-    --gray-700: oklch(36.98% 0.014 302.71);
-    --gray-400: oklch(70.9% 0.015 304.04);
-
-    --red-to-pink-to-purple-vertical-gradient: linear-gradient(
-      180deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --red-to-pink-to-purple-horizontal-gradient: linear-gradient(
-      90deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --pill-accent: var(--bright-blue);
-
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  h1 {
-    font-size: 3.125rem;
-    color: var(--gray-900);
-    font-weight: 500;
-    line-height: 100%;
-    letter-spacing: -0.125rem;
-    margin: 0;
-    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-  }
-
-  p {
-    margin: 0;
-    color: var(--gray-700);
-  }
-
-  main {
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-sizing: inherit;
-    position: relative;
-  }
-
-  .angular-logo {
-    max-width: 9.2rem;
-  }
-
-  .content {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 700px;
-    margin-bottom: 3rem;
-  }
-
-  .content h1 {
-    margin-top: 1.75rem;
-  }
-
-  .content p {
-    margin-top: 1.5rem;
-  }
-
-  .divider {
-    width: 1px;
-    background: var(--red-to-pink-to-purple-vertical-gradient);
-    margin-inline: 0.5rem;
-  }
-
-  .pill-group {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-  }
-
-  .pill {
-    display: flex;
-    align-items: center;
-    --pill-accent: var(--bright-blue);
-    background: color-mix(in srgb, var(--pill-accent) 5%, transparent);
-    color: var(--pill-accent);
-    padding-inline: 0.75rem;
-    padding-block: 0.375rem;
-    border-radius: 2.75rem;
-    border: 0;
-    transition: background 0.3s ease;
-    font-family: var(--inter-font);
-    font-size: 0.875rem;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 1.4rem;
-    letter-spacing: -0.00875rem;
-    text-decoration: none;
-  }
-
-  .pill:hover {
-    background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
-  }
-
-  .pill-group .pill:nth-child(6n + 1) {
-    --pill-accent: var(--bright-blue);
-  }
-  .pill-group .pill:nth-child(6n + 2) {
-    --pill-accent: var(--french-violet);
-  }
-  .pill-group .pill:nth-child(6n + 3),
-  .pill-group .pill:nth-child(6n + 4),
-  .pill-group .pill:nth-child(6n + 5) {
-    --pill-accent: var(--hot-red);
-  }
-
-  .pill-group svg {
-    margin-inline-start: 0.25rem;
-  }
-
-  .social-links {
-    display: flex;
-    align-items: center;
-    gap: 0.73rem;
-    margin-top: 1.5rem;
-  }
-
-  .social-links path {
-    transition: fill 0.3s ease;
-    fill: var(--gray-400);
-  }
-
-  .social-links a:hover svg path {
-    fill: var(--gray-900);
-  }
-
-  @media screen and (max-width: 650px) {
-    .content {
-      flex-direction: column;
-      width: max-content;
-    }
-
-    .divider {
-      height: 1px;
-      width: 100%;
-      background: var(--red-to-pink-to-purple-horizontal-gradient);
-      margin-block: 1.5rem;
-    }
-  }
-</style>
-
-<main class="main">
-  <div class="content">
-    <div class="left-side">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 982 239"
-        fill="none"
-        class="angular-logo"
-      >
-        <g clip-path="url(#a)">
-          <path
-            fill="url(#b)"
-            d="M388.676 191.625h30.849L363.31 31.828h-35.758l-56.215 159.797h30.848l13.174-39.356h60.061l13.256 39.356Zm-65.461-62.675 21.602-64.311h1.227l21.602 64.311h-44.431Zm126.831-7.527v70.202h-28.23V71.839h27.002v20.374h1.392c2.782-6.71 7.2-12.028 13.255-15.956 6.056-3.927 13.584-5.89 22.503-5.89 8.264 0 15.465 1.8 21.684 5.318 6.137 3.518 10.964 8.673 14.319 15.382 3.437 6.71 5.074 14.81 4.992 24.383v76.175h-28.23v-71.92c0-8.019-2.046-14.237-6.219-18.819-4.173-4.5-9.819-6.791-17.102-6.791-4.91 0-9.328 1.063-13.174 3.272-3.846 2.128-6.792 5.237-9.001 9.328-2.046 4.009-3.191 8.918-3.191 14.728ZM589.233 239c-10.147 0-18.82-1.391-26.103-4.091-7.282-2.7-13.092-6.382-17.511-10.964-4.418-4.582-7.528-9.655-9.164-15.219l25.448-6.136c1.145 2.372 2.782 4.663 4.991 6.954 2.209 2.291 5.155 4.255 8.837 5.81 3.683 1.554 8.428 2.291 14.074 2.291 8.019 0 14.647-1.964 19.884-5.81 5.237-3.845 7.856-10.227 7.856-19.064v-22.665h-1.391c-1.473 2.946-3.601 5.892-6.383 9.001-2.782 3.109-6.464 5.645-10.965 7.691-4.582 2.046-10.228 3.109-17.101 3.109-9.165 0-17.511-2.209-25.039-6.545-7.446-4.337-13.42-10.883-17.757-19.474-4.418-8.673-6.628-19.473-6.628-32.565 0-13.091 2.21-24.301 6.628-33.383 4.419-9.082 10.311-15.955 17.839-20.7 7.528-4.746 15.874-7.037 25.039-7.037 7.037 0 12.846 1.145 17.347 3.518 4.582 2.373 8.182 5.236 10.883 8.51 2.7 3.272 4.746 6.382 6.137 9.327h1.554v-19.8h27.821v121.749c0 10.228-2.454 18.737-7.364 25.447-4.91 6.709-11.538 11.7-20.048 15.055-8.509 3.355-18.165 4.991-28.884 4.991Zm.245-71.266c5.974 0 11.047-1.473 15.302-4.337 4.173-2.945 7.446-7.118 9.573-12.519 2.21-5.482 3.274-12.027 3.274-19.637 0-7.609-1.064-14.155-3.274-19.8-2.127-5.646-5.318-10.064-9.491-13.255-4.174-3.11-9.329-4.746-15.384-4.746s-11.537 1.636-15.792 4.91c-4.173 3.272-7.365 7.772-9.492 13.418-2.128 5.727-3.191 12.191-3.191 19.392 0 7.2 1.063 13.745 3.273 19.228 2.127 5.482 5.318 9.736 9.573 12.764 4.174 3.027 9.41 4.582 15.629 4.582Zm141.56-26.51V71.839h28.23v119.786h-27.412v-21.273h-1.227c-2.7 6.709-7.119 12.191-13.338 16.446-6.137 4.255-13.747 6.382-22.748 6.382-7.855 0-14.81-1.718-20.783-5.237-5.974-3.518-10.72-8.591-14.075-15.382-3.355-6.709-5.073-14.891-5.073-24.464V71.839h28.312v71.921c0 7.609 2.046 13.664 6.219 18.083 4.173 4.5 9.655 6.709 16.365 6.709 4.173 0 8.183-.982 12.111-3.028 3.927-2.045 7.118-5.072 9.655-9.082 2.537-4.091 3.764-9.164 3.764-15.218Zm65.707-109.395v159.796h-28.23V31.828h28.23Zm44.841 162.169c-7.61 0-14.402-1.391-20.457-4.091-6.055-2.7-10.883-6.791-14.32-12.109-3.518-5.319-5.237-11.946-5.237-19.801 0-6.791 1.228-12.355 3.765-16.773 2.536-4.419 5.891-7.937 10.228-10.637 4.337-2.618 9.164-4.664 14.647-6.055 5.4-1.391 11.046-2.373 16.856-3.027 7.037-.737 12.683-1.391 17.102-1.964 4.337-.573 7.528-1.555 9.574-2.782 1.963-1.309 3.027-3.273 3.027-5.973v-.491c0-5.891-1.718-10.391-5.237-13.664-3.518-3.191-8.51-4.828-15.056-4.828-6.955 0-12.356 1.473-16.447 4.5-4.009 3.028-6.71 6.546-8.183 10.719l-26.348-3.764c2.046-7.282 5.483-13.336 10.31-18.328 4.746-4.909 10.638-8.59 17.511-11.045 6.955-2.455 14.565-3.682 22.912-3.682 5.809 0 11.537.654 17.265 2.045s10.965 3.6 15.711 6.71c4.746 3.109 8.51 7.282 11.455 12.6 2.864 5.318 4.337 11.946 4.337 19.883v80.184h-27.166v-16.446h-.9c-1.719 3.355-4.092 6.464-7.201 9.328-3.109 2.864-6.955 5.237-11.619 6.955-4.828 1.718-10.229 2.536-16.529 2.536Zm7.364-20.701c5.646 0 10.556-1.145 14.729-3.354 4.173-2.291 7.364-5.237 9.655-9.001 2.292-3.763 3.355-7.854 3.355-12.273v-14.155c-.9.737-2.373 1.391-4.5 2.046-2.128.654-4.419 1.145-7.037 1.636-2.619.491-5.155.9-7.692 1.227-2.537.328-4.746.655-6.628.901-4.173.572-8.019 1.472-11.292 2.781-3.355 1.31-5.973 3.11-7.855 5.401-1.964 2.291-2.864 5.318-2.864 8.918 0 5.237 1.882 9.164 5.728 11.782 3.682 2.782 8.51 4.091 14.401 4.091Zm64.643 18.328V71.839h27.412v19.965h1.227c2.21-6.955 5.974-12.274 11.292-16.038 5.319-3.763 11.456-5.645 18.329-5.645 1.555 0 3.355.082 5.237.163 1.964.164 3.601.328 4.91.573v25.938c-1.227-.41-3.109-.819-5.646-1.146a58.814 58.814 0 0 0-7.446-.49c-5.155 0-9.738 1.145-13.829 3.354-4.091 2.209-7.282 5.236-9.655 9.164-2.373 3.927-3.519 8.427-3.519 13.5v70.448h-28.312ZM222.077 39.192l-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"
-          />
-          <path
-            fill="url(#c)"
-            d="M388.676 191.625h30.849L363.31 31.828h-35.758l-56.215 159.797h30.848l13.174-39.356h60.061l13.256 39.356Zm-65.461-62.675 21.602-64.311h1.227l21.602 64.311h-44.431Zm126.831-7.527v70.202h-28.23V71.839h27.002v20.374h1.392c2.782-6.71 7.2-12.028 13.255-15.956 6.056-3.927 13.584-5.89 22.503-5.89 8.264 0 15.465 1.8 21.684 5.318 6.137 3.518 10.964 8.673 14.319 15.382 3.437 6.71 5.074 14.81 4.992 24.383v76.175h-28.23v-71.92c0-8.019-2.046-14.237-6.219-18.819-4.173-4.5-9.819-6.791-17.102-6.791-4.91 0-9.328 1.063-13.174 3.272-3.846 2.128-6.792 5.237-9.001 9.328-2.046 4.009-3.191 8.918-3.191 14.728ZM589.233 239c-10.147 0-18.82-1.391-26.103-4.091-7.282-2.7-13.092-6.382-17.511-10.964-4.418-4.582-7.528-9.655-9.164-15.219l25.448-6.136c1.145 2.372 2.782 4.663 4.991 6.954 2.209 2.291 5.155 4.255 8.837 5.81 3.683 1.554 8.428 2.291 14.074 2.291 8.019 0 14.647-1.964 19.884-5.81 5.237-3.845 7.856-10.227 7.856-19.064v-22.665h-1.391c-1.473 2.946-3.601 5.892-6.383 9.001-2.782 3.109-6.464 5.645-10.965 7.691-4.582 2.046-10.228 3.109-17.101 3.109-9.165 0-17.511-2.209-25.039-6.545-7.446-4.337-13.42-10.883-17.757-19.474-4.418-8.673-6.628-19.473-6.628-32.565 0-13.091 2.21-24.301 6.628-33.383 4.419-9.082 10.311-15.955 17.839-20.7 7.528-4.746 15.874-7.037 25.039-7.037 7.037 0 12.846 1.145 17.347 3.518 4.582 2.373 8.182 5.236 10.883 8.51 2.7 3.272 4.746 6.382 6.137 9.327h1.554v-19.8h27.821v121.749c0 10.228-2.454 18.737-7.364 25.447-4.91 6.709-11.538 11.7-20.048 15.055-8.509 3.355-18.165 4.991-28.884 4.991Zm.245-71.266c5.974 0 11.047-1.473 15.302-4.337 4.173-2.945 7.446-7.118 9.573-12.519 2.21-5.482 3.274-12.027 3.274-19.637 0-7.609-1.064-14.155-3.274-19.8-2.127-5.646-5.318-10.064-9.491-13.255-4.174-3.11-9.329-4.746-15.384-4.746s-11.537 1.636-15.792 4.91c-4.173 3.272-7.365 7.772-9.492 13.418-2.128 5.727-3.191 12.191-3.191 19.392 0 7.2 1.063 13.745 3.273 19.228 2.127 5.482 5.318 9.736 9.573 12.764 4.174 3.027 9.41 4.582 15.629 4.582Zm141.56-26.51V71.839h28.23v119.786h-27.412v-21.273h-1.227c-2.7 6.709-7.119 12.191-13.338 16.446-6.137 4.255-13.747 6.382-22.748 6.382-7.855 0-14.81-1.718-20.783-5.237-5.974-3.518-10.72-8.591-14.075-15.382-3.355-6.709-5.073-14.891-5.073-24.464V71.839h28.312v71.921c0 7.609 2.046 13.664 6.219 18.083 4.173 4.5 9.655 6.709 16.365 6.709 4.173 0 8.183-.982 12.111-3.028 3.927-2.045 7.118-5.072 9.655-9.082 2.537-4.091 3.764-9.164 3.764-15.218Zm65.707-109.395v159.796h-28.23V31.828h28.23Zm44.841 162.169c-7.61 0-14.402-1.391-20.457-4.091-6.055-2.7-10.883-6.791-14.32-12.109-3.518-5.319-5.237-11.946-5.237-19.801 0-6.791 1.228-12.355 3.765-16.773 2.536-4.419 5.891-7.937 10.228-10.637 4.337-2.618 9.164-4.664 14.647-6.055 5.4-1.391 11.046-2.373 16.856-3.027 7.037-.737 12.683-1.391 17.102-1.964 4.337-.573 7.528-1.555 9.574-2.782 1.963-1.309 3.027-3.273 3.027-5.973v-.491c0-5.891-1.718-10.391-5.237-13.664-3.518-3.191-8.51-4.828-15.056-4.828-6.955 0-12.356 1.473-16.447 4.5-4.009 3.028-6.71 6.546-8.183 10.719l-26.348-3.764c2.046-7.282 5.483-13.336 10.31-18.328 4.746-4.909 10.638-8.59 17.511-11.045 6.955-2.455 14.565-3.682 22.912-3.682 5.809 0 11.537.654 17.265 2.045s10.965 3.6 15.711 6.71c4.746 3.109 8.51 7.282 11.455 12.6 2.864 5.318 4.337 11.946 4.337 19.883v80.184h-27.166v-16.446h-.9c-1.719 3.355-4.092 6.464-7.201 9.328-3.109 2.864-6.955 5.237-11.619 6.955-4.828 1.718-10.229 2.536-16.529 2.536Zm7.364-20.701c5.646 0 10.556-1.145 14.729-3.354 4.173-2.291 7.364-5.237 9.655-9.001 2.292-3.763 3.355-7.854 3.355-12.273v-14.155c-.9.737-2.373 1.391-4.5 2.046-2.128.654-4.419 1.145-7.037 1.636-2.619.491-5.155.9-7.692 1.227-2.537.328-4.746.655-6.628.901-4.173.572-8.019 1.472-11.292 2.781-3.355 1.31-5.973 3.11-7.855 5.401-1.964 2.291-2.864 5.318-2.864 8.918 0 5.237 1.882 9.164 5.728 11.782 3.682 2.782 8.51 4.091 14.401 4.091Zm64.643 18.328V71.839h27.412v19.965h1.227c2.21-6.955 5.974-12.274 11.292-16.038 5.319-3.763 11.456-5.645 18.329-5.645 1.555 0 3.355.082 5.237.163 1.964.164 3.601.328 4.91.573v25.938c-1.227-.41-3.109-.819-5.646-1.146a58.814 58.814 0 0 0-7.446-.49c-5.155 0-9.738 1.145-13.829 3.354-4.091 2.209-7.282 5.236-9.655 9.164-2.373 3.927-3.519 8.427-3.519 13.5v70.448h-28.312ZM222.077 39.192l-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"
-          />
-        </g>
-        <defs>
-          <radialGradient
-            id="c"
-            cx="0"
-            cy="0"
-            r="1"
-            gradientTransform="rotate(118.122 171.182 60.81) scale(205.794)"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#FF41F8" />
-            <stop offset=".707" stop-color="#FF41F8" stop-opacity=".5" />
-            <stop offset="1" stop-color="#FF41F8" stop-opacity="0" />
-          </radialGradient>
-          <linearGradient
-            id="b"
-            x1="0"
-            x2="982"
-            y1="192"
-            y2="192"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#F0060B" />
-            <stop offset="0" stop-color="#F0070C" />
-            <stop offset=".526" stop-color="#CC26D5" />
-            <stop offset="1" stop-color="#7702FF" />
-          </linearGradient>
-          <clipPath id="a"><path fill="#fff" d="M0 0h982v239H0z" /></clipPath>
-        </defs>
-      </svg>
-      <h1>Hello, {{ title }}</h1>
-      <p>Congratulations! Your app is running. 🎉</p>
-    </div>
-    <div class="divider" role="separator" aria-label="Divider"></div>
-    <div class="right-side">
-      <div class="pill-group">
-        @for (item of [
-          { title: 'Explore the Docs', link: 'https://angular.dev' },
-          { title: 'Learn with Tutorials', link: 'https://angular.dev/tutorials' },
-          { title: 'CLI Docs', link: 'https://angular.dev/tools/cli' },
-          { title: 'Angular Language Service', link: 'https://angular.dev/tools/language-service' },
-          { title: 'Angular DevTools', link: 'https://angular.dev/tools/devtools' },
-        ]; track item.title) {
-          <a
-            class="pill"
-            [href]="item.link"
-            target="_blank"
-            rel="noopener"
-          >
-            <span>{{ item.title }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="14"
-              viewBox="0 -960 960 960"
-              width="14"
-              fill="currentColor"
-            >
-              <path
-                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
-              />
-            </svg>
-          </a>
-        }
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/>
+          </svg>
+        </div>
+        <span class="brand-name">TraceCall</span>
       </div>
-      <div class="social-links">
-        <a
-          href="https://github.com/angular/angular"
-          aria-label="Github"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="25"
-            height="24"
-            viewBox="0 0 25 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Github"
-          >
-            <path
-              d="M12.3047 0C5.50634 0 0 5.50942 0 12.3047C0 17.7423 3.52529 22.3535 8.41332 23.9787C9.02856 24.0946 9.25414 23.7142 9.25414 23.3871C9.25414 23.0949 9.24389 22.3207 9.23876 21.2953C5.81601 22.0377 5.09414 19.6444 5.09414 19.6444C4.53427 18.2243 3.72524 17.8449 3.72524 17.8449C2.61064 17.082 3.81137 17.0973 3.81137 17.0973C5.04697 17.1835 5.69604 18.3647 5.69604 18.3647C6.79321 20.2463 8.57636 19.7029 9.27978 19.3881C9.39052 18.5924 9.70736 18.0499 10.0591 17.7423C7.32641 17.4347 4.45429 16.3765 4.45429 11.6618C4.45429 10.3185 4.9311 9.22133 5.72065 8.36C5.58222 8.04931 5.16694 6.79833 5.82831 5.10337C5.82831 5.10337 6.85883 4.77319 9.2121 6.36459C10.1965 6.09082 11.2424 5.95546 12.2883 5.94931C13.3342 5.95546 14.3801 6.09082 15.3644 6.36459C17.7023 4.77319 18.7328 5.10337 18.7328 5.10337C19.3942 6.79833 18.9789 8.04931 18.8559 8.36C19.6403 9.22133 20.1171 10.3185 20.1171 11.6618C20.1171 16.3888 17.2409 17.4296 14.5031 17.7321C14.9338 18.1012 15.3337 18.8559 15.3337 20.0084C15.3337 21.6552 15.3183 22.978 15.3183 23.3779C15.3183 23.7009 15.5336 24.0854 16.1642 23.9623C21.0871 22.3484 24.6094 17.7341 24.6094 12.3047C24.6094 5.50942 19.0999 0 12.3047 0Z"
-            />
+      <div class="nav-links">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#analytics" class="nav-link">Analytics</a>
+        <a href="#pricing" class="nav-link">Pricing</a>
+        <a href="#about" class="nav-link">About</a>
+      </div>
+      <div class="nav-auth">
+        <button class="btn-login" (click)="openLogin()">Log In</button>
+        <button class="btn-signup" (click)="isTrialRequest=false; openSignup()">Sign Up</button>
+        <button class="cta-primary" style="padding: 0.6rem 1.2rem; font-size: 0.85rem;" (click)="openTrialSignup()">Get Free Trial</button>
+      </div>
+      <button class="hamburger" aria-label="Open menu" (click)="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-menu" [class.open]="isMobileMenuOpen">
+      <a href="#features" class="nav-link" (click)="toggleMobileMenu()">Features</a>
+      <a href="#analytics" class="nav-link" (click)="toggleMobileMenu()">Analytics</a>
+      <a href="#pricing" class="nav-link" (click)="toggleMobileMenu()">Pricing</a>
+      <a href="#about" class="nav-link" (click)="toggleMobileMenu()">About</a>
+      <div class="mobile-auth">
+        <button class="btn-login" (click)="openLogin(); toggleMobileMenu()">Log In</button>
+        <button class="btn-signup" (click)="isTrialRequest=false; openSignup(); toggleMobileMenu()">Sign Up Free</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-container">
+      <div class="hero-badge"><span class="badge-dot"></span>Real-time Call Intelligence</div>
+      <h1 class="hero-title">Track Every Call.<br><span class="gradient-text">Optimize Every Interaction.</span></h1>
+      <p class="hero-subtitle">TraceCall gives your team full visibility into every incoming and outgoing call. Monitor agents in real-time, analyze patterns, and boost performance with AI-driven insights.</p>
+      <div class="hero-cta">
+        <button class="cta-primary" (click)="openTrialSignup()">
+          Get Free Trial
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="cta-secondary" (click)="openSignup(); isTrialRequest=false;">
+          Sign Up Paid
+        </button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item"><span class="stat-number">2M+</span><span class="stat-label">Calls Tracked</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Organizations</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat-item"><span class="stat-number">99.9%</span><span class="stat-label">Uptime SLA</span></div>
+      </div>
+    </div>
+    <div class="hero-dashboard">
+      <div class="dashboard-card">
+        <div class="dashboard-header">
+          <div class="dashboard-title"><span class="live-dot"></span>Live Call Monitor</div>
+          <span class="dashboard-date">Today, 4:12 PM</span>
+        </div>
+        <div class="call-list">
+          <div class="call-item call-active">
+            <div class="call-avatar">RS</div>
+            <div class="call-info"><span class="caller-name">Raj Sharma</span><span class="caller-number">+91 9876 543 210</span></div>
+            <div class="call-meta"><span class="call-duration active">04:22</span><span class="call-badge incoming">Incoming</span></div>
+          </div>
+          <div class="call-item">
+            <div class="call-avatar av2">PK</div>
+            <div class="call-info"><span class="caller-name">Priya Kumar</span><span class="caller-number">+91 9845 231 101</span></div>
+            <div class="call-meta"><span class="call-duration">02:07</span><span class="call-badge outgoing">Outgoing</span></div>
+          </div>
+          <div class="call-item">
+            <div class="call-avatar av3">AM</div>
+            <div class="call-info"><span class="caller-name">Arjun Mehta</span><span class="caller-number">+91 9004 876 532</span></div>
+            <div class="call-meta"><span class="call-duration">00:53</span><span class="call-badge missed">Missed</span></div>
+          </div>
+        </div>
+        <div class="dashboard-metrics">
+          <div class="metric"><span class="metric-value">42</span><span class="metric-label">Active Calls</span></div>
+          <div class="metric"><span class="metric-value">3m 14s</span><span class="metric-label">Avg Duration</span></div>
+          <div class="metric"><span class="metric-value">96%</span><span class="metric-label">Connect Rate</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FEATURES ========== -->
+  <section class="features" id="features">
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">FEATURES</span>
+        <h2 class="section-title">Everything you need to master your calls</h2>
+        <p class="section-subtitle">From real-time monitoring to deep analytics — TraceCall has it all.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card feature-large">
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+          <h3>Real-Time Call Monitoring</h3>
+          <p>Watch every active call as it happens. See agent, duration, caller ID, and connection quality — updated every second.</p>
+          <div class="feature-visual">
+            <div class="mini-chart">
+              <div class="bar" style="height:40%"></div><div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:45%"></div><div class="bar" style="height:80%"></div>
+              <div class="bar active-bar" style="height:95%"></div><div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:72%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon icon-purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 19V13L3 7V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 19V9L15 3V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M15 19V7L21 13V19H15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+          <h3>Smart Analytics</h3>
+          <p>Uncover call patterns, peak hours, and agent performance metrics with intuitive dashboards.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/><path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <h3>Call History &amp; Replay</h3>
+          <p>Access complete call history with date-time filtering. Review past calls and agent interactions easily.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon icon-orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 8H19C20.1046 8 21 8.89543 21 10V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V10C3 8.89543 3.89543 8 5 8H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 8V6C8 4.34315 9.34315 3 11 3H13C14.6569 3 16 4.34315 16 6V8" stroke="currentColor" stroke-width="2"/><path d="M12 13V17M10 15H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <h3>Agent Management</h3>
+          <p>Assign numbers to agents, track active/inactive status, and manage teams from a single control panel.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon icon-pink"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 17H20L18.3 14.7C18.1 14.4 18 14 18 13.6V10C18 7.3 16 5 13.5 4.2V4C13.5 2.9 12.6 2 11.5 2C10.4 2 9.5 2.9 9.5 4V4.2C7 5 5 7.3 5 10V13.6C5 14 4.9 14.4 4.7 14.7L3 17H9M15 17H9M15 17C15 18.7 13.4 20 11.5 20C9.6 20 8 18.7 8 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h3>Smart Alerts</h3>
+          <p>Get instant SMS or email alerts for missed calls, long-hold durations, or unusual call volumes.</p>
+        </div>
+        <div class="feature-card feature-cta-card">
+          <h3>Ready to trace your first call?</h3>
+          <p>Set up takes less than 5 minutes. No credit card required.</p>
+          <button class="btn-signup" style="margin-top:1.5rem;width:100%;" (click)="isTrialRequest=false; openSignup()">Start for Free →</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <div class="nav-brand">
+          <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/></svg></div>
+          <span class="brand-name">TraceCall</span>
+        </div>
+        <p>Smart call tracking for modern businesses.</p>
+      </div>
+      <p class="footer-copy">© 2026 TraceCall. All rights reserved.</p>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ========== LOGIN MODAL ========== -->
+<div class="modal-overlay" [class.open]="isLoginOpen" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModals()">✕</button>
+    <div class="modal-brand">
+      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/></svg></div>
+      <span class="brand-name">TraceCall</span>
+    </div>
+    <h2 class="modal-title">Welcome back</h2>
+    <p class="modal-subtitle">Sign in to your account</p>
+    <div class="form-error" *ngIf="loginError">{{ loginError }}</div>
+    <form class="modal-form" (submit)="onLoginSubmit($event)">
+      <div class="form-group">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you&#64;company.com" autocomplete="email" [(ngModel)]="loginForm.email" name="loginEmail" required>
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" [(ngModel)]="loginForm.password" name="loginPassword" required>
+      </div>
+      <a href="#" class="forgot-link">Forgot password?</a>
+      <button type="submit" class="btn-signup modal-submit" [disabled]="loginLoading">{{ loginLoading ? 'Signing in…' : 'Log In' }}</button>
+    </form>
+    <p class="modal-switch">Don't have an account? <a href="#" (click)="isTrialRequest=false; openSignup(); $event.preventDefault()">Sign Up</a></p>
+  </div>
+</div>
+
+<!-- ========== SIGNUP MODAL ========== -->
+<div class="modal-overlay" [class.open]="isSignupOpen" (click)="closeModals()">
+  <div class="modal modal-wide" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModals()">✕</button>
+    <div class="modal-brand">
+      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/></svg></div>
+      <span class="brand-name">TraceCall</span>
+    </div>
+    <h2 class="modal-title">{{ isTrialRequest ? 'Request Free Demo' : 'Create your account' }}</h2>
+    <p class="modal-subtitle">{{ isTrialRequest ? 'Get 7 days of full access to TraceCall features' : 'Start tracking calls for free — no credit card required' }}</p>
+    <div class="signup-success" *ngIf="signupSuccess">
+      <div class="success-icon">✓</div>
+      <h3>{{ isTrialRequest ? 'Request Sent!' : 'Account Created!' }}</h3>
+      <p>{{ isTrialRequest ? 'Your trial request has been sent to the main admin for approval. You will receive an email once approved.' : 'Welcome to TraceCall. You can now log in with your credentials.' }}</p>
+      <button type="button" class="btn-signup modal-submit" (click)="goToLoginFromSuccess()">{{ isTrialRequest ? 'Got it' : 'Go to Log In' }}</button>
+    </div>
+    <ng-container *ngIf="!signupSuccess">
+      <div class="form-error" *ngIf="signupError">{{ signupError }}</div>
+      <form class="modal-form" (submit)="onSignupSubmit($event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="su-company">Company Name <span class="req">*</span></label>
+            <input type="text" id="su-company" placeholder="Softrate Global" [(ngModel)]="signupForm.companyName" name="suCompany" required>
+          </div>
+          <div class="form-group">
+            <label for="su-name">Your Name <span class="req">*</span></label>
+            <input type="text" id="su-name" placeholder="John Doe" [(ngModel)]="signupForm.name" name="suName" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="su-address">Company Address <span class="req">*</span></label>
+          <input type="text" id="su-address" placeholder="123 Industry Park, Tech City" [(ngModel)]="signupForm.companyAddress" name="suAddress" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="su-email">Work Email <span class="req">*</span></label>
+            <input type="email" id="su-email" placeholder="you&#64;company.com" autocomplete="email" [(ngModel)]="signupForm.email" name="suEmail" required>
+          </div>
+          <div class="form-group">
+            <label for="su-mobile">Mobile Number <span class="req">*</span></label>
+            <div class="mobile-input-wrap">
+              <select class="mobile-prefix-select" [(ngModel)]="signupForm.countryCode" name="suCountryCode" required>
+                <option value="+91">🇮🇳 +91</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+61">🇦🇺 +61</option>
+                <option value="+971">🇦🇪 +971</option>
+              </select>
+              <input type="tel" id="su-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="signupForm.mobile" name="suMobile" required>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="su-team">Team Size <span class="req">*</span></label>
+            <select id="su-team" [(ngModel)]="signupForm.teamSize" name="suTeam" required>
+              <option value="" disabled>Select Team Size</option>
+              <option *ngFor="let s of TEAM_SIZES" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="su-industry">Industry <span class="req">*</span></label>
+            <select id="su-industry" [(ngModel)]="signupForm.industry" name="suIndustry" required>
+              <option value="" disabled>Select Industry</option>
+              <option *ngFor="let i of INDUSTRIES" [value]="i">{{ i }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="su-password">Password <span class="req">*</span></label>
+          <input type="password" id="su-password" placeholder="Min. 8 chars + A + 1 + !" autocomplete="new-password" [value]="signupForm.password" (input)="onPasswordInput($any($event.target).value)" required>
+          <div class="pwd-checks">
+            <span [class.check-ok]="pwdChecks.length">{{ pwdChecks.length ? '✓' : '○' }} 8+ characters</span>
+            <span [class.check-ok]="pwdChecks.upper">{{ pwdChecks.upper ? '✓' : '○' }} Uppercase letter</span>
+            <span [class.check-ok]="pwdChecks.number">{{ pwdChecks.number ? '✓' : '○' }} Number</span>
+            <span [class.check-ok]="pwdChecks.symbol">{{ pwdChecks.symbol ? '✓' : '○' }} Symbol (!&#64;#…)</span>
+          </div>
+        </div>
+        <button type="submit" class="btn-signup modal-submit" [disabled]="signupLoading || !passwordStrong">
+          {{ signupLoading ? 'Creating account…' : 'Create Account →' }}
+        </button>
+      </form>
+    </ng-container>
+    <p class="modal-switch" *ngIf="!signupSuccess">Already have an account? <a href="#" (click)="openLogin(); $event.preventDefault()">Log In</a></p>
+  </div>
+</div>
+
+<!-- ========== DASHBOARD (Post-Login) ========== -->
+<div class="dashboard-wrapper" *ngIf="loggedIn">
+
+  <nav class="navbar dashboard-nav">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/>
           </svg>
-        </a>
-        <a
-          href="https://twitter.com/angular"
-          aria-label="Twitter"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Twitter"
-          >
-            <path
-              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-            />
-          </svg>
-        </a>
-        <a
-          href="https://www.youtube.com/channel/UCbn1OgGei-DV7aSRo_HaAiw"
-          aria-label="Youtube"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="29"
-            height="20"
-            viewBox="0 0 29 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Youtube"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M27.4896 1.52422C27.9301 1.96749 28.2463 2.51866 28.4068 3.12258C29.0004 5.35161 29.0004 10 29.0004 10C29.0004 10 29.0004 14.6484 28.4068 16.8774C28.2463 17.4813 27.9301 18.0325 27.4896 18.4758C27.0492 18.9191 26.5 19.2389 25.8972 19.4032C23.6778 20 14.8068 20 14.8068 20C14.8068 20 5.93586 20 3.71651 19.4032C3.11363 19.2389 2.56449 18.9191 2.12405 18.4758C1.68361 18.0325 1.36732 17.4813 1.20683 16.8774C0.613281 14.6484 0.613281 10 0.613281 10C0.613281 10 0.613281 5.35161 1.20683 3.12258C1.36732 2.51866 1.68361 1.96749 2.12405 1.52422C2.56449 1.08095 3.11363 0.76113 3.71651 0.596774C5.93586 0 14.8068 0 14.8068 0C14.8068 0 23.6778 0 25.8972 0.596774C26.5 0.76113 27.0492 1.08095 27.4896 1.52422ZM19.3229 10L11.9036 5.77905V14.221L19.3229 10Z"
-            />
-          </svg>
-        </a>
+        </div>
+        <span class="brand-name">TraceCall</span>
+      </div>
+      <div class="nav-auth" style="gap:1rem;">
+        <span class="user-badge" style="font-size:.85rem;opacity:.8;">{{ dashboardCompany }} &middot; {{ dashboardCode }}</span>
+        <button class="btn-login" (click)="logout()">Log Out</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="dash-body">
+    <!-- Sidebar -->
+    <aside class="dash-sidebar">
+      <button class="sidebar-item" [class.active]="dashTab==='overview'" (click)="dashTab='overview'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+        Dashboard
+      </button>
+      <button class="sidebar-item" [class.active]="dashTab==='employees'" (click)="dashTab='employees'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M2 21c0-4 3.134-7 7-7h4c3.866 0 7 3 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Employees
+      </button>
+      <button class="sidebar-item" [class.active]="dashTab==='company'" (click)="dashTab='company'">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V21M3 21H21M9 7H11M9 11H11M9 15H11M13 7H15M13 11H15M13 15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Company
+      </button>
+    </aside>
+
+    <main class="dash-main">
+
+      <!-- ══ OVERVIEW TAB ══ -->
+      <div *ngIf="dashTab==='overview'">
+        <div class="dash-header-row">
+          <h2 class="dash-title">Call Overview</h2>
+          <div class="period-tabs">
+            <button *ngFor="let p of periods" [class.active]="selectedPeriod===p.key" (click)="onPeriodChange(p.key)">{{ p.label }}</button>
+          </div>
+        </div>
+
+        <!-- Custom date range -->
+        <div class="custom-range-row" *ngIf="selectedPeriod==='custom'">
+          <div class="cr-field">
+            <label>From</label>
+            <input type="date" [(ngModel)]="customFrom" [max]="todayIso">
+          </div>
+          <div class="cr-field">
+            <label>To <span style="font-size:.7rem;opacity:.6;">(optional)</span></label>
+            <input type="date" [(ngModel)]="customTo" [min]="customFrom" [max]="todayIso">
+          </div>
+          <button class="cta-primary" style="padding:.42rem 1.1rem;font-size:.82rem;align-self:flex-end;" (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
+        </div>
+
+        <div *ngIf="summaryLoading" class="dash-loading">Loading stats&hellip;</div>
+        <div *ngIf="!summaryLoading && !summaryStats" class="dash-empty">No call data synced yet for this period. Open the mobile app to sync.</div>
+
+        <div class="dash-grid-layout" *ngIf="!summaryLoading && summaryStats">
+
+          <!-- ── TOP KPI CARDS ── -->
+          <div class="top-stats-row">
+
+            <!-- Card 1: Connected Calls -->
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-val">{{ summaryStats.connected }}</span>
+                <span class="kpi-label">Connected Calls</span>
+              </div>
+              <div class="kpi-progress">
+                <svg class="progress-ring" width="48" height="48">
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
+                  <circle class="progress-ring__circle val" stroke="var(--green)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
+                    [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * (summaryStats.total ? summaryStats.connected / summaryStats.total : 0))"/>
+                </svg>
+                <div class="kpi-progress-text" style="color:var(--green)">
+                  {{ (summaryStats.total ? (summaryStats.connected / summaryStats.total * 100) : 0) | number:'1.0-0' }}%
+                </div>
+              </div>
+            </div>
+
+            <!-- Card 2: Duration -->
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-val">{{ summaryStats.totalDuration ? (summaryStats.totalDuration / 60 | number:'1.0-0') : '0' }}m</span>
+                <span class="kpi-label">Duration</span>
+              </div>
+              <div class="kpi-progress">
+                <svg class="progress-ring" width="48" height="48">
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
+                  <circle class="progress-ring__circle val" stroke="var(--pink)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
+                    [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * 0.7)"/>
+                </svg>
+                <div class="kpi-progress-text" style="color:var(--pink)">-2%</div>
+              </div>
+            </div>
+
+            <!-- Card 3: Total Calls -->
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-val">{{ summaryStats.total }}</span>
+                <span class="kpi-label">Total Calls</span>
+              </div>
+              <div class="kpi-progress">
+                <svg class="progress-ring" width="48" height="48">
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
+                  <circle class="progress-ring__circle val" stroke="#84cc16" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
+                    [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * 0.85)"/>
+                </svg>
+                <div class="kpi-progress-text" style="color:#84cc16">+13%</div>
+              </div>
+            </div>
+
+            <!-- Card 4: Missed -->
+            <div class="kpi-card">
+              <div class="kpi-info">
+                <span class="kpi-val">{{ summaryStats.missed }}</span>
+                <span class="kpi-label">Missed</span>
+              </div>
+              <div class="kpi-progress">
+                <svg class="progress-ring" width="48" height="48">
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
+                  <circle class="progress-ring__circle val" stroke="#f87171" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
+                    [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * (summaryStats.total ? summaryStats.missed / summaryStats.total : 0))"/>
+                </svg>
+                <div class="kpi-progress-text" style="color:#f87171">+1%</div>
+              </div>
+            </div>
+
+          </div><!-- /top-stats-row -->
+
+          <!-- ── CHARTS ROW ── -->
+          <div class="charts-row">
+
+            <!-- Statistics card: Line chart LEFT + Donut RIGHT -->
+            <div class="chart-card flex-2" style="background:var(--bg-card-2);">
+
+              <!-- Card header -->
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
+                <div>
+                  <h3 style="font-size:1.15rem;color:var(--text-heading);margin:0 0 0.6rem 0;font-family:var(--font-head);font-weight:700;">Statistics</h3>
+                  <div style="display:flex;gap:2rem;">
+                    <div>
+                      <div style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">{{ summaryStats.total }}</div>
+                      <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Total Calls</div>
+                    </div>
+                    <div>
+                      <div style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">{{ summaryStats.totalDuration ? (summaryStats.totalDuration / summaryStats.total | number:'1.0-0') : '0' }}s</div>
+                      <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Avg Duration</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="period-toggle-pill">
+                  <button [class.active]="selectedPeriod==='today'" (click)="onPeriodChange('today')">Today</button>
+                  <button [class.active]="selectedPeriod==='yesterday'" (click)="onPeriodChange('yesterday')">Yesterday</button>
+                  <button [class.active]="selectedPeriod==='lastweek'" (click)="onPeriodChange('lastweek')">Week</button>
+                </div>
+              </div>
+
+              <!-- Two-column body with explicit height -->
+              <div style="display:flex;align-items:stretch;height:280px;gap:0;">
+
+                <!-- Line chart — 60% width -->
+                <!-- <div style="flex:1.6;min-width:0;position:relative;height:100%;">
+                  <canvas id="timelineChart" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+                </div> -->
+
+                <!-- Vertical divider -->
+                <!-- <div style="width:1px;background:var(--border);margin:0 1.25rem;flex-shrink:0;opacity:0.4;"></div> -->
+
+                <!-- Donut + legend — 40% width -->
+                <div style="flex:1;min-width:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.75rem;">
+                  <!-- <div style="font-size:0.8rem;font-weight:600;color:var(--text-2);align-self:flex-start;letter-spacing:0.02em;">Call Types</div> -->
+                  <div style="position:relative;width:140px;height:140px;flex-shrink:0;">
+                    <canvas id="donutChart" style="position:absolute;top:0;left:0;width:100%;height:100%;"></canvas>
+                    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                      <div style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1;">{{ summaryStats.total }}</div>
+                      <div style="font-size:0.68rem;color:var(--text-3);font-weight:500;margin-top:2px;">Total</div>
+                    </div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.35rem 0.6rem;width:100%;max-width:155px;">
+                    <div class="legend-item"><span class="lg-dot" style="background:#3b82f6;"></span><span class="lg-label">In</span><span class="lg-val">{{ summaryStats.incoming }}</span></div>
+                    <div class="legend-item"><span class="lg-dot" style="background:#22c55e;"></span><span class="lg-label">Out</span><span class="lg-val">{{ summaryStats.outgoing }}</span></div>
+                    <div class="legend-item"><span class="lg-dot" style="background:#f87171;"></span><span class="lg-label">Missed</span><span class="lg-val">{{ summaryStats.missed }}</span></div>
+                    <div class="legend-item"><span class="lg-dot" style="background:#f59e0b;"></span><span class="lg-label">Rej</span><span class="lg-val">{{ summaryStats.rejected }}</span></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Top Employees card -->
+            <div class="chart-card flex-1">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <h3 style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">Top Employees</h3>
+                <button class="pill-btn dark" (click)="dashTab='employees'">See All<span style="font-size:0.7rem;margin-left:4px;">-></span></button>
+              </div>
+              <table class="top-list-table">
+                <thead>
+                  <tr>
+                    <th>Employee</th>
+                    <th style="text-align:right">Calls</th>
+                    <th style="text-align:right">Duration</th>
+                    <th style="text-align:center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of (employeeCallRows | slice:0:8)" style="cursor:pointer" (click)="selectEmployee(row.emp)">
+                    <td>
+                      <div class="emp-cell">
+                        <div class="emp-avatar small shadow">{{ row.emp.name.charAt(0).toUpperCase() }}</div>
+                        <span style="font-weight:500;color:var(--text-2);font-size:0.85rem;">{{ row.emp.name || row.emp.mobile }}</span>
+                      </div>
+                    </td>
+                    <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.total || 0 }}</td>
+                    <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.totalDuration ? (row.stats.totalDuration / 60 | number:'1.0-0') : '0' }}m</td>
+                    <td style="text-align:center">
+                      <button class="pill-btn outline" (click)="openEmployee(row.emp); $event.stopPropagation()">View Details</button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="!employeeCallRows || !employeeCallRows.length">
+                    <td colspan="4" style="text-align:center;color:var(--text-3);padding:1.5rem 0;">No employee data</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+          </div><!-- /charts-row -->
+
+        </div><!-- /dash-grid-layout -->
+      </div><!-- /overview tab -->
+
+      <!-- ══ EMPLOYEES TAB ══ -->
+      <div *ngIf="dashTab==='employees'">
+        <div class="dash-header-row">
+          <h2 class="dash-title">Employees</h2>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button class="btn-login" style="padding:.45rem 1rem;font-size:.85rem;display:flex;align-items:center;gap:6px;" (click)="syncAll()" [disabled]="syncAllLoading">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" [style.animation]="syncAllLoading?'spin 0.8s linear infinite':''" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              {{ syncAllLoading ? 'Syncing…' : 'Sync All' }}
+            </button>
+            <button class="cta-primary" style="padding:.45rem 1rem;font-size:.85rem;" (click)="openAddEmployee()">+ Add</button>
+          </div>
+        </div>
+        <div *ngIf="employeesLoading" class="dash-loading">Loading&hellip;</div>
+
+        <!-- Server error banner for employee list -->
+        <div *ngIf="!employeesLoading && employeesError" class="dash-error-banner">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          <span>{{ employeesError }}</span>
+          <button class="btn-retry" (click)="fetchEmployees()">Retry</button>
+        </div>
+
+        <!-- Call stats error banner -->
+        <div *ngIf="!empCallLoading && empCallError && employees.length > 0" class="dash-error-banner dash-error-soft">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>{{ empCallError }}</span>
+          <button class="btn-retry" (click)="fetchEmployeeCallRows()">Retry</button>
+        </div>
+
+        <div *ngIf="!employeesLoading && !employeesError && employees.length===0" class="dash-empty">No employees yet. Click "Add" to get started.</div>
+        <div class="emp-table-wrap" *ngIf="!employeesLoading && employees.length>0">
+          <table class="emp-table">
+            <thead>
+              <tr>
+                <th>Employee</th><th>Code</th><th>Device</th><th>App Ver.</th>
+                <th>Last Call</th><th>Last Sync</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let emp of employees" class="emp-row">
+                <td (click)="openEmployee(emp)">
+                  <div class="emp-cell">
+                    <div class="emp-avatar">{{ emp.name.charAt(0).toUpperCase() }}</div>
+                    <div><div class="emp-name">{{ emp.name }}</div><div class="emp-phone">{{ emp.mobile }}</div></div>
+                  </div>
+                </td>
+                <td style="font-family:monospace;font-size:.8rem;color:var(--text-3);">{{ emp.employeeCode || '—' }}</td>
+                <td style="font-size:.78rem;color:var(--text-3);white-space:nowrap;">{{ emp.deviceModel || '—' }}</td>
+                <td style="font-size:.78rem;color:var(--text-3);">{{ emp.appVersion || '—' }}</td>
+                <td style="font-size:.78rem;white-space:nowrap;" [style.color]="emp.lastCallTime ? 'var(--text-1)' : 'var(--text-3)'">{{ fmtDate(emp.lastCallTime) }}</td>
+                <td style="font-size:.78rem;white-space:nowrap;" [style.color]="emp.lastSyncTime ? 'var(--green)' : 'var(--text-3)'">{{ fmtDate(emp.lastSyncTime) }}</td>
+                <td>
+                  <button class="action-btn" (click)="openEmployee(emp)" title="View details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M2 12C2 12 5.818 5 12 5s10 7 10 7-3.818 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="2"/></svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ COMPANY TAB ══ -->
+      <div *ngIf="dashTab==='company'">
+        <div class="dash-header-row">
+          <h2 class="dash-title">Company Profile</h2>
+        </div>
+        <div *ngIf="companyProfileLoading" class="dash-loading">Loading company info&hellip;</div>
+        <div class="company-tab-grid" *ngIf="!companyProfileLoading && companyProfile">
+          <div class="company-card">
+            <div class="company-card-header">
+              <div class="cc-avatar">{{ companyProfile.companyName.charAt(0).toUpperCase() }}</div>
+              <div>
+                <h3 class="cc-title">{{ companyProfile.companyName }}</h3>
+                <span class="cc-badge">#{{ companyProfile.companyCode }}</span>
+              </div>
+            </div>
+            <div class="cc-details-grid">
+              <div class="cc-detail"><label>Admin Name</label><div>{{ companyProfile.name }}</div></div>
+              <div class="cc-detail"><label>Email Address</label><div>{{ companyProfile.email }}</div></div>
+              <div class="cc-detail"><label>Phone Number</label><div>{{ companyProfile.countryCode }} {{ companyProfile.mobile }}</div></div>
+              <div class="cc-detail"><label>Industry</label><div>{{ companyProfile.industry }}</div></div>
+              <div class="cc-detail"><label>Team Size</label><div>{{ companyProfile.teamSize }}</div></div>
+              <div class="cc-detail"><label>Member Since</label><div>{{ fmtDate(companyProfile.createdAt) }}</div></div>
+              <div class="cc-detail full-width">
+                <label>
+                  Address
+                  <button class="cc-edit-btn" (click)="startEditAddress()" *ngIf="!editingAddress" title="Edit address">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5C18.8978 2.10217 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10217 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10217 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Edit
+                  </button>
+                </label>
+                <div *ngIf="!editingAddress" class="cc-address-value">
+                  {{ companyProfile.companyAddress || 'No address provided.' }}
+                  <span *ngIf="saveAddressSuccess" class="addr-success">✓ {{ saveAddressSuccess }}</span>
+                </div>
+                <div *ngIf="editingAddress" class="cc-address-edit">
+                  <input type="text" [(ngModel)]="editAddressValue" name="editAddr" placeholder="Enter company address…" class="cc-address-input">
+                  <div class="cc-addr-error" *ngIf="saveAddressError">{{ saveAddressError }}</div>
+                  <div class="cc-addr-actions">
+                    <button class="cta-primary" style="padding:.38rem .9rem;font-size:.8rem;" (click)="saveAddress()" [disabled]="saveAddressLoading">{{ saveAddressLoading ? 'Saving…' : 'Save' }}</button>
+                    <button class="btn-login" style="padding:.38rem .9rem;font-size:.8rem;" (click)="cancelEditAddress()">Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="company-card">
+            <h3 class="cc-title" style="margin-bottom:1.5rem;">Change Password</h3>
+            <div class="form-error" *ngIf="changePwdError">{{ changePwdError }}</div>
+            <div *ngIf="changePwdSuccess" style="color:var(--green);font-weight:600;margin-bottom:1rem;">✓ {{ changePwdSuccess }}</div>
+            <form class="modal-form" (submit)="onChangePasswordSubmit($event)">
+              <div class="form-group">
+                <label for="old-pwd">Current Password</label>
+                <input type="password" id="old-pwd" [(ngModel)]="changePwdForm.oldPassword" name="oldPwd" required>
+              </div>
+              <div class="form-group">
+                <label for="new-pwd">New Password</label>
+                <input type="password" id="new-pwd" [value]="changePwdForm.newPassword" (input)="onChangePwdInput($any($event.target).value)" name="newPwd" required>
+                <div class="pwd-checks" style="margin-top:8px;">
+                  <span [class.check-ok]="changePwdChecks.length">{{ changePwdChecks.length ? '✓' : '○' }} 8+ characters</span>
+                  <span [class.check-ok]="changePwdChecks.upper">{{ changePwdChecks.upper ? '✓' : '○' }} Uppercase letter</span>
+                  <span [class.check-ok]="changePwdChecks.number">{{ changePwdChecks.number ? '✓' : '○' }} Number</span>
+                  <span [class.check-ok]="changePwdChecks.symbol">{{ changePwdChecks.symbol ? '✓' : '○' }} Symbol</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="confirm-pwd">Confirm New Password</label>
+                <input type="password" id="confirm-pwd" [(ngModel)]="changePwdForm.confirmPassword" name="confPwd" required>
+              </div>
+              <button type="submit" class="cta-primary" [disabled]="changePwdLoading || !changePwdStrong" style="margin-top:1rem;">
+                {{ changePwdLoading ? 'Updating...' : 'Update Password' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Employee drilldown panel -->
+  <div class="drilldown-overlay" [class.open]="!!selectedEmployee" (click)="closeEmployee()">
+    <div class="drilldown-panel" (click)="$event.stopPropagation()" *ngIf="selectedEmployee">
+      <button class="drilldown-close" (click)="closeEmployee()">&#x2715;</button>
+      <div class="drilldown-header">
+        <div class="emp-avatar big">{{ selectedEmployee.name.charAt(0).toUpperCase() }}</div>
+        <div style="flex:1">
+          <div class="drilldown-name">{{ selectedEmployee.name }}</div>
+          <div class="drilldown-phone">{{ selectedEmployee.mobile }} &middot; #{{ selectedEmployee.employeeCode }}</div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-top:3px">{{ selectedEmployee.deviceModel || 'Device unknown' }} &bull; v{{ selectedEmployee.appVersion || '?' }}</div>
+        </div>
+        <button class="btn-login" style="padding:.35rem .8rem;font-size:.8rem;display:flex;align-items:center;gap:5px;" (click)="syncEmployee()" [disabled]="syncEmpLoading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" [style.animation]="syncEmpLoading?'spin 0.8s linear infinite':''" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          {{ syncEmpLoading ? 'Syncing…' : 'Sync' }}
+        </button>
+      </div>
+      <div class="period-tabs" style="margin:1.1rem 0 0.5rem;">
+        <button *ngFor="let p of periods" [class.active]="selectedPeriod===p.key" (click)="onPeriodChange(p.key)">{{ p.label }}</button>
+      </div>
+      <div class="custom-range-row" *ngIf="selectedPeriod==='custom'" style="margin:0.75rem 0 1rem;padding:.75rem 1rem;">
+        <div class="cr-field">
+          <label>From</label>
+          <input type="date" [(ngModel)]="customFrom" [max]="todayIso">
+        </div>
+        <div class="cr-field">
+          <label>To <span style="font-size:.7rem;opacity:.6;">(optional)</span></label>
+          <input type="date" [(ngModel)]="customTo" [min]="customFrom" [max]="todayIso">
+        </div>
+        <button class="cta-primary" style="padding:.38rem .9rem;font-size:.8rem;align-self:flex-end;" (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
+      </div>
+      <div class="drilldown-tabs">
+        <button [class.active]="drilldownTab==='stats'" (click)="drilldownTab='stats'">Summary</button>
+        <button [class.active]="drilldownTab==='calls'" (click)="drilldownTab='calls'">Call History <span class="badge-count" *ngIf="selectedEmpCalls.length">{{ selectedEmpCalls.length }}</span></button>
+      </div>
+      <div *ngIf="drilldownTab==='stats'">
+        <div *ngIf="selectedEmpLoading" class="dash-loading">Loading&hellip;</div>
+        <div *ngIf="!selectedEmpLoading && !selectedEmpStats" class="dash-empty" style="padding:1.5rem;">No data for this period.</div>
+        <div class="drilldown-stats" *ngIf="!selectedEmpLoading && selectedEmpStats">
+          <div class="ds-row"><span class="ds-label">Total Calls</span><span class="ds-val">{{ selectedEmpStats.total }}</span></div>
+          <div class="ds-row"><span class="ds-label">Call Duration</span><span class="ds-val">{{ fmtDur(selectedEmpStats.totalDuration) }}</span></div>
+          <div class="ds-row in-row"><span class="ds-label">Incoming</span><span class="ds-val">{{ selectedEmpStats.incoming }}</span></div>
+          <div class="ds-row in-row"><span class="ds-label">Incoming Duration</span><span class="ds-val">{{ fmtDur(selectedEmpStats.incomingDuration) }}</span></div>
+          <div class="ds-row out-row"><span class="ds-label">Outgoing</span><span class="ds-val">{{ selectedEmpStats.outgoing }}</span></div>
+          <div class="ds-row out-row"><span class="ds-label">Outgoing Duration</span><span class="ds-val">{{ fmtDur(selectedEmpStats.outgoingDuration) }}</span></div>
+          <div class="ds-row miss-row"><span class="ds-label">Missed</span><span class="ds-val">{{ selectedEmpStats.missed }}</span></div>
+          <div class="ds-row rej-row"><span class="ds-label">Rejected</span><span class="ds-val">{{ selectedEmpStats.rejected }}</span></div>
+          <div class="ds-row conn-row"><span class="ds-label">Connected</span><span class="ds-val">{{ selectedEmpStats.connected }}</span></div>
+        </div>
+        <div class="drilldown-meta" *ngIf="selectedEmployee">
+          <div class="dm-row"><span>Registered</span><span>{{ fmtDate(selectedEmployee.createdAt) }}</span></div>
+          <div class="dm-row"><span>Last Call</span><span>{{ fmtDate(selectedEmployee.lastCallTime) }}</span></div>
+          <div class="dm-row"><span>Last Sync</span><span style="color:var(--green)">{{ fmtDate(selectedEmployee.lastSyncTime) }}</span></div>
+        </div>
+      </div>
+      <div *ngIf="drilldownTab==='calls'">
+        <div *ngIf="selectedEmpCallsLoading" class="dash-loading">Loading calls&hellip;</div>
+        <div *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length===0" class="dash-empty" style="padding:1.5rem;">No individual call data.</div>
+        <div class="call-history-list" *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length>0">
+          <div class="ch-item" *ngFor="let c of selectedEmpCalls">
+            <span class="ch-type-badge" [class]="c.callType">{{ c.callType }}</span>
+            <div class="ch-info">
+              <div class="ch-number">{{ c.name || c.number || 'Unknown' }}</div>
+              <div class="ch-sub" *ngIf="c.name">{{ c.number }}</div>
+            </div>
+            <div class="ch-right">
+              <div class="ch-time">{{ fmtTime(c.timestamp) }}</div>
+              <div class="ch-dur" *ngIf="c.duration > 0">{{ fmtDur(c.duration) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="drilldown-analytics" *ngIf="selectedEmployee && selectedEmpCalls.length > 0">
+        <div class="da-header">
+          <h3>Analytics</h3>
+          <div class="period-tabs">
+            <button [class.active]="chartType==='line'" (click)="setChartType('line')">Line</button>
+            <button [class.active]="chartType==='pie'" (click)="setChartType('pie')">Pie</button>
+            <button [class.active]="chartType==='bar'" (click)="setChartType('bar')">Bar</button>
+          </div>
+        </div>
+        <div class="chart-container"><canvas id="empChart"></canvas></div>
       </div>
     </div>
   </div>
-</main>
 
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+</div>
 
-
-<router-outlet />
+<!-- ========== ADD EMPLOYEE MODAL ========== -->
+<div class="modal-overlay" [class.open]="isAddEmployeeOpen" (click)="closeAddEmployee()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeAddEmployee()">&#x2715;</button>
+    <div class="modal-brand" style="justify-content:flex-start;margin-bottom:1.5rem;">
+      <h2 class="modal-title" style="margin:0;">Add Agent</h2>
+    </div>
+    <p class="modal-subtitle" style="text-align:left;margin-bottom:2rem;">Add a new employee to your trace logging system.</p>
+    <div class="form-error" *ngIf="addEmployeeError">{{ addEmployeeError }}</div>
+    <form class="modal-form" (submit)="onAddEmployeeSubmit($event)">
+      <div class="form-group">
+        <label for="emp-name">Full Name <span class="req">*</span></label>
+        <input type="text" id="emp-name" placeholder="Agent Name" [(ngModel)]="newEmployee.name" name="empName" required>
+      </div>
+      <div class="form-group">
+        <label for="emp-mobile">Phone Number <span class="req">*</span></label>
+        <input type="tel" id="emp-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="newEmployee.mobile" name="empMobile" required>
+      </div>
+      <button type="submit" class="btn-signup modal-submit" [disabled]="addEmployeeLoading" style="width:100%;">
+        {{ addEmployeeLoading ? 'Adding...' : 'Add Employee' }}
+      </button>
+    </form>
+  </div>
+</div>

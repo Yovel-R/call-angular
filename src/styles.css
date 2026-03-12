@@ -1,1 +1,41 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles for TraceCall */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg:          #ffffff;
+  --bg-card:     #ffffff;
+  --bg-card-2:   #f4fbfa;
+  --border:      #e5e7eb;
+  --border-glow: rgba(99,102,241,0.3);
+  --accent:      #14b8a6;
+  --accent-2:    #0f766e;
+  --accent-dark: #0f766e;
+  --green:       #10b981;
+  --orange:      #f59e0b;
+  --pink:        #ef4444;
+  --purple:      #6366f1;
+  --text-1:      #1f2937;
+  --text-2:      #4b5563;
+  --text-3:      #9ca3af;
+  --text-heading:#111827;
+  --radius:      16px;
+  --font-head:   'Inter', sans-serif;
+  --font-body:   'Inter', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
