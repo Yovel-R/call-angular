@@ -865,43 +865,43 @@
           <div class="reports-filter-grid">
             <div class="filter-field">
               <label>From Date</label>
-              <input type="date" [(ngModel)]="customFrom">
+              <input type="date" [(ngModel)]="customFrom" (ngModelChange)="applyCustomRange()">
             </div>
             <div class="filter-field">
               <label>To Date</label>
-              <input type="date" [(ngModel)]="customTo">
+              <input type="date" [(ngModel)]="customTo" (ngModelChange)="applyCustomRange()">
             </div>
             <div class="filter-field">
               <label>Select Employee Tags</label>
-              <select [(ngModel)]="filterTags">
+              <select [(ngModel)]="filterTags" (ngModelChange)="applyCustomRange()">
                 <option value="">Select</option>
                 <option *ngFor="let t of tagOptions" [value]="t">{{ t }}</option>
               </select>
             </div>
             <div class="filter-field">
               <label>Select Employees</label>
-              <select [(ngModel)]="filterEmployees">
+              <select [(ngModel)]="filterEmployees" (ngModelChange)="applyCustomRange()">
                 <option value="">Select</option>
                 <option *ngFor="let row of employeeCallRows" [value]="row.emp.mobile">{{ row.emp.name }}</option>
               </select>
             </div>
             <div class="filter-field">
               <label>Select Call Type</label>
-              <select [(ngModel)]="filterCallType">
+              <select [(ngModel)]="filterCallType" (ngModelChange)="applyCustomRange()">
                 <option value="">Select</option>
                 <option *ngFor="let ct of callTypeOptions" [value]="ct">{{ ct }}</option>
               </select>
             </div>
             <div class="filter-field">
               <label>Select Duration</label>
-              <select [(ngModel)]="filterDuration">
+              <select [(ngModel)]="filterDuration" (ngModelChange)="applyCustomRange()">
                 <option value="">Select</option>
                 <option *ngFor="let d of durationOptions" [value]="d">{{ d }}</option>
               </select>
             </div>
             <div class="filter-field">
               <label>Select Call Time</label>
-              <select [(ngModel)]="filterCallTime">
+              <select [(ngModel)]="filterCallTime" (ngModelChange)="applyCustomRange()">
                 <option value="">Select</option>
                 <option *ngFor="let t of timeOptions" [value]="t">{{ t }}</option>
               </select>
@@ -910,13 +910,6 @@
               <button class="btn-apply" (click)="applyCustomRange()">Apply</button>
               <button class="btn-reset" (click)="resetFilters()">Reset</button>
             </div>
-          </div>
-          <div class="filter-checkbox-row">
-            <label class="checkbox-container">
-              <input type="checkbox" [(ngModel)]="excludePhoneNumbers">
-              <span class="checkmark"></span>
-              Exclude Numbers Mentioned in <span style="color: var(--orange); font-weight: 500;">Exclude Phone Numbers</span>
-            </label>
           </div>
         </div>
 
@@ -941,23 +934,27 @@
                 <th rowspan="2">Working Hours</th>
                 <th rowspan="2">Unique Clients</th>
                 <th rowspan="2">Unique Conn. Calls</th>
-                <th colspan="3" class="group-in">Incoming</th>
-                <th colspan="3" class="group-out">Outgoing</th>
-                <th colspan="1" class="group-miss">Missed</th>
-                <th colspan="1" class="group-rej">Rejected</th>
+                <th colspan="3" class="group-in" *ngIf="!filterCallType || filterCallType === 'Incoming'">Incoming</th>
+                <th colspan="3" class="group-out" *ngIf="!filterCallType || filterCallType === 'Outgoing'">Outgoing</th>
+                <th colspan="1" class="group-miss" *ngIf="!filterCallType || filterCallType === 'Missed'">Missed</th>
+                <th colspan="1" class="group-rej" *ngIf="!filterCallType || filterCallType === 'Rejected'">Rejected</th>
                 <th rowspan="2">Never Attended</th>
                 <th rowspan="2">Not Pickup by Client</th>
                 <th rowspan="2">Last Sync Time</th>
               </tr>
               <tr>
-                <th class="group-in">Total Call</th><th class="group-in">Total Duration</th><th class="group-in">Connected Calls</th>
-                <th class="group-out">Total Call</th><th class="group-out">Total Duration</th><th class="group-out">Connected Calls</th>
-                <th class="group-miss">Total Call</th>
-                <th class="group-rej">Total Call</th>
+                <ng-container *ngIf="!filterCallType || filterCallType === 'Incoming'">
+                  <th class="group-in">Total Call</th><th class="group-in">Total Duration</th><th class="group-in">Connected Calls</th>
+                </ng-container>
+                <ng-container *ngIf="!filterCallType || filterCallType === 'Outgoing'">
+                  <th class="group-out">Total Call</th><th class="group-out">Total Duration</th><th class="group-out">Connected Calls</th>
+                </ng-container>
+                <th class="group-miss" *ngIf="!filterCallType || filterCallType === 'Missed'">Total Call</th>
+                <th class="group-rej" *ngIf="!filterCallType || filterCallType === 'Rejected'">Total Call</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let row of employeeCallRows; let i = index">
+              <tr *ngFor="let row of filteredEmployeeCallRows; let i = index">
                 <td class="sticky-col">{{ i + 1 }}</td>
                 <td class="sticky-col">
                   <div style="font-weight:600;color:var(--text-1)">{{ row.emp.name || 'Unknown' }}</div>
@@ -979,18 +976,22 @@
                 <td>0</td> <!-- Unique conn unavailable backend -->
                 
                 <!-- INCOMING -->
-                <td>{{ row.stats?.incoming || 0 }}</td>
-                <td>{{ fmtDur(row.stats?.incomingDuration || 0) }}</td>
-                <td>{{ row.stats?.incoming || 0 }}</td>
+                <ng-container *ngIf="!filterCallType || filterCallType === 'Incoming'">
+                  <td>{{ row.stats?.incoming || 0 }}</td>
+                  <td>{{ fmtDur(row.stats?.incomingDuration || 0) }}</td>
+                  <td>{{ row.stats?.incoming || 0 }}</td>
+                </ng-container>
                 
                 <!-- OUTGOING -->
-                <td>{{ row.stats?.outgoing || 0 }}</td>
-                <td>{{ fmtDur(row.stats?.outgoingDuration || 0) }}</td>
-                <td>{{ row.stats?.outgoing || 0 }}</td>
+                <ng-container *ngIf="!filterCallType || filterCallType === 'Outgoing'">
+                  <td>{{ row.stats?.outgoing || 0 }}</td>
+                  <td>{{ fmtDur(row.stats?.outgoingDuration || 0) }}</td>
+                  <td>{{ row.stats?.outgoing || 0 }}</td>
+                </ng-container>
                 
                 <!-- MISSED / REJECTED -->
-                <td>{{ row.stats?.missed || 0 }}</td>
-                <td>{{ row.stats?.rejected || 0 }}</td>
+                <td *ngIf="!filterCallType || filterCallType === 'Missed'">{{ row.stats?.missed || 0 }}</td>
+                <td *ngIf="!filterCallType || filterCallType === 'Rejected'">{{ row.stats?.rejected || 0 }}</td>
                 
                 <!-- OTHER -->
                 <td>0</td> <!-- Never attended -->
@@ -998,7 +999,7 @@
                 <td style="white-space:nowrap;font-size:0.8rem;color:var(--text-2);">{{ row.emp.lastSyncTime ? (row.emp.lastSyncTime | date:'dd MMM yyyy, hh:mm a') : 'Never' }}</td>
               </tr>
               <tr *ngIf="!employeeCallRows.length">
-                <td colspan="21" style="text-align:center;padding:3rem;color:var(--text-3);">No call report data available for this period.</td>
+                <td colspan="100%" style="text-align:center;padding:3rem;color:var(--text-3);">No call report data available for this period.</td>
               </tr>
             </tbody>
           </table>

@@ -41,9 +41,15 @@ export class CallLogService {
     return this.api.get(`/api/calllogs/summary?companyCode=${encodeURIComponent(companyCode)}&${r}`);
   }
 
-  getEmployeesStats(companyCode: string, period: string, from?: string, to?: string): Observable<any> {
+  getEmployeesStats(companyCode: string, period: string, from?: string, to?: string, filters?: any): Observable<any> {
     const r = this.rangeParams(period, from, to);
-    return this.api.get(`/api/calllogs/employees?companyCode=${encodeURIComponent(companyCode)}&${r}`);
+    let url = `/api/calllogs/employees?companyCode=${encodeURIComponent(companyCode)}&${r}`;
+    if (filters) {
+      if (filters.callType) url += `&callType=${encodeURIComponent(filters.callType)}`;
+      if (filters.duration) url += `&duration=${encodeURIComponent(filters.duration)}`;
+      if (filters.callTime) url += `&callTime=${encodeURIComponent(filters.callTime)}`;
+    }
+    return this.api.get(url);
   }
 
   getEmployeeStat(companyCode: string, phone: string, period: string, from?: string, to?: string): Observable<any> {

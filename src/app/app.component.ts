@@ -138,6 +138,18 @@ export class AppComponent implements OnInit {
   changePwdForm = { oldPassword: '', newPassword: '', confirmPassword: '' };
   changePwdLoading = false;
   changePwdError = '';
+
+  get filteredEmployeeCallRows() {
+    return this.employeeCallRows.filter(row => {
+      // Filter by Tags
+      if (this.filterTags && (!row.emp.tags || !row.emp.tags.includes(this.filterTags))) return false;
+      
+      // Filter by Employee mobile
+      if (this.filterEmployees && row.emp.mobile !== this.filterEmployees) return false;
+
+      return true;
+    });
+  }
   changePwdSuccess = '';
   changePwdChecks = { length: false, upper: false, number: false, symbol: false };
 
@@ -528,10 +540,18 @@ export class AppComponent implements OnInit {
 
     this.empCallLoading = true;
     this.empCallError = '';
+
+    const filters = this.dashTab === 'reports' ? {
+      callType: this.filterCallType,
+      duration: this.filterDuration,
+      callTime: this.filterCallTime,
+    } : null;
+
     this.callLogService.getEmployeesStats(
       this.dashboardCode, this.selectedPeriod,
       this.selectedPeriod === 'custom' ? this.customFrom : undefined,
       this.selectedPeriod === 'custom' ? (this.customTo || undefined) : undefined,
+      filters
     ).subscribe({
       next: (res: any) => {
         if (res.success) {
@@ -1086,29 +1106,46 @@ export class AppComponent implements OnInit {
   }
 
   exportToExcel(): void {
-    const data = this.employeeCallRows.map((row, index) => ({
-      'Sr. No.': index + 1,
-      'Employee': `${row.emp.name} (${row.emp.mobile})`,
-      'Total Calls': row.stats?.total || 0,
-      'Total Duration': this.fmtDur(row.stats?.totalDuration || 0),
-      'Connected Calls': (row.stats?.incoming || 0) + (row.stats?.outgoing || 0),
-      'Conn. Calls Duration': this.fmtDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0)),
-      'Conn. Call Avg. Duration': this.fmtAvgDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0), (row.stats?.incoming || 0) + (row.stats?.outgoing || 0)),
-      'Working Hours': this.fmtDur(row.stats?.totalDuration || 0),
-      'Unique Clients': 0,
-      'Unique Conn. Calls': 0,
-      'Incoming Total': row.stats?.incoming || 0,
-      'Incoming Duration': this.fmtDur(row.stats?.incomingDuration || 0),
-      'Incoming Connected': row.stats?.incoming || 0,
-      'Outgoing Total': row.stats?.outgoing || 0,
-      'Outgoing Duration': this.fmtDur(row.stats?.outgoingDuration || 0),
-      'Outgoing Connected': row.stats?.outgoing || 0,
-      'Missed Total': row.stats?.missed || 0,
-      'Rejected Total': row.stats?.rejected || 0,
-      'Never Attended': 0,
-      'Not Pickup by Client': 0,
-      'Last Sync Time': row.emp.lastSyncTime ? new Date(row.emp.lastSyncTime).toLocaleString('en-IN') : 'Never'
-    }));
+    const data = this.filteredEmployeeCallRows.map((row, index) => {
+      const obj: any = {
+        'Sr. No.': index + 1,
+        'Employee': `${row.emp.name} (${row.emp.mobile})`,
+        'Total Calls': row.stats?.total || 0,
+        'Total Duration': this.fmtDur(row.stats?.totalDuration || 0),
+        'Connected Calls': (row.stats?.incoming || 0) + (row.stats?.outgoing || 0),
+        'Conn. Calls Duration': this.fmtDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0)),
+        'Conn. Call Avg. Duration': this.fmtAvgDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0), (row.stats?.incoming || 0) + (row.stats?.outgoing || 0)),
+        'Working Hours': this.fmtDur(row.stats?.totalDuration || 0),
+        'Unique Clients': 0,
+        'Unique Conn. Calls': 0
+      };
+
+      if (!this.filterCallType || this.filterCallType === 'Incoming') {
+        obj['Incoming Total'] = row.stats?.incoming || 0;
+        obj['Incoming Duration'] = this.fmtDur(row.stats?.incomingDuration || 0);
+        obj['Incoming Connected'] = row.stats?.incoming || 0;
+      }
+      
+      if (!this.filterCallType || this.filterCallType === 'Outgoing') {
+        obj['Outgoing Total'] = row.stats?.outgoing || 0;
+        obj['Outgoing Duration'] = this.fmtDur(row.stats?.outgoingDuration || 0);
+        obj['Outgoing Connected'] = row.stats?.outgoing || 0;
+      }
+      
+      if (!this.filterCallType || this.filterCallType === 'Missed') {
+        obj['Missed Total'] = row.stats?.missed || 0;
+      }
+      
+      if (!this.filterCallType || this.filterCallType === 'Rejected') {
+        obj['Rejected Total'] = row.stats?.rejected || 0;
+      }
+
+      obj['Never Attended'] = 0;
+      obj['Not Pickup by Client'] = 0;
+      obj['Last Sync Time'] = row.emp.lastSyncTime ? new Date(row.emp.lastSyncTime).toLocaleString('en-IN') : 'Never';
+
+      return obj;
+    });
 
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
@@ -1123,9 +1160,9 @@ export class AppComponent implements OnInit {
     this.filterDuration = '';
     this.filterCallTime = '';
     this.excludePhoneNumbers = false;
-    this.customFrom = '';
-    this.customTo = '';
-    this.selectedPeriod = 'today';
-    this.onPeriodChange('today');
+    this.customFrom = new Date().toISOString().split('T')[0];
+    this.customTo = new Date().toISOString().split('T')[0];
+    this.selectedPeriod = 'custom';
+    this.applyCustomRange();
   }
 }
