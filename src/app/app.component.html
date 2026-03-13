@@ -312,10 +312,10 @@
         <div class="form-row">
           <div class="form-group">
             <label for="su-team">Team Size <span class="req">*</span></label>
-            <select id="su-team" [(ngModel)]="signupForm.teamSize" name="suTeam" required>
-              <option value="" disabled>Select Team Size</option>
-              <option *ngFor="let s of TEAM_SIZES" [value]="s">{{ s }}</option>
-            </select>
+            <input type="number" id="su-team" [(ngModel)]="signupForm.teamSize" name="suTeam" placeholder="e.g. 5" min="1" required>
+            <small class="form-hint" style="display: block; margin-top: 4px; color: #64748b; font-size: 0.75rem; line-height: 1.4;">
+              <b>Note:</b> Your employee creation limit is determined by this count. You can modify this capacity later as your team grows.
+            </small>
           </div>
           <div class="form-group">
             <label for="su-industry">Industry <span class="req">*</span></label>
@@ -1077,8 +1077,31 @@
               <div class="cc-detail"><label>Industry</label>
                 <div>{{ companyProfile.industry }}</div>
               </div>
-              <div class="cc-detail"><label>Team Size</label>
-                <div>{{ companyProfile.teamSize }}</div>
+              <div class="cc-detail"><label>
+                  Team Size
+                  <button class="cc-edit-btn" (click)='startEditTeamSize()' *ngIf='!editingTeamSize' title='Edit team size'>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path d="M18.5 2.5C18.8978 2.10217 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10217 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10217 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Edit
+                  </button>
+                </label>
+                <div *ngIf='!editingTeamSize'>
+                  {{ companyProfile.teamSize }}
+                  <span *ngIf="saveTeamSizeSuccess" class="addr-success" style="color: var(--green); margin-left: 8px;">✓ {{ saveTeamSizeSuccess }}</span>
+                </div>
+                <div *ngIf='editingTeamSize' class="cc-address-edit">
+                  <input type="number" [(ngModel)]="editTeamSizeValue" name="editTeam" placeholder="Enter team size…" class="cc-address-input" min="1">
+                  <div class="cc-addr-error" *ngIf="saveTeamSizeError" style="color: var(--orange); font-size: 0.75rem; margin-top: 4px;">{{ saveTeamSizeError }}</div>
+                  <div class="cc-addr-actions" style="margin-top: 8px; display: flex; gap: 8px;">
+                    <button class="cta-primary" style="padding:.38rem .9rem;font-size:.8rem;" (click)="saveTeamSize()" [disabled]="saveTeamSizeLoading">{{ saveTeamSizeLoading ? 'Saving…' : 'Save' }}</button>
+                    <button class="btn-login" style="padding:.38rem .9rem;font-size:.8rem;" (click)="cancelEditTeamSize()">Cancel</button>
+                  </div>
+                  <small style="display: block; margin-top: 8px; color: #64748b; font-size: 0.7rem; line-height: 1.4;">
+                    Your employee creation limit is strictly determined by this count.
+                  </small>
+                </div>
               </div>
               <div class="cc-detail"><label>Member Since</label>
                 <div>{{ fmtDate(companyProfile.createdAt) }}</div>
@@ -1417,8 +1440,13 @@
       </div>
       <div class="form-group">
         <label for="emp-mobile">Phone Number <span class="req">*</span></label>
-        <input type="tel" id="emp-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="newEmployee.mobile"
-          name="empMobile" required>
+        <div style="display: flex; gap: 8px;">
+          <select [(ngModel)]="newEmployee.countryCode" name="empCC" style="width: 100px; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; background: var(--bg-card); color: var(--text-1); font-size: 0.9rem;">
+            <option *ngFor="let c of countryCodes" [value]="c.code">{{ c.code }} ({{ c.name }})</option>
+          </select>
+          <input type="tel" id="emp-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="newEmployee.mobile"
+            name="empMobile" required style="flex: 1;">
+        </div>
       </div>
       <button type="submit" class="btn-signup modal-submit" [disabled]="addEmployeeLoading" style="width:100%;">
         {{ addEmployeeLoading ? 'Adding...' : 'Add Employee' }}

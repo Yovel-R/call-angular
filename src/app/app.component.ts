@@ -38,7 +38,6 @@ export class AppComponent implements OnInit {
 
   pwdChecks = { length: false, upper: false, number: false, symbol: false };
 
-  readonly TEAM_SIZES = ['1-5', '6-10', '11-15', '16-25', '26-50', '50+'];
   readonly INDUSTRIES = [
     'IT / ITES', 'BPO / KPO', 'Banking & Finance', 'Healthcare',
     'Retail & E-commerce', 'Manufacturing', 'Telecom', 'Education',
@@ -49,6 +48,7 @@ export class AppComponent implements OnInit {
   loggedIn = false;
   dashboardCompany = '';
   dashboardCode = '';
+  dashboardTeamSize = 0;
 
   // ── UI panels ──────────────────────────────────────────────
   isMobileMenuOpen = false;
@@ -128,7 +128,15 @@ export class AppComponent implements OnInit {
   isAddEmployeeOpen = false;
   addEmployeeLoading = false;
   addEmployeeError = '';
-  newEmployee = { name: '', mobile: '' };
+  newEmployee = { name: '', mobile: '', countryCode: '+91' };
+  countryCodes = [
+    { name: 'India', code: '+91' },
+    { name: 'USA', code: '+1' },
+    { name: 'UK', code: '+44' },
+    { name: 'UAE', code: '+971' },
+    { name: 'Australia', code: '+61' },
+    { name: 'Singapore', code: '+65' }
+  ];
 
   isEditEmployeeOpen = false;
   editEmployeeLoading = false;
@@ -195,6 +203,12 @@ export class AppComponent implements OnInit {
   saveAddressError = '';
   saveAddressSuccess = '';
 
+  editingTeamSize = false;
+  editTeamSizeValue = '';
+  saveTeamSizeLoading = false;
+  saveTeamSizeError = '';
+  saveTeamSizeSuccess = '';
+
   // Employee Tagging Inline
   editTagEmpId: string | null = null;
   inlineTagValue: string = '';
@@ -221,6 +235,7 @@ export class AppComponent implements OnInit {
         this.loggedIn = true;
         this.dashboardCompany = user.companyName || 'Your Company';
         this.dashboardCode = user.companyCode || '';
+        this.dashboardTeamSize = parseInt(user.teamSize) || 0;
         this._loadDashboard();
       } catch { localStorage.removeItem('tracecall_user'); }
     }
@@ -992,6 +1007,7 @@ export class AppComponent implements OnInit {
           this.loggedIn = true;
           this.dashboardCompany = res.user.companyName || 'Your Company';
           this.dashboardCode = res.user.companyCode || 'N/A';
+          this.dashboardTeamSize = parseInt(res.user.teamSize) || 0;
           localStorage.setItem('tracecall_user', JSON.stringify(res.user));
           setTimeout(() => window.scrollTo(0, 0), 0);
           this._loadDashboard();
@@ -1026,7 +1042,7 @@ export class AppComponent implements OnInit {
     window.scrollTo(0, 0);
   }
 
-  openAddEmployee(): void { this.isAddEmployeeOpen = true; this.addEmployeeError = ''; this.newEmployee = { name: '', mobile: '' }; }
+  openAddEmployee(): void { this.isAddEmployeeOpen = true; this.addEmployeeError = ''; this.newEmployee = { name: '', mobile: '', countryCode: '+91' }; }
   closeAddEmployee(): void { this.isAddEmployeeOpen = false; }
 
   onAddEmployeeSubmit(event: Event): void {
@@ -1035,6 +1051,11 @@ export class AppComponent implements OnInit {
     if (!this.newEmployee.name || !this.newEmployee.mobile) {
       this.addEmployeeError = 'Name and mobile are required.'; return;
     }
+    if (this.dashboardTeamSize > 0 && this.employees.length >= this.dashboardTeamSize) {
+      this.addEmployeeError = `Employee limit reached. Your current plan allows for a maximum of ${this.dashboardTeamSize} employees. Please update your team size in settings if you need to add more.`;
+      return;
+    }
+
     this.addEmployeeLoading = true;
     this.employeeService.addEmployee({ ...this.newEmployee, companyCode: this.dashboardCode }).subscribe({
       next: (res: any) => {
@@ -1059,6 +1080,7 @@ export class AppComponent implements OnInit {
       _id: emp._id,
       name: emp.name,
       mobile: emp.mobile,
+      countryCode: emp.countryCode || '+91',
       tags: emp.tags ? [...emp.tags] : []
     };
     this.isEditEmployeeOpen = true;
@@ -1079,6 +1101,7 @@ export class AppComponent implements OnInit {
     this.employeeService.updateEmployee(this.editingEmployee._id, {
       name: this.editingEmployee.name,
       mobile: this.editingEmployee.mobile,
+      countryCode: this.editingEmployee.countryCode,
       tags: this.editingEmployee.tags
     }).subscribe({
       next: (res: any) => {
@@ -1388,6 +1411,57 @@ Thank You.`;
       error: (err: any) => {
         this.saveAddressLoading = false;
         this.saveAddressError = err?.error?.message || 'Server error.';
+      }
+    });
+  }
+
+  startEditTeamSize(): void {
+    this.editingTeamSize = true;
+    this.editTeamSizeValue = this.companyProfile?.teamSize || '';
+    this.saveTeamSizeError = '';
+    this.saveTeamSizeSuccess = '';
+  }
+
+  cancelEditTeamSize(): void {
+    this.editingTeamSize = false;
+    this.saveTeamSizeError = '';
+  }
+
+  saveTeamSize(): void {
+    if (!this.editTeamSizeValue || parseInt(this.editTeamSizeValue.toString()) < 1) {
+      this.saveTeamSizeError = 'Please enter a valid team size (minimum 1).';
+      return;
+    }
+
+    this.saveTeamSizeLoading = true;
+    this.saveTeamSizeError = '';
+    this.saveTeamSizeSuccess = '';
+    this.authService.updateTeamSize(this.dashboardCode, this.editTeamSizeValue.toString()).subscribe({
+      next: (res: any) => {
+        this.saveTeamSizeLoading = false;
+        if (res.success) {
+          this.companyProfile.teamSize = res.teamSize;
+          this.dashboardTeamSize = parseInt(res.teamSize);
+          
+          const raw = localStorage.getItem('tracecall_user');
+          if (raw) {
+            try {
+              const user = JSON.parse(raw);
+              user.teamSize = res.teamSize;
+              localStorage.setItem('tracecall_user', JSON.stringify(user));
+            } catch { }
+          }
+          
+          this.editingTeamSize = false;
+          this.saveTeamSizeSuccess = 'Team size updated!';
+          setTimeout(() => this.saveTeamSizeSuccess = '', 3000);
+        } else {
+          this.saveTeamSizeError = res.message;
+        }
+      },
+      error: (err: any) => {
+        this.saveTeamSizeLoading = false;
+        this.saveTeamSizeError = err?.error?.message || 'Server error.';
       }
     });
   }

@@ -32,6 +32,7 @@ export interface ApiResponse {
     email: string;
     companyName: string;
     companyCode?: string;
+    teamSize: string;
   };
 }
 
@@ -69,5 +70,9 @@ export class AuthService {
 
   updateCompanyTags(companyCode: string, tags: string[]): Observable<any> {
     return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/tags`, { tags });
+  }
+
+  updateTeamSize(companyCode: string, teamSize: string): Observable<any> {
+    return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/team-size`, { teamSize });
   }
 }

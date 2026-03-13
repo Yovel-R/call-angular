@@ -5,6 +5,7 @@ import { ApiService } from './api.service';
 export interface Employee {
   _id?: string;
   name: string;
+  countryCode?: string;
   mobile: string;
   companyCode: string;
   employeeCode?: string;
@@ -27,7 +28,7 @@ export interface EmployeeResponse {
 export class EmployeeService {
   constructor(private api: ApiService) {}
 
-  addEmployee(payload: { name: string; mobile: string; companyCode: string }): Observable<EmployeeResponse> {
+  addEmployee(payload: { name: string; mobile: string; countryCode: string; companyCode: string }): Observable<EmployeeResponse> {
     return this.api.post<EmployeeResponse>('/api/employees', payload);
   }
 
@@ -39,7 +40,7 @@ export class EmployeeService {
     return this.api.patch<EmployeeResponse>(`/api/employees/${employeeId}/tags`, { tags, companyCode });
   }
 
-  updateEmployee(employeeId: string, payload: { name: string; mobile: string; tags: string[] }): Observable<EmployeeResponse> {
+  updateEmployee(employeeId: string, payload: { name: string; mobile: string; countryCode?: string; tags: string[] }): Observable<EmployeeResponse> {
     return this.api.put<EmployeeResponse>(`/api/employees/${employeeId}`, payload);
   }
 }
