@@ -110,6 +110,13 @@ export class AppComponent implements OnInit {
   donutChart: Chart | null = null;
   timelineData: any[] = [];
 
+  // ── Preloaded Data Caches ───────────────────────────────────
+  preloadedCache: Record<string, { summary: any, timeline: any, employees: any, prevSummary: any }> = {
+    today: { summary: null, timeline: [], employees: [], prevSummary: null },
+    yesterday: { summary: null, timeline: [], employees: [], prevSummary: null },
+    lastweek: { summary: null, timeline: [], employees: [], prevSummary: null }
+  };
+
   // ── Company Profile ────────────────────────────────────────
   companyProfile: any = null;
   companyProfileLoading = false;
@@ -190,12 +197,67 @@ export class AppComponent implements OnInit {
 
   // ── Dashboard loader ──────────────────────────────────────
   _loadDashboard(): void {
-    this.fetchSummary();
-    this.fetchEmployees();
+    this.companyProfileLoading = true;
     this.fetchCompanyProfile();
+    this.fetchEmployees();
+    // Preload past 7 days data on load to avoid spinners when toggling periods
+    this.preloadDashboardData();
   }
 
+  preloadDashboardData(): void {
+    this.summaryLoading = true;
+    this.empCallLoading = true;
+
+    const periods = ['today', 'yesterday', 'lastweek'];
+    let loadedCount = 0;
+
+    periods.forEach(period => {
+      // Fetch summary
+      this.callLogService.getSummary(this.dashboardCode, period).subscribe(res => {
+        if (res.success) {
+          this.preloadedCache[period].summary = res.stats;
+          // Also fetch the previous period to calculate KPI trends
+          this.fetchPreviousStatsForCache(res.from, res.to, period);
+
+          if (period === 'today') {
+            this.applyFilterLocally();
+          }
+        } else if (period === 'today') {
+           this.summaryLoading = false;
+        }
+      });
+
+      // Fetch timeline
+      this.callLogService.getTimeline(this.dashboardCode, period).subscribe(res => {
+        if (res.success) {
+          this.preloadedCache[period].timeline = res.timeline;
+          if (period === 'today') this.applyFilterLocally();
+        }
+      });
+
+      // Fetch employees stats
+      this.callLogService.getEmployeesStats(this.dashboardCode, period).subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this.preloadedCache[period].employees = res.employees;
+            if (period === 'today') this.applyFilterLocally();
+          } else if (period === 'today') {
+            this.empCallLoading = false;
+          }
+        },
+        error: () => { if (period === 'today') this.empCallLoading = false; }
+      });
+    });
+  }
+
+  // We rewrite fetchSummary to instantly return preloaded data if available, and to show loading ONLY if not.
   fetchSummary(): void {
+    // If we have it preloaded, skip hitting the API
+    if (this.selectedPeriod !== 'custom' && this.preloadedCache[this.selectedPeriod].summary) {
+       this.applyFilterLocally();
+       return;
+    }
+
     this.summaryLoading = true;
     this.summaryStats = null;
 
@@ -212,11 +274,10 @@ export class AppComponent implements OnInit {
           this.summaryStats = res.stats;
           this.fetchPreviousStats(res.from, res.to);
           
-          // Increase timeout to ensure *ngIf has rendered the canvas
           setTimeout(() => {
             this.renderDonutChart();
             if (this.timelineData.length) this.renderTimelineChart();
-          }, 500); // bump from 300 → 500
+          }, 500);
           
         } else {
           this.summaryLoading = false;
@@ -274,6 +335,26 @@ export class AppComponent implements OnInit {
     });
   }
 
+  fetchPreviousStatsForCache(currentFrom: string, currentTo: string, period: string): void {
+    const fromDate = new Date(currentFrom);
+    const toDate = new Date(currentTo || currentFrom);
+    const diff = toDate.getTime() - fromDate.getTime();
+    const prevTo = new Date(fromDate.getTime() - (24 * 60 * 60 * 1000));
+    const prevFrom = new Date(prevTo.getTime() - diff);
+
+    const fromStr = prevFrom.toISOString().split('T')[0];
+    const toStr = prevTo.toISOString().split('T')[0];
+
+    this.callLogService.getSummary(this.dashboardCode, 'custom', fromStr, toStr).subscribe({
+      next: (res: any) => {
+        if (res.success && res.stats) {
+          this.preloadedCache[period].prevSummary = res.stats;
+          if (this.selectedPeriod === period) this.applyFilterLocally();
+        }
+      }
+    });
+  }
+
   calculateMetrics(curr: CallStats, prev: CallStats | null): void {
     const total = curr.total || 0;
     const connected = curr.connected || 0;
@@ -308,11 +389,60 @@ export class AppComponent implements OnInit {
     this.selectedPeriod = p as any;
     if (this.timelineChart) { this.timelineChart.destroy(); this.timelineChart = null; }
     if (this.donutChart) { this.donutChart.destroy(); this.donutChart = null; }
+
     if (p !== 'custom') {
-      this.fetchSummary();
-      this.fetchEmployeeCallRows();
-      if (this.selectedEmployee) this.openEmployee(this.selectedEmployee);
+      // If we're toggling locally without spinners (today, yesterday, lastweek)
+      this.applyFilterLocally();
+      if (this.selectedEmployee) this.openEmployee(this.selectedEmployee); // drilldowns need a specific api hit
     }
+  }
+
+  // Attempts to switch to current period view instantly without hitting the API for standard views
+  applyFilterLocally(): void {
+    const cache = this.preloadedCache[this.selectedPeriod];
+    
+    if (this.selectedPeriod !== 'custom' && cache.summary && cache.employees.length && cache.timeline.length) {
+      this.summaryStats = cache.summary;
+      this.timelineData = cache.timeline;
+      if (cache.prevSummary) {
+        this.calculateMetrics(this.summaryStats!, cache.prevSummary);
+      } else {
+        // Fallback progress calculation if prev summary hasn't loaded 
+        this.calculateMetrics(this.summaryStats!, null);
+      }
+      this.mapEmployeeStats(cache.employees);
+      
+      setTimeout(() => {
+        this.renderDonutChart();
+        if (this.timelineData.length) this.renderTimelineChart();
+      }, 50);
+      
+      this.summaryLoading = false;
+      this.empCallLoading = false;
+      return;
+    }
+
+    if (this.selectedPeriod !== 'custom' && cache.summary) {
+       // partial data case
+       this.summaryStats = cache.summary;
+       if (cache.prevSummary) this.calculateMetrics(this.summaryStats!, cache.prevSummary);
+       setTimeout(() => { this.renderDonutChart(); }, 50);
+       this.summaryLoading = false;
+    } else {
+       if (this.selectedPeriod === 'custom') this.fetchSummary();
+    }
+    
+    if (this.selectedPeriod === 'custom') this.fetchEmployeeCallRows();
+  }
+
+  mapEmployeeStats(stats: any[]): void {
+    this.empCallLoading = false;
+    const statsMap: Record<string, any> = {};
+    for (const s of stats) statsMap[s.phone] = s;
+    this.employeeCallRows = this.employees.map(emp => ({
+      emp,
+      stats: statsMap[emp.mobile] ?? null,
+    }));
   }
 
   applyCustomRange(): void {
@@ -345,6 +475,16 @@ export class AppComponent implements OnInit {
 
   fetchEmployeeCallRows(): void {
     if (!this.dashboardCode) return;
+    
+    // Check if we can just use the preloaded array
+    if (this.selectedPeriod !== 'custom') {
+      const cache = this.preloadedCache[this.selectedPeriod];
+      if (cache && cache.employees && cache.employees.length > 0) {
+        this.mapEmployeeStats(cache.employees);
+        return;
+      }
+    }
+
     this.empCallLoading = true;
     this.empCallError = '';
     this.callLogService.getEmployeesStats(
@@ -353,15 +493,10 @@ export class AppComponent implements OnInit {
       this.selectedPeriod === 'custom' ? (this.customTo || undefined) : undefined,
     ).subscribe({
       next: (res: any) => {
-        this.empCallLoading = false;
         if (res.success) {
-          const statsMap: Record<string, any> = {};
-          for (const s of res.employees) statsMap[s.phone] = s;
-          this.employeeCallRows = this.employees.map(emp => ({
-            emp,
-            stats: statsMap[emp.mobile] ?? null,
-          }));
+          this.mapEmployeeStats(res.employees);
         } else {
+          this.empCallLoading = false;
           this.empCallError = res.message || 'Failed to load call data.';
         }
       },
@@ -794,6 +929,7 @@ export class AppComponent implements OnInit {
         if (res.success && res.employee) {
           this.employees.unshift(res.employee);
           this.closeAddEmployee();
+          // Reload dashboard data so the new employee can show stats 
           this.fetchEmployeeCallRows();
         } else this.addEmployeeError = res.message || 'Failed to add employee.';
       },
