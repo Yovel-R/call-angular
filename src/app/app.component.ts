@@ -111,10 +111,10 @@ export class AppComponent implements OnInit {
   timelineData: any[] = [];
 
   // ── Preloaded Data Caches ───────────────────────────────────
-  preloadedCache: Record<string, { summary: any, timeline: any, employees: any, prevSummary: any }> = {
-    today: { summary: null, timeline: [], employees: [], prevSummary: null },
-    yesterday: { summary: null, timeline: [], employees: [], prevSummary: null },
-    lastweek: { summary: null, timeline: [], employees: [], prevSummary: null }
+  preloadedCache: Record<string, { summary: any, timeline: any, employees: any, prevSummary: any, summaryLoaded: boolean, timelineLoaded: boolean, employeesLoaded: boolean, prevSummaryLoaded: boolean }> = {
+    today: { summary: null, timeline: [], employees: [], prevSummary: null, summaryLoaded: false, timelineLoaded: false, employeesLoaded: false, prevSummaryLoaded: false },
+    yesterday: { summary: null, timeline: [], employees: [], prevSummary: null, summaryLoaded: false, timelineLoaded: false, employeesLoaded: false, prevSummaryLoaded: false },
+    lastweek: { summary: null, timeline: [], employees: [], prevSummary: null, summaryLoaded: false, timelineLoaded: false, employeesLoaded: false, prevSummaryLoaded: false }
   };
 
   // ── Company Profile ────────────────────────────────────────
@@ -213,47 +213,57 @@ export class AppComponent implements OnInit {
 
     periods.forEach(period => {
       // Fetch summary
-      this.callLogService.getSummary(this.dashboardCode, period).subscribe(res => {
-        if (res.success) {
-          this.preloadedCache[period].summary = res.stats;
-          // Also fetch the previous period to calculate KPI trends
-          this.fetchPreviousStatsForCache(res.from, res.to, period);
-
-          if (period === 'today') {
-            this.applyFilterLocally();
+      this.callLogService.getSummary(this.dashboardCode, period).subscribe({
+        next: (res: any) => {
+          this.preloadedCache[period].summaryLoaded = true;
+          if (res.success) {
+            this.preloadedCache[period].summary = res.stats;
+            this.fetchPreviousStatsForCache(res.from, res.to, period);
           }
-        } else if (period === 'today') {
-           this.summaryLoading = false;
+          if (period === this.selectedPeriod) this.applyFilterLocally();
+        },
+        error: () => {
+          this.preloadedCache[period].summaryLoaded = true;
+          if (period === this.selectedPeriod) this.applyFilterLocally();
         }
       });
 
       // Fetch timeline
-      this.callLogService.getTimeline(this.dashboardCode, period).subscribe(res => {
-        if (res.success) {
-          this.preloadedCache[period].timeline = res.timeline;
-          if (period === 'today') this.applyFilterLocally();
+      this.callLogService.getTimeline(this.dashboardCode, period).subscribe({
+        next: (res: any) => {
+          this.preloadedCache[period].timelineLoaded = true;
+          if (res.success) {
+            this.preloadedCache[period].timeline = res.timeline;
+          }
+          if (period === this.selectedPeriod) this.applyFilterLocally();
+        },
+        error: () => {
+          this.preloadedCache[period].timelineLoaded = true;
+          if (period === this.selectedPeriod) this.applyFilterLocally();
         }
       });
 
       // Fetch employees stats
       this.callLogService.getEmployeesStats(this.dashboardCode, period).subscribe({
         next: (res: any) => {
+          this.preloadedCache[period].employeesLoaded = true;
           if (res.success) {
             this.preloadedCache[period].employees = res.employees;
-            if (period === 'today') this.applyFilterLocally();
-          } else if (period === 'today') {
-            this.empCallLoading = false;
           }
+          if (period === this.selectedPeriod) this.applyFilterLocally();
         },
-        error: () => { if (period === 'today') this.empCallLoading = false; }
+        error: () => {
+          this.preloadedCache[period].employeesLoaded = true;
+          if (period === this.selectedPeriod) this.applyFilterLocally();
+        }
       });
     });
   }
 
   // We rewrite fetchSummary to instantly return preloaded data if available, and to show loading ONLY if not.
-  fetchSummary(): void {
+  fetchSummary(forceReload = false): void {
     // If we have it preloaded, skip hitting the API
-    if (this.selectedPeriod !== 'custom' && this.preloadedCache[this.selectedPeriod].summary) {
+    if (!forceReload && this.selectedPeriod !== 'custom' && this.preloadedCache[this.selectedPeriod].summaryLoaded) {
        this.applyFilterLocally();
        return;
     }
@@ -347,10 +357,15 @@ export class AppComponent implements OnInit {
 
     this.callLogService.getSummary(this.dashboardCode, 'custom', fromStr, toStr).subscribe({
       next: (res: any) => {
+        this.preloadedCache[period].prevSummaryLoaded = true;
         if (res.success && res.stats) {
           this.preloadedCache[period].prevSummary = res.stats;
-          if (this.selectedPeriod === period) this.applyFilterLocally();
         }
+        if (this.selectedPeriod === period) this.applyFilterLocally();
+      },
+      error: () => {
+        this.preloadedCache[period].prevSummaryLoaded = true;
+        if (this.selectedPeriod === period) this.applyFilterLocally();
       }
     });
   }
@@ -399,40 +414,37 @@ export class AppComponent implements OnInit {
 
   // Attempts to switch to current period view instantly without hitting the API for standard views
   applyFilterLocally(): void {
+    if (this.selectedPeriod === 'custom') {
+      return; // Custom is handled by its explicit apply event and fetch commands
+    }
+
     const cache = this.preloadedCache[this.selectedPeriod];
     
-    if (this.selectedPeriod !== 'custom' && cache.summary && cache.employees.length && cache.timeline.length) {
-      this.summaryStats = cache.summary;
-      this.timelineData = cache.timeline;
-      if (cache.prevSummary) {
+    // Only parse and display everything IF the big 3 are completely loaded, AND the employees list is loaded
+    if (cache.summaryLoaded && cache.timelineLoaded && cache.employeesLoaded) {
+      this.summaryStats = cache.summary || null;
+      this.timelineData = cache.timeline || [];
+      
+      // We only compute metrics if prev is loaded too, or we fallback if the summary API call was successful
+      if (cache.prevSummaryLoaded && cache.summary) {
         this.calculateMetrics(this.summaryStats!, cache.prevSummary);
-      } else {
-        // Fallback progress calculation if prev summary hasn't loaded 
+      } else if (cache.summary) {
         this.calculateMetrics(this.summaryStats!, null);
       }
-      this.mapEmployeeStats(cache.employees);
+      
+      // Delay map employee stats until `this.employees` array is successfully populated
+      if (!this.employeesLoading) {
+        this.mapEmployeeStats(cache.employees || []);
+        this.empCallLoading = false;
+      }
       
       setTimeout(() => {
-        this.renderDonutChart();
-        if (this.timelineData.length) this.renderTimelineChart();
+        if (this.summaryStats) this.renderDonutChart();
+        if (this.timelineData && this.timelineData.length) this.renderTimelineChart();
       }, 50);
       
       this.summaryLoading = false;
-      this.empCallLoading = false;
-      return;
     }
-
-    if (this.selectedPeriod !== 'custom' && cache.summary) {
-       // partial data case
-       this.summaryStats = cache.summary;
-       if (cache.prevSummary) this.calculateMetrics(this.summaryStats!, cache.prevSummary);
-       setTimeout(() => { this.renderDonutChart(); }, 50);
-       this.summaryLoading = false;
-    } else {
-       if (this.selectedPeriod === 'custom') this.fetchSummary();
-    }
-    
-    if (this.selectedPeriod === 'custom') this.fetchEmployeeCallRows();
   }
 
   mapEmployeeStats(stats: any[]): void {
@@ -461,7 +473,17 @@ export class AppComponent implements OnInit {
         this.employeesLoading = false;
         if (res.success && res.employees) {
           this.employees = res.employees;
-          this.fetchEmployeeCallRows();
+          
+          if (this.selectedPeriod !== 'custom') {
+             // Let the locally loaded trigger map it if cache is ready
+             const cache = this.preloadedCache[this.selectedPeriod];
+             if (cache.employeesLoaded) {
+                 this.mapEmployeeStats(cache.employees || []);
+                 this.empCallLoading = false;
+             }
+          } else {
+            this.fetchEmployeeCallRows();
+          }
         } else {
           this.employeesError = res.message || 'Failed to load employees.';
         }
@@ -473,16 +495,20 @@ export class AppComponent implements OnInit {
     });
   }
 
-  fetchEmployeeCallRows(): void {
+  fetchEmployeeCallRows(forceRefresh = false): void {
     if (!this.dashboardCode) return;
     
     // Check if we can just use the preloaded array
-    if (this.selectedPeriod !== 'custom') {
+    if (!forceRefresh && this.selectedPeriod !== 'custom') {
       const cache = this.preloadedCache[this.selectedPeriod];
-      if (cache && cache.employees && cache.employees.length > 0) {
-        this.mapEmployeeStats(cache.employees);
-        return;
+      if (cache.employeesLoaded) {
+        this.mapEmployeeStats(cache.employees || []);
+        this.empCallLoading = false;
+      } else {
+        // Wait for preload dashboard
+        this.empCallLoading = true;
       }
+      return;
     }
 
     this.empCallLoading = true;
@@ -509,8 +535,15 @@ export class AppComponent implements OnInit {
 
   syncAll(): void {
     this.syncAllLoading = true;
-    this.fetchSummary();
-    this.fetchEmployeeCallRows();
+    
+    if (this.selectedPeriod === 'custom') {
+      this.fetchSummary();
+      this.fetchEmployeeCallRows();
+    } else {
+      // Force API fetch and overwrite cache
+      this.fetchSummary(true);
+      this.fetchEmployeeCallRows(true);
+    }
     this.fetchEmployees();
     setTimeout(() => this.syncAllLoading = false, 1500);
   }
@@ -930,7 +963,7 @@ export class AppComponent implements OnInit {
           this.employees.unshift(res.employee);
           this.closeAddEmployee();
           // Reload dashboard data so the new employee can show stats 
-          this.fetchEmployeeCallRows();
+          this.fetchEmployeeCallRows(true);
         } else this.addEmployeeError = res.message || 'Failed to add employee.';
       },
       error: (err: any) => {
