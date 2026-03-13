@@ -413,6 +413,12 @@
         </svg>
         Company
       </button>
+      <button class="sidebar-item" [class.active]="dashTab==='support'" (click)="dashTab='support'; sidebarOpen=false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Help & Support
+      </button>
     </aside>
 
     <main class="dash-main">
@@ -806,7 +812,7 @@
             <thead>
               <tr>
                 <th>Employee</th>
-                <th>Code</th>
+                <th>Tag</th>
                 <th>Device</th>
                 <th>App Ver.</th>
                 <th>Last Call</th>
@@ -825,7 +831,38 @@
                     </div>
                   </div>
                 </td>
-                <td style="font-family:monospace;font-size:.8rem;color:var(--text-3);">{{ emp.employeeCode || '—' }}
+                <td (click)="$event.stopPropagation()">
+                  <ng-container *ngIf="editTagEmpId !== emp._id">
+                    <span *ngIf="emp.tags && emp.tags.length > 0" class="tag-badge">{{ emp.tags[0] }}</span>
+                    <button *ngIf="!emp.tags || emp.tags.length === 0" class="btn-add-tag" (click)="enableTagEdit(emp)">+ Add Tag</button>
+                    <button *ngIf="emp.tags && emp.tags.length > 0" class="btn-edit-tag" (click)="enableTagEdit(emp)">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                  </ng-container>
+                  <ng-container *ngIf="editTagEmpId === emp._id">
+                    <div style="display:flex; align-items:center; gap:4px; position:relative;" (click)="$event.stopPropagation()">
+                      <div style="position:relative;">
+                        <input type="text" [(ngModel)]="inlineTagValue" (focus)="focusTagInput(emp)" (blur)="blurTagInput()" (keydown.enter)="saveInlineTag(emp, $event)" placeholder="Type For Custom" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 4px; width: 100px; background: var(--bg); color: var(--text-1); outline: none;" />
+                        
+                        <!-- Custom Dropdown -->
+                        <div *ngIf="showInlineDropdown === emp._id" style="position:absolute; top: 100%; left: 0; margin-top: 2px; width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 50; max-height: 120px; overflow-y: auto;">
+                          <div *ngFor="let opt of getFilteredTagOptions()" (mousedown)="$event.preventDefault(); inlineTagValue = opt; saveInlineTag(emp, $event)" class="custom-dropdown-opt">
+                            {{ opt }}
+                          </div>
+                          <div *ngIf="getFilteredTagOptions().length === 0" style="padding: 0.35rem 0.5rem; font-size: 0.75rem; color: var(--text-3); text-align: center; font-style: italic;">
+                            + New tag
+                          </div>
+                        </div>
+                      </div>
+
+                      <button (click)="saveInlineTag(emp, $event)" [disabled]="savingTag" title="Save" style="background:transparent; border:none; cursor:pointer; color:var(--green); padding:2px; display:inline-flex; align-items:center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      </button>
+                      <button (click)="cancelTagEdit($event)" title="Cancel" style="background:transparent; border:none; cursor:pointer; color:var(--text-3); padding:2px; display:inline-flex; align-items:center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      </button>
+                    </div>
+                  </ng-container>
                 </td>
                 <td style="font-size:.78rem;color:var(--text-3);white-space:nowrap;">{{ emp.deviceModel || '—' }}</td>
                 <td style="font-size:.78rem;color:var(--text-3);">{{ emp.appVersion || '—' }}</td>
@@ -836,11 +873,17 @@
                   [style.color]="emp.lastSyncTime ? 'var(--green)' : 'var(--text-3)'">{{ fmtDate(emp.lastSyncTime) }}
                 </td>
                 <td>
+                  <button class="action-btn" (click)="$event.stopPropagation(); openEditEmployee(emp)" title="Edit employee" style="margin-right: 4px; color: var(--purple);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13"></path>
+                      <path d="M18.5 2.5C18.8978 2.10217 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10217 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10217 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z"></path>
+                    </svg>
+                  </button>
                   <button class="action-btn" (click)="openEmployee(emp)" title="View details">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
                       <path d="M2 12C2 12 5.818 5 12 5s10 7 10 7-3.818 7-10 7S2 12 2 12z" stroke="currentColor"
-                        stroke-width="2" />
+                         stroke-width="2" />
                     </svg>
                   </button>
                 </td>
@@ -1108,9 +1151,141 @@
               </button>
             </form>
           </div>
+
+          <!-- Tag Management Card -->
+          <div class="company-card">
+            <h3 class="cc-title" style="margin-bottom:0.5rem;">Tag Management</h3>
+            <p style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 1.5rem;">Create and manage tags to organize your employees into groups like Sales, Support, etc.</p>
+            
+            <div *ngIf="tagManagementError" class="form-error" style="margin-bottom: 1rem;">{{ tagManagementError }}</div>
+            <div *ngIf="tagManagementSuccess" style="color:var(--green);font-weight:600;margin-bottom:1rem;font-size:0.85rem;">✓ {{ tagManagementSuccess }}</div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <div style="display: flex; gap: 0.75rem;">
+                <input type="text" placeholder="Enter new tag name..." 
+                  style="flex: 1; border: 1px solid var(--border); padding: 0.7rem; border-radius: 10px; font-size: 0.85rem;"
+                  [(ngModel)]="newTagInput" (keyup.enter)="addTag()">
+                <button (click)="addTag()" class="cta-primary" style="padding: 0 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.85rem;" [disabled]="tagManagementLoading">
+                  {{ tagManagementLoading ? '...' : 'Add' }}
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+              <div *ngFor="let tag of tagOptions" 
+                style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--purple); font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(99, 102, 241, 0.15);">
+                {{ tag }}
+                <button (click)="removeTag(tag)" style="border: none; background: transparent; color: var(--orange); padding: 0; display: flex; align-items: center; cursor: pointer; transition: 0.2s;" [disabled]="tagManagementLoading">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+              </div>
+              <div *ngIf="tagOptions.length === 0" style="font-size: 0.85rem; color: var(--text-3); font-style: italic;">No tags created yet.</div>
+            </div>
+          </div>
+
         </div>
       </div>
 
+      <!-- ══ SUPPORT TAB ══ -->
+      <!-- ══ MINIMALIST HELP & SUPPORT ══ -->
+      <div *ngIf="dashTab==='support'">
+        <div class="dash-header-row" style="margin-bottom: 2.5rem; justify-content: space-between; border-bottom: none; align-items: baseline;">
+          <h2 class="dash-title" style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Help & Support</h2>
+          <!-- <p style="color: var(--text-3); font-size: 0.95rem; margin-top: 0.5rem; white-space: nowrap;">Everything you need to manage your connection and get expert assistance.</p> -->
+        </div>
+
+        <div class="support-grid" style="max-width: 1100px; gap: 2.5rem;">
+          
+          <!-- LEFT COLUMN: Simplified Assistance -->
+          <div class="support-col-left" style="gap: 2rem;">
+            
+            <!-- Minimal Connect Code Card -->
+            <div class="company-card" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-card); box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 1.5rem;">
+              <div style="display: flex; align-items: center; gap: 1.25rem;">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(99, 102, 241, 0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--purple);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                </div>
+                <div style="flex: 1;">
+                  <span style="font-size: 0.7rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em;">Device Connect Code</span>
+                  <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.25rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-1); margin: 0; letter-spacing: -0.01em; font-family: 'JetBrains Mono', Courier, monospace;">{{ companyProfile?.companyCode }}</h3>
+                  </div>
+                </div>
+              </div>
+              <button class="cta-secondary" style="width: 100%; border-radius: 10px; font-weight: 600; padding: 0.7rem; font-size: 0.85rem;" (click)="openShareModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                Share
+              </button>
+            </div>
+            
+            <!-- Minimal RM Card -->
+            <div class="company-card" style="padding: 1.5rem; border-radius: 16px; border: 1px solid var(--border); background: var(--bg-card); box-shadow: 0 4px 15px rgba(0,0,0,0.02);" *ngIf="companyProfile?.relationshipManager?.name; else requestRmTemplate">
+              <!-- RM Content same as before but slightly more compact padding -->
+              <h4 style="font-size: 0.7rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Personal Assistance
+              </h4>
+              <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <div style="font-weight: 700; color: var(--text-1); font-size: 1.1rem; margin-bottom: 0.5rem;">{{ companyProfile.relationshipManager.name }}</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                  <div>
+                    <div style="font-size: 0.65rem; color: var(--text-3); font-weight: 600; text-transform: uppercase;">Availability</div>
+                    <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 2px;">{{ companyProfile.relationshipManager.workingDays }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.65rem; color: var(--text-3); font-weight: 600; text-transform: uppercase;">Hours</div>
+                    <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 2px;">{{ companyProfile.relationshipManager.workingHours }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.65rem; color: var(--text-3); font-weight: 600; text-transform: uppercase;">Phone Number</div>
+                    <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 2px;">{{ companyProfile.relationshipManager.phone }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 0.65rem; color: var(--text-3); font-weight: 600; text-transform: uppercase;">Email Address</div>
+                    <div style="font-size: 0.8rem; color: var(--text-2); margin-top: 2px;">{{ companyProfile.relationshipManager.email }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <ng-template #requestRmTemplate>
+              <div class="company-card" style="padding: 1.5rem; border-radius: 16px; border: 1px dashed var(--border); text-align: center; background: rgba(99, 102, 241, 0.02);">
+                <p style="color: var(--text-2); font-size: 0.85rem; font-weight: 500; margin-bottom: 1.25rem;">Need a dedicated manager for your account?</p>
+                <button class="cta-secondary" style="width: 100%; border-radius: 10px; font-weight: 600; padding: 0.7rem; font-size: 0.85rem;" (click)="requestRm()" [disabled]="!canRequestRm || rmRequestLoading">
+                  {{ rmRequestLoading ? 'Processing...' : 'Request Relationship Manager' }}
+                </button>
+                <div *ngIf="!canRequestRm" style="margin-top: 1rem;">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <p style="font-size: 0.75rem; color: var(--orange); font-weight: 600;">Request pending. Recheck after few minutes.</p>
+                  </div>
+                  <div *ngIf="rmCountdown" style="font-size: 0.7rem; color: var(--text-3); margin-top: 4px; font-weight: 500;">
+                    Next request available in: <span style="color: var(--purple); font-weight: 700;">{{ rmCountdown }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-template>
+
+          </div>
+
+          <!-- RIGHT COLUMN: Clean Content -->
+          <div class="support-col-right" style="gap: 2rem;">
+            <div style="padding: 0 0.5rem;">
+              <h4 style="font-size: 1rem; font-weight: 700; color: var(--text-1); margin-bottom: 1.25rem;">Activation Guide</h4>
+              <div style="position: relative; width: 100%; border-radius: 16px; overflow: hidden; background: #f1f5f9; padding-bottom: 56.25%; border: 1px solid var(--border);">
+                <iframe style="position: absolute; top:0; left: 0; width: 100%; height: 100%; border: none;" src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+              </div>
+              <p style="font-size: 0.85rem; color: var(--text-3); margin-top: 1rem; line-height: 1.5;">Watch this 2-minute video to complete your setup. For faster deployment, you can share the link below with your operators.</p>
+              
+              <div style="margin-top: 2rem; background: var(--bg-main); padding: 1rem; border-radius: 14px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem;">
+                <input type="text" readonly value="https://help.callyzer.co/article/how-to-register-your-emp/" style="flex: 1; border: none; background: transparent; color: var(--text-2); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; outline: none;">
+                <button (click)="copyConnectCodeLink()" style="background: var(--text-1); color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;">Copy</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </main>
   </div>
 
@@ -1194,7 +1369,7 @@
         <div *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length===0" class="dash-empty" style="padding:1.5rem;">
           No individual call data.</div>
         <div class="call-history-list" *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length>0">
-          <div class="ch-item" *ngFor="let c of selectedEmpCalls">
+          <div class="ch-item" *ngFor="let c of selectedEmpCalls | slice:0:5">
             <span class="ch-type-badge" [class]="c.callType">{{ c.callType }}</span>
             <div class="ch-info">
               <div class="ch-number">{{ c.name || c.number || 'Unknown' }}</div>
@@ -1205,6 +1380,7 @@
               <div class="ch-dur" *ngIf="c.duration > 0">{{ fmtDur(c.duration) }}</div>
             </div>
           </div>
+          <button *ngIf="selectedEmpCalls.length > 5" class="cta-secondary" style="width: 100%; margin-top: 1rem; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem;" (click)="openAllCallsModal()">View All {{ selectedEmpCalls.length }} Calls</button>
         </div>
       </div>
       <div class="drilldown-analytics" *ngIf="selectedEmployee && selectedEmpCalls.length > 0">
@@ -1246,6 +1422,109 @@
       </div>
       <button type="submit" class="btn-signup modal-submit" [disabled]="addEmployeeLoading" style="width:100%;">
         {{ addEmployeeLoading ? 'Adding...' : 'Add Employee' }}
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ========== VIEW ALL CALLS MODAL ========== -->
+<div class="modal-overlay" [class.open]="showAllCallsModal" (click)="closeAllCallsModal()">
+  <div class="modal" style="max-width: 600px; width: 90%; max-height: 85vh; display: flex; flex-direction: column;" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeAllCallsModal()">&#x2715;</button>
+    <div class="modal-brand" style="justify-content:flex-start;margin-bottom:1rem;">
+      <h2 class="modal-title" style="margin:0;">All Calls</h2>
+    </div>
+    <p class="modal-subtitle" style="text-align:left;margin-bottom:1.5rem;">Showing all call history for {{ selectedEmployee?.name || 'this agent' }}.</p>
+    
+    <div class="call-history-list" style="overflow-y: auto; flex: 1; padding-right: 0.5rem; margin-right: -0.5rem;">
+      <div class="ch-item" *ngFor="let c of selectedEmpCalls">
+        <span class="ch-type-badge" [class]="c.callType">{{ c.callType }}</span>
+        <div class="ch-info">
+          <div class="ch-number">{{ c.name || c.number || 'Unknown' }}</div>
+          <div class="ch-sub" *ngIf="c.name">{{ c.number }}</div>
+        </div>
+        <div class="ch-right" style="text-align: right;">
+          <div class="ch-time" style="font-weight: 500;">{{ c.timestamp | date:'dd MMM yyyy, hh:mm a' }}</div>
+          <div class="ch-dur" *ngIf="c.duration > 0">{{ fmtDur(c.duration) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SHARE MESSAGE MODAL ========== -->
+<div class="modal-overlay" [class.open]="showShareModal" (click)="showShareModal = false">
+  <div class="modal" style="max-width: 500px; width: 90%;" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="showShareModal = false">&#x2715;</button>
+    <div class="modal-brand" style="justify-content:flex-start;margin-bottom:1rem;">
+      <h2 class="modal-title" style="margin:0;">Share Registration Link</h2>
+    </div>
+    <p class="modal-subtitle" style="text-align:left;margin-bottom:1.5rem;">Copy this message to share with your employees.</p>
+    
+    <div style="margin-bottom: 1.5rem;">
+      <textarea readonly 
+        style="width: 100%; height: 280px; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text-1); font-size: 0.85rem; line-height: 1.5; resize: none; font-family: inherit; outline: none;"
+        [(ngModel)]="shareMessage"></textarea>
+    </div>
+
+    <button (click)="copyShareMessage()" class="btn-signup" style="width: 100%; border-radius: 12px; padding: 0.8rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+      Copy Message
+    </button>
+  </div>
+</div>
+
+<!-- ========== EDIT EMPLOYEE MODAL ========== -->
+<div class="modal-overlay" [class.open]="isEditEmployeeOpen" (click)="closeEditEmployee()">
+  <div class="modal" (click)="$event.stopPropagation()" style="max-width: 450px;">
+    <button class="modal-close" (click)="closeEditEmployee()">&#x2715;</button>
+    <div class="modal-brand" style="margin-bottom: 2rem;">
+      <div class="modal-icon" style="background: var(--purple-fade); color: var(--purple); flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="modal-title" style="margin-bottom: 2px;">Edit Employee</h2>
+        <p class="modal-subtitle" style="margin-bottom: 0; opacity: 0.8; font-size: 0.85rem;">Update employee name, phone, and tags.</p>
+      </div>
+    </div>
+
+    <form class="modal-form" (submit)="onEditEmployeeSubmit($event)">
+      <div class="form-error" *ngIf="editEmployeeError">{{ editEmployeeError }}</div>
+
+      <div class="form-group">
+        <label for="edit-emp-name">Full Name</label>
+        <div class="input-with-icon">
+          <input type="text" id="edit-emp-name" [(ngModel)]="editingEmployee.name" name="name" placeholder="Enter name" required />
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="edit-emp-mobile">Phone Number</label>
+        <div class="input-with-icon">
+          <input type="text" id="edit-emp-mobile" [(ngModel)]="editingEmployee.mobile" name="mobile" placeholder="Enter phone number" required />
+          <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Selected Tags</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+          <div *ngFor="let t of tagOptions" (click)="toggleEditTag(t)"
+            [style.background]="editingEmployee.tags.includes(t) ? 'rgba(99, 102, 241, 0.15)' : 'transparent'"
+            [style.color]="editingEmployee.tags.includes(t) ? 'var(--purple)' : 'var(--text-3)'"
+            [style.border-color]="editingEmployee.tags.includes(t) ? 'var(--purple)' : 'var(--border)'"
+            style="padding: 4px 10px; border: 1px solid; border-radius: 6px; font-size: 0.75rem; cursor: pointer; transition: 0.2s; font-weight: 600;">
+            {{ t }}
+          </div>
+          <div *ngIf="tagOptions.length === 0" style="font-size: 0.75rem; color: var(--text-3); font-style: italic;">No tags available. Manage tags in Company Profile.</div>
+        </div>
+      </div>
+
+      <button type="submit" class="cta-primary" [disabled]="editEmployeeLoading" style="margin-top: 1rem; width: 100%;">
+        {{ editEmployeeLoading ? 'Updating...' : 'Save Changes' }}
       </button>
     </form>
   </div>

@@ -1413,7 +1413,15 @@
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
-  overflow: hidden;
+  /* Removed overflow: hidden to allow dropdowns to pop out */
+}
+
+/* Re-apply border radiuses to the headers to fix corners since overflow hidden was removed */
+.emp-table thead th:first-child {
+  border-top-left-radius: 16px;
+}
+.emp-table thead th:last-child {
+  border-top-right-radius: 16px;
 }
 
 .emp-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
@@ -1729,6 +1737,87 @@
 
 .cc-detail.full-width {
   grid-column: 1 / -1;
+}
+
+/* ── Tags UI ── */
+.tag-badge {
+  background: var(--bg-hover);
+  color: var(--orange);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+  border: 1px solid var(--border);
+}
+
+.btn-add-tag {
+  background: transparent;
+  color: var(--text-3);
+  border: 1px dashed var(--border);
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.btn-add-tag:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+  border-style: solid;
+}
+
+.btn-edit-tag {
+  background: transparent;
+  color: var(--text-3);
+  border: none;
+  padding: 0.25rem 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+}
+
+.btn-edit-tag:hover {
+  color: var(--orange);
+}
+
+.custom-dropdown-opt {
+  padding: 0.45rem 0.65rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: var(--text-1);
+  transition: background 0.15s;
+}
+
+.custom-dropdown-opt:hover {
+  background: var(--bg-hover) !important;
+}
+
+/* ── Support Tab ── */
+/* ── Support Section ── */
+.support-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: stretch;
+  margin-top: 1rem;
+}
+
+.support-col-left, .support-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+
+@media (max-width: 900px) {
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .cc-detail label {
@@ -2394,4 +2483,36 @@
 .kpi-card-mini.highlight-card .kpi-mini-icon {
   background: linear-gradient(135deg, var(--accent), var(--purple));
   color: white;
+}
+
+/* Input with Icon Styles */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input-with-icon .input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-3);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding-left: 44px !important;
+}
+
+.input-with-icon input:focus + .input-icon {
+  color: var(--accent);
+}
+
+.modal-icon {
+  flex-shrink: 0;
 }

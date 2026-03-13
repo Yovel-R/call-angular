@@ -58,4 +58,16 @@ export class AuthService {
   updateAddress(companyCode: string, companyAddress: string): Observable<any> {
     return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/address`, { companyAddress });
   }
+
+  requestRm(companyCode: string): Observable<any> {
+    return this.api.post(`/api/auth/company/${encodeURIComponent(companyCode)}/request-rm`, {});
+  }
+
+  assignRm(companyCode: string, rmData: any): Observable<any> {
+    return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/assign-rm`, rmData);
+  }
+
+  updateCompanyTags(companyCode: string, tags: string[]): Observable<any> {
+    return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/tags`, { tags });
+  }
 }

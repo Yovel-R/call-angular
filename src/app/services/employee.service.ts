@@ -34,4 +34,12 @@ export class EmployeeService {
   getEmployees(companyCode: string): Observable<EmployeeResponse> {
     return this.api.get<EmployeeResponse>(`/api/employees?companyCode=${companyCode}`);
   }
+
+  updateEmployeeTags(employeeId: string, tags: string[], companyCode: string): Observable<EmployeeResponse> {
+    return this.api.patch<EmployeeResponse>(`/api/employees/${employeeId}/tags`, { tags, companyCode });
+  }
+
+  updateEmployee(employeeId: string, payload: { name: string; mobile: string; tags: string[] }): Observable<EmployeeResponse> {
+    return this.api.put<EmployeeResponse>(`/api/employees/${employeeId}`, payload);
+  }
 }

@@ -56,7 +56,32 @@ export class AppComponent implements OnInit {
   isSignupOpen = false;
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'employees' | 'reports' | 'company' = 'overview';
+  dashTab: 'overview' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
+  showShareModal = false;
+  shareMessage = '';
+
+  // ── Support & RM ───────────────────────────────────────────
+  rmRequestLoading = false;
+  rmRequestMessage = '';
+  
+  adminRm = {
+    name: '',
+    phone: '',
+    email: '',
+    workingDays: '',
+    workingHours: ''
+  };
+  adminRmLoading = false;
+
+  rmCountdown = '';
+  private rmTimerInterval: any;
+
+  get canRequestRm(): boolean {
+    if (!this.companyProfile) return false;
+    if (!this.companyProfile.rmRequestTime) return true;
+    const hoursSinceRequest = (Date.now() - new Date(this.companyProfile.rmRequestTime).getTime()) / (1000 * 60 * 60);
+    return hoursSinceRequest >= 8;
+  }
 
   // ── Advanced Filters ──────────────────────────────────────
   filterTags = '';
@@ -90,6 +115,12 @@ export class AppComponent implements OnInit {
   summaryStats: CallStats | null = null;
   summaryLoading = false;
 
+  // ── Tag Management ──────────────────────────────────────────
+  newTagInput = '';
+  tagManagementLoading = false;
+  tagManagementError = '';
+  tagManagementSuccess = '';
+
   // ── Employee list ──────────────────────────────────────────
   employees: Employee[] = [];
   employeesLoading = false;
@@ -98,6 +129,11 @@ export class AppComponent implements OnInit {
   addEmployeeLoading = false;
   addEmployeeError = '';
   newEmployee = { name: '', mobile: '' };
+
+  isEditEmployeeOpen = false;
+  editEmployeeLoading = false;
+  editEmployeeError = '';
+  editingEmployee: any = { _id: '', name: '', mobile: '', tags: [] };
 
   employeeCallRows: { emp: Employee; stats: any }[] = [];
   empCallLoading = false;
@@ -158,6 +194,15 @@ export class AppComponent implements OnInit {
   saveAddressLoading = false;
   saveAddressError = '';
   saveAddressSuccess = '';
+
+  // Employee Tagging Inline
+  editTagEmpId: string | null = null;
+  inlineTagValue: string = '';
+  showInlineDropdown: string | null = null;
+  savingTag = false;
+
+  // View All Calls Modal
+  showAllCallsModal = false;
 
   today = new Date();
 
@@ -1008,6 +1053,135 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Edit Employee
+  openEditEmployee(emp: Employee): void {
+    this.editingEmployee = {
+      _id: emp._id,
+      name: emp.name,
+      mobile: emp.mobile,
+      tags: emp.tags ? [...emp.tags] : []
+    };
+    this.isEditEmployeeOpen = true;
+    this.editEmployeeError = '';
+  }
+
+  closeEditEmployee(): void {
+    this.isEditEmployeeOpen = false;
+    this.editEmployeeError = '';
+  }
+
+  onEditEmployeeSubmit(event: Event): void {
+    event.preventDefault();
+    if (!this.editingEmployee._id) return;
+    this.editEmployeeLoading = true;
+    this.editEmployeeError = '';
+
+    this.employeeService.updateEmployee(this.editingEmployee._id, {
+      name: this.editingEmployee.name,
+      mobile: this.editingEmployee.mobile,
+      tags: this.editingEmployee.tags
+    }).subscribe({
+      next: (res: any) => {
+        this.editEmployeeLoading = false;
+        if (res.success) {
+          this.fetchEmployees();
+          this.closeEditEmployee();
+        } else {
+          this.editEmployeeError = res.message;
+        }
+      },
+      error: (err: any) => {
+        this.editEmployeeLoading = false;
+        this.editEmployeeError = err?.error?.message || 'Error updating employee.';
+      }
+    });
+  }
+
+  toggleEditTag(tag: string): void {
+    const idx = this.editingEmployee.tags.indexOf(tag);
+    if (idx > -1) {
+      this.editingEmployee.tags.splice(idx, 1);
+    } else {
+      this.editingEmployee.tags.push(tag);
+    }
+  }
+
+  // ── Employee Tagging (Inline) ─────────────────────────────────
+
+  enableTagEdit(emp: Employee): void {
+    event?.stopPropagation(); // Prevent row click from showing drilldown
+    this.editTagEmpId = emp._id!;
+    this.inlineTagValue = (emp.tags && emp.tags.length > 0) ? emp.tags[0] : '';
+  }
+
+  cancelTagEdit(event: Event): void {
+    event.stopPropagation();
+    this.editTagEmpId = null;
+    this.inlineTagValue = '';
+    this.showInlineDropdown = null;
+  }
+
+  focusTagInput(emp: Employee): void {
+    this.showInlineDropdown = emp._id!;
+  }
+
+  blurTagInput(): void {
+    // Delay to allow dropdown click to register before hiding
+    setTimeout(() => {
+      this.showInlineDropdown = null;
+    }, 200);
+  }
+
+  getFilteredTagOptions(): string[] {
+    const val = (this.inlineTagValue || '').toLowerCase();
+    return this.tagOptions.filter(t => t.toLowerCase().includes(val));
+  }
+
+  saveInlineTag(emp: Employee, event?: Event): void {
+    if (event) event.stopPropagation();
+    if (!this.dashboardCode) return;
+
+    const finalTag = this.inlineTagValue.trim();
+    if (!finalTag) {
+      alert('Please enter a tag name to save.');
+      return;
+    }
+
+    this.savingTag = true;
+    const tagsToSave = [finalTag];
+
+    this.employeeService.updateEmployeeTags(emp._id!, tagsToSave, this.dashboardCode).subscribe({
+      next: (res: any) => {
+        this.savingTag = false;
+        if (res.success) {
+          emp.tags = res.employee.tags;
+
+          if (finalTag && !this.tagOptions.includes(finalTag)) {
+             this.tagOptions.push(finalTag);
+          }
+
+          this.editTagEmpId = null;
+        } else {
+          alert('Failed to update tag: ' + (res.message || 'Unknown error'));
+        }
+      },
+      error: (err: any) => {
+        this.savingTag = false;
+        alert('Server error updating tags.');
+      }
+    });
+  }
+
+  // ── Modals / Misc ────────────────────────────────────────
+
+  openAllCallsModal(): void {
+    this.showAllCallsModal = true;
+  }
+
+  closeAllCallsModal(): void {
+    this.showAllCallsModal = false;
+  }
+
   // ── Company & Password ────────────────────────────────────
   fetchCompanyProfile(): void {
     if (!this.dashboardCode) return;
@@ -1018,9 +1192,162 @@ export class AppComponent implements OnInit {
         if (res.success) {
           this.companyProfile = res.company;
           this.editAddressValue = res.company.companyAddress || '';
+          this.tagOptions = res.company.tags || [];
+          if (this.companyProfile.rmRequestTime) {
+            this.startRmTimer(this.companyProfile.rmRequestTime);
+          }
         }
       },
       error: () => { this.companyProfileLoading = false; }
+    });
+  }
+
+  // ── Support & RM ──────────────────────────────────────────
+
+  requestRm(): void {
+    if (!this.dashboardCode) return;
+    this.rmRequestLoading = true;
+    this.rmRequestMessage = '';
+    
+    this.authService.requestRm(this.dashboardCode).subscribe({
+      next: (res: any) => {
+        this.rmRequestLoading = false;
+        if (res.success) {
+          this.rmRequestMessage = res.message;
+          if (this.companyProfile) {
+            this.companyProfile.rmRequestTime = res.rmRequestTime;
+            this.startRmTimer(res.rmRequestTime);
+          }
+        }
+      },
+      error: (err: any) => {
+        this.rmRequestLoading = false;
+        this.rmRequestMessage = err?.error?.message || 'Error sending request.';
+      }
+    });
+  }
+
+  startRmTimer(requestTime: any): void {
+    if (this.rmTimerInterval) clearInterval(this.rmTimerInterval);
+    
+    const update = () => {
+      const start = new Date(requestTime).getTime();
+      const end = start + (8 * 60 * 60 * 1000);
+      const now = Date.now();
+      const diff = end - now;
+
+      if (diff <= 0) {
+        this.rmCountdown = '';
+        clearInterval(this.rmTimerInterval);
+        return;
+      }
+
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      this.rmCountdown = `${h}h ${m}m ${s}s`;
+    };
+
+    update();
+    this.rmTimerInterval = setInterval(update, 1000);
+  }
+
+  assignAdminRm(): void {
+    if (!this.dashboardCode) return;
+    this.adminRmLoading = true;
+    
+    this.authService.assignRm(this.dashboardCode, this.adminRm).subscribe({
+      next: (res: any) => {
+        this.adminRmLoading = false;
+        if (res.success) {
+          if (this.companyProfile) {
+            this.companyProfile.relationshipManager = res.company.relationshipManager;
+          }
+          alert('RM Assigned successfully!');
+        }
+      },
+      error: () => {
+        this.adminRmLoading = false;
+        alert('Failed to assign RM.');
+      }
+    });
+  }
+
+  copyConnectCodeLink(): void {
+    const link = `https://help.callyzer.co/article/how-to-register-your-emp/`;
+    navigator.clipboard.writeText(link).then(() => {
+      alert('Link copied to clipboard!');
+    }).catch(err => {
+      console.error('Could not copy text: ', err);
+    });
+  }
+
+  // ── Tag Management logic ──
+  addTag(): void {
+    const tag = this.newTagInput.trim();
+    if (!tag) return;
+    if (this.tagOptions.includes(tag)) {
+      this.tagManagementError = 'Tag already exists.';
+      setTimeout(() => this.tagManagementError = '', 3000);
+      return;
+    }
+    this.tagOptions.push(tag);
+    this.newTagInput = '';
+    this.persistCompanyTags();
+  }
+
+  removeTag(tag: string): void {
+    this.tagOptions = this.tagOptions.filter(t => t !== tag);
+    this.persistCompanyTags();
+  }
+
+  persistCompanyTags(): void {
+    if (!this.dashboardCode) return;
+    this.tagManagementLoading = true;
+    this.tagManagementError = '';
+    
+    this.authService.updateCompanyTags(this.dashboardCode, this.tagOptions).subscribe({
+      next: (res: any) => {
+        this.tagManagementLoading = false;
+        if (res.success) {
+          this.tagOptions = res.tags;
+          if (this.companyProfile) this.companyProfile.tags = res.tags;
+          this.tagManagementSuccess = 'Tags updated!';
+          setTimeout(() => this.tagManagementSuccess = '', 3000);
+        } else {
+          this.tagManagementError = res.message;
+        }
+      },
+      error: (err: any) => {
+        this.tagManagementLoading = false;
+        this.tagManagementError = err?.error?.message || 'Error updating tags.';
+      }
+    });
+  }
+
+  openShareModal(): void {
+    if (!this.companyProfile) return;
+    const code = this.companyProfile.companyCode || 'N/A';
+    const email = this.companyProfile.email || 'N/A';
+    const mobile = this.companyProfile.mobile || 'N/A';
+    
+    this.shareMessage = `Hello,
+
+To register your employee using Callyzer Biz mobile app, please follow the step-by-step instructions mentioned in the link below:
+https://help.callyzer.co/article/how-to-register-your-employees
+
+Please use below unique device connect code to register. Your Device Connect Code is ${code}.
+
+If you encounter any difficulties, please contact at ${email} or ${mobile}
+
+Thank You.`;
+    this.showShareModal = true;
+  }
+
+  copyShareMessage(): void {
+    navigator.clipboard.writeText(this.shareMessage).then(() => {
+      alert('Message copied to clipboard!');
+      this.showShareModal = false;
     });
   }
 
