@@ -6,7 +6,9 @@
       <div class="nav-brand">
         <div class="brand-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/>
+            <path
+              d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z"
+              fill="currentColor" />
           </svg>
         </div>
         <span class="brand-name">TraceCall</span>
@@ -20,7 +22,8 @@
       <div class="nav-auth">
         <button class="btn-login" (click)="openLogin()">Log In</button>
         <button class="btn-signup" (click)="isTrialRequest=false; openSignup()">Sign Up</button>
-        <button class="cta-primary" style="padding: 0.6rem 1.2rem; font-size: 0.85rem;" (click)="openTrialSignup()">Get Free Trial</button>
+        <button class="cta-primary" style="padding: 0.6rem 1.2rem; font-size: 0.85rem;" (click)="openTrialSignup()">Get
+          Free Trial</button>
       </div>
       <button class="hamburger" aria-label="Open menu" (click)="toggleMobileMenu()">
         <span></span><span></span><span></span>
@@ -33,7 +36,8 @@
       <a href="#about" class="nav-link" (click)="toggleMobileMenu()">About</a>
       <div class="mobile-auth">
         <button class="btn-login" (click)="openLogin(); toggleMobileMenu()">Log In</button>
-        <button class="btn-signup" (click)="isTrialRequest=false; openSignup(); toggleMobileMenu()">Sign Up Free</button>
+        <button class="btn-signup" (click)="isTrialRequest=false; openSignup(); toggleMobileMenu()">Sign Up
+          Free</button>
       </div>
     </div>
   </nav>
@@ -46,11 +50,15 @@
     <div class="hero-container">
       <div class="hero-badge"><span class="badge-dot"></span>Real-time Call Intelligence</div>
       <h1 class="hero-title">Track Every Call.<br><span class="gradient-text">Optimize Every Interaction.</span></h1>
-      <p class="hero-subtitle">TraceCall gives your team full visibility into every incoming and outgoing call. Monitor agents in real-time, analyze patterns, and boost performance with AI-driven insights.</p>
+      <p class="hero-subtitle">TraceCall gives your team full visibility into every incoming and outgoing call. Monitor
+        agents in real-time, analyze patterns, and boost performance with AI-driven insights.</p>
       <div class="hero-cta">
         <button class="cta-primary" (click)="openTrialSignup()">
           Get Free Trial
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
         </button>
         <button class="cta-secondary" (click)="openSignup(); isTrialRequest=false;">
           Sign Up Paid
@@ -73,23 +81,30 @@
         <div class="call-list">
           <div class="call-item call-active">
             <div class="call-avatar">RS</div>
-            <div class="call-info"><span class="caller-name">Raj Sharma</span><span class="caller-number">+91 9876 543 210</span></div>
-            <div class="call-meta"><span class="call-duration active">04:22</span><span class="call-badge incoming">Incoming</span></div>
+            <div class="call-info"><span class="caller-name">Raj Sharma</span><span class="caller-number">+91 9876 543
+                210</span></div>
+            <div class="call-meta"><span class="call-duration active">04:22</span><span
+                class="call-badge incoming">Incoming</span></div>
           </div>
           <div class="call-item">
             <div class="call-avatar av2">PK</div>
-            <div class="call-info"><span class="caller-name">Priya Kumar</span><span class="caller-number">+91 9845 231 101</span></div>
-            <div class="call-meta"><span class="call-duration">02:07</span><span class="call-badge outgoing">Outgoing</span></div>
+            <div class="call-info"><span class="caller-name">Priya Kumar</span><span class="caller-number">+91 9845 231
+                101</span></div>
+            <div class="call-meta"><span class="call-duration">02:07</span><span
+                class="call-badge outgoing">Outgoing</span></div>
           </div>
           <div class="call-item">
             <div class="call-avatar av3">AM</div>
-            <div class="call-info"><span class="caller-name">Arjun Mehta</span><span class="caller-number">+91 9004 876 532</span></div>
-            <div class="call-meta"><span class="call-duration">00:53</span><span class="call-badge missed">Missed</span></div>
+            <div class="call-info"><span class="caller-name">Arjun Mehta</span><span class="caller-number">+91 9004 876
+                532</span></div>
+            <div class="call-meta"><span class="call-duration">00:53</span><span class="call-badge missed">Missed</span>
+            </div>
           </div>
         </div>
         <div class="dashboard-metrics">
           <div class="metric"><span class="metric-value">42</span><span class="metric-label">Active Calls</span></div>
-          <div class="metric"><span class="metric-value">3m 14s</span><span class="metric-label">Avg Duration</span></div>
+          <div class="metric"><span class="metric-value">3m 14s</span><span class="metric-label">Avg Duration</span>
+          </div>
           <div class="metric"><span class="metric-value">96%</span><span class="metric-label">Connect Rate</span></div>
         </div>
       </div>
@@ -106,42 +121,71 @@
       </div>
       <div class="features-grid">
         <div class="feature-card feature-large">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            </svg></div>
           <h3>Real-Time Call Monitoring</h3>
-          <p>Watch every active call as it happens. See agent, duration, caller ID, and connection quality — updated every second.</p>
+          <p>Watch every active call as it happens. See agent, duration, caller ID, and connection quality — updated
+            every second.</p>
           <div class="feature-visual">
             <div class="mini-chart">
-              <div class="bar" style="height:40%"></div><div class="bar" style="height:65%"></div>
-              <div class="bar" style="height:45%"></div><div class="bar" style="height:80%"></div>
-              <div class="bar active-bar" style="height:95%"></div><div class="bar" style="height:60%"></div>
+              <div class="bar" style="height:40%"></div>
+              <div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:45%"></div>
+              <div class="bar" style="height:80%"></div>
+              <div class="bar active-bar" style="height:95%"></div>
+              <div class="bar" style="height:60%"></div>
               <div class="bar" style="height:72%"></div>
             </div>
           </div>
         </div>
         <div class="feature-card">
-          <div class="feature-icon icon-purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 19V13L3 7V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 19V9L15 3V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M15 19V7L21 13V19H15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></div>
+          <div class="feature-icon icon-purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M9 19V13L3 7V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              <path d="M9 19V9L15 3V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+              <path d="M15 19V7L21 13V19H15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+            </svg></div>
           <h3>Smart Analytics</h3>
           <p>Uncover call patterns, peak hours, and agent performance metrics with intuitive dashboards.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/><path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="feature-icon icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
+                stroke="currentColor" stroke-width="2" />
+              <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg></div>
           <h3>Call History &amp; Replay</h3>
           <p>Access complete call history with date-time filtering. Review past calls and agent interactions easily.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon icon-orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M18 8H19C20.1046 8 21 8.89543 21 10V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V10C3 8.89543 3.89543 8 5 8H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 8V6C8 4.34315 9.34315 3 11 3H13C14.6569 3 16 4.34315 16 6V8" stroke="currentColor" stroke-width="2"/><path d="M12 13V17M10 15H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+          <div class="feature-icon icon-orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M18 8H19C20.1046 8 21 8.89543 21 10V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V10C3 8.89543 3.89543 8 5 8H6"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+              <path d="M8 8V6C8 4.34315 9.34315 3 11 3H13C14.6569 3 16 4.34315 16 6V8" stroke="currentColor"
+                stroke-width="2" />
+              <path d="M12 13V17M10 15H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg></div>
           <h3>Agent Management</h3>
           <p>Assign numbers to agents, track active/inactive status, and manage teams from a single control panel.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon icon-pink"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 17H20L18.3 14.7C18.1 14.4 18 14 18 13.6V10C18 7.3 16 5 13.5 4.2V4C13.5 2.9 12.6 2 11.5 2C10.4 2 9.5 2.9 9.5 4V4.2C7 5 5 7.3 5 10V13.6C5 14 4.9 14.4 4.7 14.7L3 17H9M15 17H9M15 17C15 18.7 13.4 20 11.5 20C9.6 20 8 18.7 8 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="feature-icon icon-pink"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M15 17H20L18.3 14.7C18.1 14.4 18 14 18 13.6V10C18 7.3 16 5 13.5 4.2V4C13.5 2.9 12.6 2 11.5 2C10.4 2 9.5 2.9 9.5 4V4.2C7 5 5 7.3 5 10V13.6C5 14 4.9 14.4 4.7 14.7L3 17H9M15 17H9M15 17C15 18.7 13.4 20 11.5 20C9.6 20 8 18.7 8 17"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg></div>
           <h3>Smart Alerts</h3>
           <p>Get instant SMS or email alerts for missed calls, long-hold durations, or unusual call volumes.</p>
         </div>
         <div class="feature-card feature-cta-card">
           <h3>Ready to trace your first call?</h3>
           <p>Set up takes less than 5 minutes. No credit card required.</p>
-          <button class="btn-signup" style="margin-top:1.5rem;width:100%;" (click)="isTrialRequest=false; openSignup()">Start for Free →</button>
+          <button class="btn-signup" style="margin-top:1.5rem;width:100%;"
+            (click)="isTrialRequest=false; openSignup()">Start for Free →</button>
         </div>
       </div>
     </div>
@@ -152,7 +196,11 @@
     <div class="footer-container">
       <div class="footer-brand">
         <div class="nav-brand">
-          <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/></svg></div>
+          <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z"
+                fill="currentColor" />
+            </svg></div>
           <span class="brand-name">TraceCall</span>
         </div>
         <p>Smart call tracking for modern businesses.</p>
@@ -168,7 +216,11 @@
   <div class="modal" (click)="$event.stopPropagation()">
     <button class="modal-close" (click)="closeModals()">✕</button>
     <div class="modal-brand">
-      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/></svg></div>
+      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z"
+            fill="currentColor" />
+        </svg></div>
       <span class="brand-name">TraceCall</span>
     </div>
     <h2 class="modal-title">Welcome back</h2>
@@ -177,16 +229,20 @@
     <form class="modal-form" (submit)="onLoginSubmit($event)">
       <div class="form-group">
         <label for="login-email">Email</label>
-        <input type="email" id="login-email" placeholder="you&#64;company.com" autocomplete="email" [(ngModel)]="loginForm.email" name="loginEmail" required>
+        <input type="email" id="login-email" placeholder="you&#64;company.com" autocomplete="email"
+          [(ngModel)]="loginForm.email" name="loginEmail" required>
       </div>
       <div class="form-group">
         <label for="login-password">Password</label>
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" [(ngModel)]="loginForm.password" name="loginPassword" required>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
+          [(ngModel)]="loginForm.password" name="loginPassword" required>
       </div>
       <a href="#" class="forgot-link">Forgot password?</a>
-      <button type="submit" class="btn-signup modal-submit" [disabled]="loginLoading">{{ loginLoading ? 'Signing in…' : 'Log In' }}</button>
+      <button type="submit" class="btn-signup modal-submit" [disabled]="loginLoading">{{ loginLoading ? 'Signing in…' :
+        'Log In' }}</button>
     </form>
-    <p class="modal-switch">Don't have an account? <a href="#" (click)="isTrialRequest=false; openSignup(); $event.preventDefault()">Sign Up</a></p>
+    <p class="modal-switch">Don't have an account? <a href="#"
+        (click)="isTrialRequest=false; openSignup(); $event.preventDefault()">Sign Up</a></p>
   </div>
 </div>
 
@@ -195,16 +251,23 @@
   <div class="modal modal-wide" (click)="$event.stopPropagation()">
     <button class="modal-close" (click)="closeModals()">✕</button>
     <div class="modal-brand">
-      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/></svg></div>
+      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z"
+            fill="currentColor" />
+        </svg></div>
       <span class="brand-name">TraceCall</span>
     </div>
     <h2 class="modal-title">{{ isTrialRequest ? 'Request Free Demo' : 'Create your account' }}</h2>
-    <p class="modal-subtitle">{{ isTrialRequest ? 'Get 7 days of full access to TraceCall features' : 'Start tracking calls for free — no credit card required' }}</p>
+    <p class="modal-subtitle">{{ isTrialRequest ? 'Get 7 days of full access to TraceCall features' : 'Start tracking
+      calls for free — no credit card required' }}</p>
     <div class="signup-success" *ngIf="signupSuccess">
       <div class="success-icon">✓</div>
       <h3>{{ isTrialRequest ? 'Request Sent!' : 'Account Created!' }}</h3>
-      <p>{{ isTrialRequest ? 'Your trial request has been sent to the main admin for approval. You will receive an email once approved.' : 'Welcome to TraceCall. You can now log in with your credentials.' }}</p>
-      <button type="button" class="btn-signup modal-submit" (click)="goToLoginFromSuccess()">{{ isTrialRequest ? 'Got it' : 'Go to Log In' }}</button>
+      <p>{{ isTrialRequest ? 'Your trial request has been sent to the main admin for approval. You will receive an email
+        once approved.' : 'Welcome to TraceCall. You can now log in with your credentials.' }}</p>
+      <button type="button" class="btn-signup modal-submit" (click)="goToLoginFromSuccess()">{{ isTrialRequest ? 'Got
+        it' : 'Go to Log In' }}</button>
     </div>
     <ng-container *ngIf="!signupSuccess">
       <div class="form-error" *ngIf="signupError">{{ signupError }}</div>
@@ -212,7 +275,8 @@
         <div class="form-row">
           <div class="form-group">
             <label for="su-company">Company Name <span class="req">*</span></label>
-            <input type="text" id="su-company" placeholder="Softrate Global" [(ngModel)]="signupForm.companyName" name="suCompany" required>
+            <input type="text" id="su-company" placeholder="Softrate Global" [(ngModel)]="signupForm.companyName"
+              name="suCompany" required>
           </div>
           <div class="form-group">
             <label for="su-name">Your Name <span class="req">*</span></label>
@@ -221,12 +285,14 @@
         </div>
         <div class="form-group">
           <label for="su-address">Company Address <span class="req">*</span></label>
-          <input type="text" id="su-address" placeholder="123 Industry Park, Tech City" [(ngModel)]="signupForm.companyAddress" name="suAddress" required>
+          <input type="text" id="su-address" placeholder="123 Industry Park, Tech City"
+            [(ngModel)]="signupForm.companyAddress" name="suAddress" required>
         </div>
         <div class="form-row">
           <div class="form-group">
             <label for="su-email">Work Email <span class="req">*</span></label>
-            <input type="email" id="su-email" placeholder="you&#64;company.com" autocomplete="email" [(ngModel)]="signupForm.email" name="suEmail" required>
+            <input type="email" id="su-email" placeholder="you&#64;company.com" autocomplete="email"
+              [(ngModel)]="signupForm.email" name="suEmail" required>
           </div>
           <div class="form-group">
             <label for="su-mobile">Mobile Number <span class="req">*</span></label>
@@ -238,7 +304,8 @@
                 <option value="+61">🇦🇺 +61</option>
                 <option value="+971">🇦🇪 +971</option>
               </select>
-              <input type="tel" id="su-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="signupForm.mobile" name="suMobile" required>
+              <input type="tel" id="su-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="signupForm.mobile"
+                name="suMobile" required>
             </div>
           </div>
         </div>
@@ -260,7 +327,8 @@
         </div>
         <div class="form-group">
           <label for="su-password">Password <span class="req">*</span></label>
-          <input type="password" id="su-password" placeholder="Min. 8 chars + A + 1 + !" autocomplete="new-password" [value]="signupForm.password" (input)="onPasswordInput($any($event.target).value)" required>
+          <input type="password" id="su-password" placeholder="Min. 8 chars + A + 1 + !" autocomplete="new-password"
+            [value]="signupForm.password" (input)="onPasswordInput($any($event.target).value)" required>
           <div class="pwd-checks">
             <span [class.check-ok]="pwdChecks.length">{{ pwdChecks.length ? '✓' : '○' }} 8+ characters</span>
             <span [class.check-ok]="pwdChecks.upper">{{ pwdChecks.upper ? '✓' : '○' }} Uppercase letter</span>
@@ -273,7 +341,8 @@
         </button>
       </form>
     </ng-container>
-    <p class="modal-switch" *ngIf="!signupSuccess">Already have an account? <a href="#" (click)="openLogin(); $event.preventDefault()">Log In</a></p>
+    <p class="modal-switch" *ngIf="!signupSuccess">Already have an account? <a href="#"
+        (click)="openLogin(); $event.preventDefault()">Log In</a></p>
   </div>
 </div>
 
@@ -285,18 +354,21 @@
       <div class="nav-brand">
         <button class="dash-hamburger" (click)="toggleSidebar()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/>
+            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" />
           </svg>
         </button>
         <div class="brand-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor"/>
+            <path
+              d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 15.96 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z"
+              fill="currentColor" />
           </svg>
         </div>
         <span class="brand-name">TraceCall</span>
       </div>
       <div class="nav-auth" style="gap:1rem;">
-        <span class="user-badge" style="font-size:.85rem;opacity:.8;">{{ dashboardCompany }} &middot; {{ dashboardCode }}</span>
+        <span class="user-badge" style="font-size:.85rem;opacity:.8;">{{ dashboardCompany }} &middot; {{ dashboardCode
+          }}</span>
         <button class="btn-login" (click)="logout()">Log Out</button>
       </div>
     </div>
@@ -308,16 +380,37 @@
 
     <!-- Sidebar -->
     <aside class="dash-sidebar" [class.active]="sidebarOpen">
-      <button class="sidebar-item" [class.active]="dashTab==='overview'" (click)="dashTab='overview'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2"/></svg>
+      <button class="sidebar-item" [class.active]="dashTab==='overview'"
+        (click)="dashTab='overview'; sidebarOpen=false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+          <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+          <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+          <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
+        </svg>
         Dashboard
       </button>
-      <button class="sidebar-item" [class.active]="dashTab==='employees'" (click)="dashTab='employees'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M2 21c0-4 3.134-7 7-7h4c3.866 0 7 3 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <button class="sidebar-item" [class.active]="dashTab==='employees'"
+        (click)="dashTab='employees'; sidebarOpen=false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
+          <path d="M2 21c0-4 3.134-7 7-7h4c3.866 0 7 3 7 7" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" />
+        </svg>
         Employees
       </button>
+      <button class="sidebar-item" [class.active]="dashTab==='reports'" (click)="dashTab='reports'; selectedPeriod='custom'; sidebarOpen=false">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M9 17h6M9 13h6m2 9a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2h10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Periodic Reports
+      </button>
       <button class="sidebar-item" [class.active]="dashTab==='company'" (click)="dashTab='company'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V21M3 21H21M9 7H11M9 11H11M9 15H11M13 7H15M13 11H15M13 15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V21M3 21H21M9 7H11M9 11H11M9 15H11M13 7H15M13 11H15M13 15H15"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
         Company
       </button>
     </aside>
@@ -329,7 +422,8 @@
         <div class="dash-header-row">
           <h2 class="dash-title">Call Overview</h2>
           <div class="period-tabs">
-            <button *ngFor="let p of periods" [class.active]="selectedPeriod===p.key" (click)="onPeriodChange(p.key)">{{ p.label }}</button>
+            <button *ngFor="let p of periods" [class.active]="selectedPeriod===p.key" (click)="onPeriodChange(p.key)">{{
+              p.label }}</button>
           </div>
         </div>
 
@@ -343,11 +437,13 @@
             <label>To <span style="font-size:.7rem;opacity:.6;">(optional)</span></label>
             <input type="date" [(ngModel)]="customTo" [min]="customFrom" [max]="todayIso">
           </div>
-          <button class="cta-primary" style="padding:.42rem 1.1rem;font-size:.82rem;align-self:flex-end;" (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
+          <button class="cta-primary" style="padding:.42rem 1.1rem;font-size:.82rem;align-self:flex-end;"
+            (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
         </div>
 
         <div *ngIf="summaryLoading" class="dash-loading">Loading stats&hellip;</div>
-        <div *ngIf="!summaryLoading && !summaryStats" class="dash-empty">No call data synced yet for this period. Open the mobile app to sync.</div>
+        <div *ngIf="!summaryLoading && !summaryStats" class="dash-empty">No call data synced yet for this period. Open
+          the mobile app to sync.</div>
 
         <div class="dash-grid-layout" *ngIf="!summaryLoading && summaryStats">
 
@@ -362,13 +458,14 @@
               </div>
               <div class="kpi-progress">
                 <svg class="progress-ring" width="48" height="48">
-                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
-                  <circle class="progress-ring__circle val" stroke="var(--green)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
-                    [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.connectRate)"/>
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent"
+                    r="20" cx="24" cy="24" />
+                  <circle class="progress-ring__circle val" stroke="var(--green)" stroke-width="4" fill="transparent"
+                    r="20" cx="24" cy="24" [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.connectRate)" />
                 </svg>
                 <div class="kpi-progress-text"
-                     [style.color]="kpiMetrics.trends.connected >= 0 ? 'var(--green)' : 'var(--red)'">
+                  [style.color]="kpiMetrics.trends.connected >= 0 ? 'var(--green)' : 'var(--red)'">
                   {{ kpiMetrics.connectRate * 100 | number:'1.0-0' }}%
                 </div>
               </div>
@@ -377,17 +474,20 @@
             <!-- Card 2: Duration -->
             <div class="kpi-card">
               <div class="kpi-info">
-                <span class="kpi-val">{{ summaryStats.totalDuration ? (summaryStats.totalDuration / 60 | number:'1.0-0') : '0' }}m</span>
+                <span class="kpi-val">{{ summaryStats.totalDuration ? (summaryStats.totalDuration / 60 | number:'1.0-0')
+                  : '0' }}m</span>
                 <span class="kpi-label">Duration</span>
               </div>
               <div class="kpi-progress">
                 <svg class="progress-ring" width="48" height="48">
-                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
-                  <circle class="progress-ring__circle val" stroke="var(--pink)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
-                    [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.durationProgress)"/>
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent"
+                    r="20" cx="24" cy="24" />
+                  <circle class="progress-ring__circle val" stroke="var(--pink)" stroke-width="4" fill="transparent"
+                    r="20" cx="24" cy="24" [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.durationProgress)" />
                 </svg>
-                <div class="kpi-progress-text" [style.color]="kpiMetrics.trends.duration >= 0 ? 'var(--green)' : 'var(--red)'">
+                <div class="kpi-progress-text"
+                  [style.color]="kpiMetrics.trends.duration >= 0 ? 'var(--green)' : 'var(--red)'">
                   {{ kpiMetrics.trends.duration >= 0 ? '+' : '' }}{{ kpiMetrics.trends.duration }}%
                 </div>
               </div>
@@ -401,13 +501,14 @@
               </div>
               <div class="kpi-progress">
                 <svg class="progress-ring" width="48" height="48">
-                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
-                  <circle class="progress-ring__circle val" stroke="#84cc16" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
-                    [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.totalCallsProgress)"/>
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent"
+                    r="20" cx="24" cy="24" />
+                  <circle class="progress-ring__circle val" stroke="#84cc16" stroke-width="4" fill="transparent" r="20"
+                    cx="24" cy="24" [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.totalCallsProgress)" />
                 </svg>
                 <div class="kpi-progress-text" [style.color]="kpiMetrics.trends.total >= 0 ? '#84cc16' : '#ef4444'">
-                   {{ kpiMetrics.trends.total >= 0 ? '+' : '' }}{{ kpiMetrics.trends.total }}%
+                  {{ kpiMetrics.trends.total >= 0 ? '+' : '' }}{{ kpiMetrics.trends.total }}%
                 </div>
               </div>
             </div>
@@ -420,12 +521,14 @@
               </div>
               <div class="kpi-progress">
                 <svg class="progress-ring" width="48" height="48">
-                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"/>
-                  <circle class="progress-ring__circle val" stroke="#f87171" stroke-width="4" fill="transparent" r="20" cx="24" cy="24"
-                    [style.stroke-dasharray]="125.6"
-                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.missedRate)"/>
+                  <circle class="progress-ring__circle bg" stroke="var(--border)" stroke-width="4" fill="transparent"
+                    r="20" cx="24" cy="24" />
+                  <circle class="progress-ring__circle val" stroke="#f87171" stroke-width="4" fill="transparent" r="20"
+                    cx="24" cy="24" [style.stroke-dasharray]="125.6"
+                    [style.stroke-dashoffset]="125.6 - (125.6 * kpiMetrics.missedRate)" />
                 </svg>
-                <div class="kpi-progress-text" [style.color]="kpiMetrics.trends.missed <= 0 ? 'var(--green)' : 'var(--red)'">
+                <div class="kpi-progress-text"
+                  [style.color]="kpiMetrics.trends.missed <= 0 ? 'var(--green)' : 'var(--red)'">
                   {{ kpiMetrics.trends.missed >= 0 ? '+' : '' }}{{ kpiMetrics.trends.missed }}%
                 </div>
               </div>
@@ -442,22 +545,30 @@
               <!-- Card header -->
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
                 <div>
-                  <h3 style="font-size:1.15rem;color:var(--text-heading);margin:0 0 0.6rem 0;font-family:var(--font-head);font-weight:700;">Statistics</h3>
+                  <h3
+                    style="font-size:1.15rem;color:var(--text-heading);margin:0 0 0.6rem 0;font-family:var(--font-head);font-weight:700;">
+                    Statistics</h3>
                   <div style="display:flex;gap:2rem;">
                     <div>
-                      <div style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">{{ summaryStats.total }}</div>
+                      <div
+                        style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                        {{ summaryStats.total }}</div>
                       <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Total Calls</div>
                     </div>
                     <div>
-                      <div style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">{{ fmtAvgDur(summaryStats.totalDuration, summaryStats.connected) }}</div>
+                      <div
+                        style="font-size:1.4rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                        {{ fmtAvgDur(summaryStats.totalDuration, summaryStats.connected) }}</div>
                       <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Avg Duration</div>
                     </div>
                   </div>
                 </div>
                 <div class="period-toggle-pill">
                   <button [class.active]="selectedPeriod==='today'" (click)="onPeriodChange('today')">Today</button>
-                  <button [class.active]="selectedPeriod==='yesterday'" (click)="onPeriodChange('yesterday')">Yesterday</button>
-                  <button [class.active]="selectedPeriod==='lastweek'" (click)="onPeriodChange('lastweek')">Week</button>
+                  <button [class.active]="selectedPeriod==='yesterday'"
+                    (click)="onPeriodChange('yesterday')">Yesterday</button>
+                  <button [class.active]="selectedPeriod==='lastweek'"
+                    (click)="onPeriodChange('lastweek')">Week</button>
                 </div>
               </div>
 
@@ -471,10 +582,14 @@
                   </div>
                 </div>
                 <div class="donut-legend-grid">
-                  <div class="legend-item"><span class="lg-dot" style="background:#3b82f6;"></span><span class="lg-label">In</span><span class="lg-val">{{ summaryStats.incoming }}</span></div>
-                  <div class="legend-item"><span class="lg-dot" style="background:#22c55e;"></span><span class="lg-label">Out</span><span class="lg-val">{{ summaryStats.outgoing }}</span></div>
-                  <div class="legend-item"><span class="lg-dot" style="background:#f87171;"></span><span class="lg-label">Missed</span><span class="lg-val">{{ summaryStats.missed }}</span></div>
-                  <div class="legend-item"><span class="lg-dot" style="background:#f59e0b;"></span><span class="lg-label">Rej</span><span class="lg-val">{{ summaryStats.rejected }}</span></div>
+                  <div class="legend-item"><span class="lg-dot" style="background:#3b82f6;"></span><span
+                      class="lg-label">In</span><span class="lg-val">{{ summaryStats.incoming }}</span></div>
+                  <div class="legend-item"><span class="lg-dot" style="background:#22c55e;"></span><span
+                      class="lg-label">Out</span><span class="lg-val">{{ summaryStats.outgoing }}</span></div>
+                  <div class="legend-item"><span class="lg-dot" style="background:#f87171;"></span><span
+                      class="lg-label">Missed</span><span class="lg-val">{{ summaryStats.missed }}</span></div>
+                  <div class="legend-item"><span class="lg-dot" style="background:#f59e0b;"></span><span
+                      class="lg-label">Rej</span><span class="lg-val">{{ summaryStats.rejected }}</span></div>
                 </div>
               </div>
             </div>
@@ -482,8 +597,11 @@
             <!-- Top Employees card -->
             <div class="chart-card flex-1">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-                <h3 style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">Top Employees</h3>
-                <button class="pill-btn dark" (click)="dashTab='employees'">See All<span style="font-size:0.7rem;margin-left:4px;">-></span></button>
+                <h3
+                  style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">
+                  Top Employees</h3>
+                <button class="pill-btn dark" (click)="dashTab='employees'">See All<span
+                    style="font-size:0.7rem;margin-left:4px;">-></span></button>
               </div>
               <div class="top-list-table-container">
                 <table class="top-list-table">
@@ -496,21 +614,26 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let row of (employeeCallRows | slice:0:8)" style="cursor:pointer" (click)="selectEmployee(row.emp)">
+                    <tr *ngFor="let row of (employeeCallRows | slice:0:8)" style="cursor:pointer"
+                      (click)="selectEmployee(row.emp)">
                       <td>
                         <div class="emp-cell">
                           <div class="emp-avatar small shadow">{{ row.emp.name.charAt(0).toUpperCase() }}</div>
-                          <span style="font-weight:500;color:var(--text-2);font-size:0.85rem;">{{ row.emp.name || row.emp.mobile }}</span>
+                          <span style="font-weight:500;color:var(--text-2);font-size:0.85rem;">{{ row.emp.name ||
+                            row.emp.mobile }}</span>
                         </div>
                       </td>
                       <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.total || 0 }}</td>
-                      <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.totalDuration ? fmtDur(row.stats.totalDuration) : '0s' }}</td>
+                      <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.totalDuration ?
+                        fmtDur(row.stats.totalDuration) : '0s' }}</td>
                       <td style="text-align:center">
-                        <button class="pill-btn outline" (click)="openEmployee(row.emp); $event.stopPropagation()">View Details</button>
+                        <button class="pill-btn outline" (click)="openEmployee(row.emp); $event.stopPropagation()">View
+                          Details</button>
                       </td>
                     </tr>
                     <tr *ngIf="!employeeCallRows || !employeeCallRows.length">
-                      <td colspan="4" style="text-align:center;color:var(--text-3);padding:1.5rem 0;">No employee data</td>
+                      <td colspan="4" style="text-align:center;color:var(--text-3);padding:1.5rem 0;">No employee data
+                      </td>
                     </tr>
                   </tbody>
                 </table>
@@ -520,6 +643,118 @@
 
           </div><!-- /charts-row -->
 
+          <!-- ── BOTTOM STATS ROW ── -->
+          <div class="bottom-stats-grid"
+            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-top:1.5rem;">
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                {{ summaryStats.total }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Total Calls</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                {{ fmtDur(summaryStats.totalDuration) }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Call Duration</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--blue);font-family:var(--font-head);line-height:1.2;">
+                {{ summaryStats.incoming }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Incoming</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                {{ fmtDur(summaryStats.incomingDuration) }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Incoming Duration</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--green);font-family:var(--font-head);line-height:1.2;">
+                {{ summaryStats.outgoing }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Outgoing</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                {{ fmtDur(summaryStats.outgoingDuration) }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Outgoing Duration</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--red);font-family:var(--font-head);line-height:1.2;">
+                {{ summaryStats.missed }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Missed</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--pink);font-family:var(--font-head);line-height:1.2;">
+                {{ summaryStats.rejected }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Rejected</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                0</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Never Attended</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                {{ summaryStats.outgoing - summaryStats.connected > 0 ? summaryStats.outgoing - summaryStats.connected :
+                0 }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Not Pickup by Client
+              </div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                {{ employeeCallRows.length }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Unique Clients</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
+                {{ fmtDur(summaryStats.totalDuration) }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Working Hours</div>
+            </div>
+
+            <div class="kpi-card-mini"
+              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              <div
+                style="font-size:1.5rem;font-weight:700;color:var(--green);font-family:var(--font-head);line-height:1.2;">
+                {{ summaryStats.connected }}</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Connected Calls</div>
+            </div>
+
+          </div><!-- /bottom-stats-grid -->
+
         </div><!-- /dash-grid-layout -->
       </div><!-- /overview tab -->
 
@@ -528,36 +763,55 @@
         <div class="dash-header-row">
           <h2 class="dash-title">Employees</h2>
           <div style="display:flex;gap:8px;align-items:center;">
-            <button class="btn-login" style="padding:.45rem 1rem;font-size:.85rem;display:flex;align-items:center;gap:6px;" (click)="syncAll()" [disabled]="syncAllLoading">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" [style.animation]="syncAllLoading?'spin 0.8s linear infinite':''" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <button class="btn-login"
+              style="padding:.45rem 1rem;font-size:.85rem;display:flex;align-items:center;gap:6px;" (click)="syncAll()"
+              [disabled]="syncAllLoading">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                [style.animation]="syncAllLoading?'spin 0.8s linear infinite':''" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
               {{ syncAllLoading ? 'Syncing…' : 'Sync All' }}
             </button>
-            <button class="cta-primary" style="padding:.45rem 1rem;font-size:.85rem;" (click)="openAddEmployee()">+ Add</button>
+            <button class="cta-primary" style="padding:.45rem 1rem;font-size:.85rem;" (click)="openAddEmployee()">+
+              Add</button>
           </div>
         </div>
         <div *ngIf="employeesLoading" class="dash-loading">Loading&hellip;</div>
 
         <!-- Server error banner for employee list -->
         <div *ngIf="!employeesLoading && employeesError" class="dash-error-banner">
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
           <span>{{ employeesError }}</span>
           <button class="btn-retry" (click)="fetchEmployees()">Retry</button>
         </div>
 
         <!-- Call stats error banner -->
         <div *ngIf="!empCallLoading && empCallError && employees.length > 0" class="dash-error-banner dash-error-soft">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <span>{{ empCallError }}</span>
           <button class="btn-retry" (click)="fetchEmployeeCallRows()">Retry</button>
         </div>
 
-        <div *ngIf="!employeesLoading && !employeesError && employees.length===0" class="dash-empty">No employees yet. Click "Add" to get started.</div>
+        <div *ngIf="!employeesLoading && !employeesError && employees.length===0" class="dash-empty">No employees yet.
+          Click "Add" to get started.</div>
         <div class="emp-table-wrap" *ngIf="!employeesLoading && employees.length>0">
           <table class="emp-table">
             <thead>
               <tr>
-                <th>Employee</th><th>Code</th><th>Device</th><th>App Ver.</th>
-                <th>Last Call</th><th>Last Sync</th><th>Action</th>
+                <th>Employee</th>
+                <th>Code</th>
+                <th>Device</th>
+                <th>App Ver.</th>
+                <th>Last Call</th>
+                <th>Last Sync</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -565,19 +819,186 @@
                 <td (click)="openEmployee(emp)">
                   <div class="emp-cell">
                     <div class="emp-avatar">{{ emp.name.charAt(0).toUpperCase() }}</div>
-                    <div><div class="emp-name">{{ emp.name }}</div><div class="emp-phone">{{ emp.mobile }}</div></div>
+                    <div>
+                      <div class="emp-name">{{ emp.name }}</div>
+                      <div class="emp-phone">{{ emp.mobile }}</div>
+                    </div>
                   </div>
                 </td>
-                <td style="font-family:monospace;font-size:.8rem;color:var(--text-3);">{{ emp.employeeCode || '—' }}</td>
+                <td style="font-family:monospace;font-size:.8rem;color:var(--text-3);">{{ emp.employeeCode || '—' }}
+                </td>
                 <td style="font-size:.78rem;color:var(--text-3);white-space:nowrap;">{{ emp.deviceModel || '—' }}</td>
                 <td style="font-size:.78rem;color:var(--text-3);">{{ emp.appVersion || '—' }}</td>
-                <td style="font-size:.78rem;white-space:nowrap;" [style.color]="emp.lastCallTime ? 'var(--text-1)' : 'var(--text-3)'">{{ fmtDate(emp.lastCallTime) }}</td>
-                <td style="font-size:.78rem;white-space:nowrap;" [style.color]="emp.lastSyncTime ? 'var(--green)' : 'var(--text-3)'">{{ fmtDate(emp.lastSyncTime) }}</td>
+                <td style="font-size:.78rem;white-space:nowrap;"
+                  [style.color]="emp.lastCallTime ? 'var(--text-1)' : 'var(--text-3)'">{{ fmtDate(emp.lastCallTime) }}
+                </td>
+                <td style="font-size:.78rem;white-space:nowrap;"
+                  [style.color]="emp.lastSyncTime ? 'var(--green)' : 'var(--text-3)'">{{ fmtDate(emp.lastSyncTime) }}
+                </td>
                 <td>
                   <button class="action-btn" (click)="openEmployee(emp)" title="View details">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/><path d="M2 12C2 12 5.818 5 12 5s10 7 10 7-3.818 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="2"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2" />
+                      <path d="M2 12C2 12 5.818 5 12 5s10 7 10 7-3.818 7-10 7S2 12 2 12z" stroke="currentColor"
+                        stroke-width="2" />
+                    </svg>
                   </button>
                 </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ PERIODIC REPORTS TAB ══ -->
+      <div *ngIf="dashTab==='reports'">
+        <div class="dash-header-row" style="margin-bottom: 1rem;">
+          <h2 class="dash-title">Periodic Reports</h2>
+          <button class="cta-primary" (click)="exportToExcel()" style="padding: 0.6rem 1.25rem; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            EXPORT AS EXCEL
+          </button>
+        </div>
+
+        <!-- Advanced Filter Bar -->
+        <div class="reports-filter-card">
+          <div class="reports-filter-grid">
+            <div class="filter-field">
+              <label>From Date</label>
+              <input type="date" [(ngModel)]="customFrom">
+            </div>
+            <div class="filter-field">
+              <label>To Date</label>
+              <input type="date" [(ngModel)]="customTo">
+            </div>
+            <div class="filter-field">
+              <label>Select Employee Tags</label>
+              <select [(ngModel)]="filterTags">
+                <option value="">Select</option>
+                <option *ngFor="let t of tagOptions" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label>Select Employees</label>
+              <select [(ngModel)]="filterEmployees">
+                <option value="">Select</option>
+                <option *ngFor="let row of employeeCallRows" [value]="row.emp.mobile">{{ row.emp.name }}</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label>Select Call Type</label>
+              <select [(ngModel)]="filterCallType">
+                <option value="">Select</option>
+                <option *ngFor="let ct of callTypeOptions" [value]="ct">{{ ct }}</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label>Select Duration</label>
+              <select [(ngModel)]="filterDuration">
+                <option value="">Select</option>
+                <option *ngFor="let d of durationOptions" [value]="d">{{ d }}</option>
+              </select>
+            </div>
+            <div class="filter-field">
+              <label>Select Call Time</label>
+              <select [(ngModel)]="filterCallTime">
+                <option value="">Select</option>
+                <option *ngFor="let t of timeOptions" [value]="t">{{ t }}</option>
+              </select>
+            </div>
+            <div class="filter-actions">
+              <button class="btn-apply" (click)="applyCustomRange()">Apply</button>
+              <button class="btn-reset" (click)="resetFilters()">Reset</button>
+            </div>
+          </div>
+          <div class="filter-checkbox-row">
+            <label class="checkbox-container">
+              <input type="checkbox" [(ngModel)]="excludePhoneNumbers">
+              <span class="checkmark"></span>
+              Exclude Numbers Mentioned in <span style="color: var(--orange); font-weight: 500;">Exclude Phone Numbers</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-2); display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--orange);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          {{ (customFrom ? (customFrom | date:'dd MMM yyyy') : (todayIso | date:'dd MMM yyyy')) }}
+        </div>
+
+        <div *ngIf="empCallLoading" class="dash-loading">Loading report data&hellip;</div>
+        
+        <div class="report-table-wrap" *ngIf="!empCallLoading">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th rowspan="2" class="sticky-col">Sr. No.</th>
+                <th rowspan="2" class="sticky-col">Employee</th>
+                <th rowspan="2">Total Calls</th>
+                <th rowspan="2">Total Duration</th>
+                <th rowspan="2">Connected Calls</th>
+                <th rowspan="2">Conn. Calls Duration</th>
+                <th rowspan="2">Conn. Call Avg. Duration</th>
+                <th rowspan="2">Working Hours</th>
+                <th rowspan="2">Unique Clients</th>
+                <th rowspan="2">Unique Conn. Calls</th>
+                <th colspan="3" class="group-in">Incoming</th>
+                <th colspan="3" class="group-out">Outgoing</th>
+                <th colspan="1" class="group-miss">Missed</th>
+                <th colspan="1" class="group-rej">Rejected</th>
+                <th rowspan="2">Never Attended</th>
+                <th rowspan="2">Not Pickup by Client</th>
+                <th rowspan="2">Last Sync Time</th>
+              </tr>
+              <tr>
+                <th class="group-in">Total Call</th><th class="group-in">Total Duration</th><th class="group-in">Connected Calls</th>
+                <th class="group-out">Total Call</th><th class="group-out">Total Duration</th><th class="group-out">Connected Calls</th>
+                <th class="group-miss">Total Call</th>
+                <th class="group-rej">Total Call</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let row of employeeCallRows; let i = index">
+                <td class="sticky-col">{{ i + 1 }}</td>
+                <td class="sticky-col">
+                  <div style="font-weight:600;color:var(--text-1)">{{ row.emp.name || 'Unknown' }}</div>
+                  <div style="font-size:0.75rem;color:var(--text-3)">{{ row.emp.mobile }}</div>
+                </td>
+                
+                <td>{{ row.stats?.total || 0 }}</td>
+                <td>{{ fmtDur(row.stats?.totalDuration || 0) }}</td>
+                
+                <!-- Connected equals Incoming + Outgoing -->
+                <td>{{ (row.stats?.incoming || 0) + (row.stats?.outgoing || 0) }}</td>
+                <td>{{ fmtDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0)) }}</td>
+                <td>{{ fmtAvgDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0), (row.stats?.incoming || 0) + (row.stats?.outgoing || 0)) }}</td>
+                
+                <!-- Working Hours (mirrors total duration) -->
+                <td>{{ fmtDur(row.stats?.totalDuration || 0) }}</td>
+                
+                <td>0</td> <!-- Unique clients unavailable backend -->
+                <td>0</td> <!-- Unique conn unavailable backend -->
+                
+                <!-- INCOMING -->
+                <td>{{ row.stats?.incoming || 0 }}</td>
+                <td>{{ fmtDur(row.stats?.incomingDuration || 0) }}</td>
+                <td>{{ row.stats?.incoming || 0 }}</td>
+                
+                <!-- OUTGOING -->
+                <td>{{ row.stats?.outgoing || 0 }}</td>
+                <td>{{ fmtDur(row.stats?.outgoingDuration || 0) }}</td>
+                <td>{{ row.stats?.outgoing || 0 }}</td>
+                
+                <!-- MISSED / REJECTED -->
+                <td>{{ row.stats?.missed || 0 }}</td>
+                <td>{{ row.stats?.rejected || 0 }}</td>
+                
+                <!-- OTHER -->
+                <td>0</td> <!-- Never attended -->
+                <td>{{ ((row.stats?.outgoing || 0) - (row.stats?.outgoing || 0)) > 0 ? ((row.stats?.outgoing || 0) - (row.stats?.outgoing || 0)) : 0 }}</td> <!-- Not pickup -->
+                <td style="white-space:nowrap;font-size:0.8rem;color:var(--text-2);">{{ row.emp.lastSyncTime ? (row.emp.lastSyncTime | date:'dd MMM yyyy, hh:mm a') : 'Never' }}</td>
+              </tr>
+              <tr *ngIf="!employeeCallRows.length">
+                <td colspan="21" style="text-align:center;padding:3rem;color:var(--text-3);">No call report data available for this period.</td>
               </tr>
             </tbody>
           </table>
@@ -600,17 +1021,36 @@
               </div>
             </div>
             <div class="cc-details-grid">
-              <div class="cc-detail"><label>Admin Name</label><div>{{ companyProfile.name }}</div></div>
-              <div class="cc-detail"><label>Email Address</label><div>{{ companyProfile.email }}</div></div>
-              <div class="cc-detail"><label>Phone Number</label><div>{{ companyProfile.countryCode }} {{ companyProfile.mobile }}</div></div>
-              <div class="cc-detail"><label>Industry</label><div>{{ companyProfile.industry }}</div></div>
-              <div class="cc-detail"><label>Team Size</label><div>{{ companyProfile.teamSize }}</div></div>
-              <div class="cc-detail"><label>Member Since</label><div>{{ fmtDate(companyProfile.createdAt) }}</div></div>
+              <div class="cc-detail"><label>Admin Name</label>
+                <div>{{ companyProfile.name }}</div>
+              </div>
+              <div class="cc-detail"><label>Email Address</label>
+                <div>{{ companyProfile.email }}</div>
+              </div>
+              <div class="cc-detail"><label>Phone Number</label>
+                <div>{{ companyProfile.countryCode }} {{ companyProfile.mobile }}</div>
+              </div>
+              <div class="cc-detail"><label>Industry</label>
+                <div>{{ companyProfile.industry }}</div>
+              </div>
+              <div class="cc-detail"><label>Team Size</label>
+                <div>{{ companyProfile.teamSize }}</div>
+              </div>
+              <div class="cc-detail"><label>Member Since</label>
+                <div>{{ fmtDate(companyProfile.createdAt) }}</div>
+              </div>
               <div class="cc-detail full-width">
                 <label>
                   Address
                   <button class="cc-edit-btn" (click)="startEditAddress()" *ngIf="!editingAddress" title="Edit address">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5C18.8978 2.10217 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10217 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10217 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                      <path
+                        d="M18.5 2.5C18.8978 2.10217 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10217 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10217 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
                     Edit
                   </button>
                 </label>
@@ -619,11 +1059,14 @@
                   <span *ngIf="saveAddressSuccess" class="addr-success">✓ {{ saveAddressSuccess }}</span>
                 </div>
                 <div *ngIf="editingAddress" class="cc-address-edit">
-                  <input type="text" [(ngModel)]="editAddressValue" name="editAddr" placeholder="Enter company address…" class="cc-address-input">
+                  <input type="text" [(ngModel)]="editAddressValue" name="editAddr" placeholder="Enter company address…"
+                    class="cc-address-input">
                   <div class="cc-addr-error" *ngIf="saveAddressError">{{ saveAddressError }}</div>
                   <div class="cc-addr-actions">
-                    <button class="cta-primary" style="padding:.38rem .9rem;font-size:.8rem;" (click)="saveAddress()" [disabled]="saveAddressLoading">{{ saveAddressLoading ? 'Saving…' : 'Save' }}</button>
-                    <button class="btn-login" style="padding:.38rem .9rem;font-size:.8rem;" (click)="cancelEditAddress()">Cancel</button>
+                    <button class="cta-primary" style="padding:.38rem .9rem;font-size:.8rem;" (click)="saveAddress()"
+                      [disabled]="saveAddressLoading">{{ saveAddressLoading ? 'Saving…' : 'Save' }}</button>
+                    <button class="btn-login" style="padding:.38rem .9rem;font-size:.8rem;"
+                      (click)="cancelEditAddress()">Cancel</button>
                   </div>
                 </div>
               </div>
@@ -633,7 +1076,8 @@
           <div class="company-card">
             <h3 class="cc-title" style="margin-bottom:1.5rem;">Change Password</h3>
             <div class="form-error" *ngIf="changePwdError">{{ changePwdError }}</div>
-            <div *ngIf="changePwdSuccess" style="color:var(--green);font-weight:600;margin-bottom:1rem;">✓ {{ changePwdSuccess }}</div>
+            <div *ngIf="changePwdSuccess" style="color:var(--green);font-weight:600;margin-bottom:1rem;">✓ {{
+              changePwdSuccess }}</div>
             <form class="modal-form" (submit)="onChangePasswordSubmit($event)">
               <div class="form-group">
                 <label for="old-pwd">Current Password</label>
@@ -641,19 +1085,24 @@
               </div>
               <div class="form-group">
                 <label for="new-pwd">New Password</label>
-                <input type="password" id="new-pwd" [value]="changePwdForm.newPassword" (input)="onChangePwdInput($any($event.target).value)" name="newPwd" required>
+                <input type="password" id="new-pwd" [value]="changePwdForm.newPassword"
+                  (input)="onChangePwdInput($any($event.target).value)" name="newPwd" required>
                 <div class="pwd-checks" style="margin-top:8px;">
-                  <span [class.check-ok]="changePwdChecks.length">{{ changePwdChecks.length ? '✓' : '○' }} 8+ characters</span>
-                  <span [class.check-ok]="changePwdChecks.upper">{{ changePwdChecks.upper ? '✓' : '○' }} Uppercase letter</span>
+                  <span [class.check-ok]="changePwdChecks.length">{{ changePwdChecks.length ? '✓' : '○' }} 8+
+                    characters</span>
+                  <span [class.check-ok]="changePwdChecks.upper">{{ changePwdChecks.upper ? '✓' : '○' }} Uppercase
+                    letter</span>
                   <span [class.check-ok]="changePwdChecks.number">{{ changePwdChecks.number ? '✓' : '○' }} Number</span>
                   <span [class.check-ok]="changePwdChecks.symbol">{{ changePwdChecks.symbol ? '✓' : '○' }} Symbol</span>
                 </div>
               </div>
               <div class="form-group">
                 <label for="confirm-pwd">Confirm New Password</label>
-                <input type="password" id="confirm-pwd" [(ngModel)]="changePwdForm.confirmPassword" name="confPwd" required>
+                <input type="password" id="confirm-pwd" [(ngModel)]="changePwdForm.confirmPassword" name="confPwd"
+                  required>
               </div>
-              <button type="submit" class="cta-primary" [disabled]="changePwdLoading || !changePwdStrong" style="margin-top:1rem;">
+              <button type="submit" class="cta-primary" [disabled]="changePwdLoading || !changePwdStrong"
+                style="margin-top:1rem;">
                 {{ changePwdLoading ? 'Updating...' : 'Update Password' }}
               </button>
             </form>
@@ -673,17 +1122,25 @@
         <div style="flex:1">
           <div class="drilldown-name">{{ selectedEmployee.name }}</div>
           <div class="drilldown-phone">{{ selectedEmployee.mobile }} &middot; #{{ selectedEmployee.employeeCode }}</div>
-          <div style="font-size:.78rem;color:var(--text-3);margin-top:3px">{{ selectedEmployee.deviceModel || 'Device unknown' }} &bull; v{{ selectedEmployee.appVersion || '?' }}</div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-top:3px">{{ selectedEmployee.deviceModel || 'Device
+            unknown' }} &bull; v{{ selectedEmployee.appVersion || '?' }}</div>
         </div>
-        <button class="btn-login" style="padding:.35rem .8rem;font-size:.8rem;display:flex;align-items:center;gap:5px;" (click)="syncEmployee()" [disabled]="syncEmpLoading">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" [style.animation]="syncEmpLoading?'spin 0.8s linear infinite':''" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <button class="btn-login" style="padding:.35rem .8rem;font-size:.8rem;display:flex;align-items:center;gap:5px;"
+          (click)="syncEmployee()" [disabled]="syncEmpLoading">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+            [style.animation]="syncEmpLoading?'spin 0.8s linear infinite':''" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
           {{ syncEmpLoading ? 'Syncing…' : 'Sync' }}
         </button>
       </div>
       <div class="period-tabs" style="margin:1.1rem 0 0.5rem;">
-        <button *ngFor="let p of periods" [class.active]="selectedPeriod===p.key" (click)="onPeriodChange(p.key)">{{ p.label }}</button>
+        <button *ngFor="let p of periods" [class.active]="selectedPeriod===p.key" (click)="onPeriodChange(p.key)">{{
+          p.label }}</button>
       </div>
-      <div class="custom-range-row" *ngIf="selectedPeriod==='custom'" style="margin:0.75rem 0 1rem;padding:.75rem 1rem;">
+      <div class="custom-range-row" *ngIf="selectedPeriod==='custom'"
+        style="margin:0.75rem 0 1rem;padding:.75rem 1rem;">
         <div class="cr-field">
           <label>From</label>
           <input type="date" [(ngModel)]="customFrom" [max]="todayIso">
@@ -692,35 +1149,49 @@
           <label>To <span style="font-size:.7rem;opacity:.6;">(optional)</span></label>
           <input type="date" [(ngModel)]="customTo" [min]="customFrom" [max]="todayIso">
         </div>
-        <button class="cta-primary" style="padding:.38rem .9rem;font-size:.8rem;align-self:flex-end;" (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
+        <button class="cta-primary" style="padding:.38rem .9rem;font-size:.8rem;align-self:flex-end;"
+          (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
       </div>
       <div class="drilldown-tabs">
         <button [class.active]="drilldownTab==='stats'" (click)="drilldownTab='stats'">Summary</button>
-        <button [class.active]="drilldownTab==='calls'" (click)="drilldownTab='calls'">Call History <span class="badge-count" *ngIf="selectedEmpCalls.length">{{ selectedEmpCalls.length }}</span></button>
+        <button [class.active]="drilldownTab==='calls'" (click)="drilldownTab='calls'">Call History <span
+            class="badge-count" *ngIf="selectedEmpCalls.length">{{ selectedEmpCalls.length }}</span></button>
       </div>
       <div *ngIf="drilldownTab==='stats'">
         <div *ngIf="selectedEmpLoading" class="dash-loading">Loading&hellip;</div>
-        <div *ngIf="!selectedEmpLoading && !selectedEmpStats" class="dash-empty" style="padding:1.5rem;">No data for this period.</div>
+        <div *ngIf="!selectedEmpLoading && !selectedEmpStats" class="dash-empty" style="padding:1.5rem;">No data for
+          this period.</div>
         <div class="drilldown-stats" *ngIf="!selectedEmpLoading && selectedEmpStats">
-          <div class="ds-row"><span class="ds-label">Total Calls</span><span class="ds-val">{{ selectedEmpStats.total }}</span></div>
-          <div class="ds-row"><span class="ds-label">Call Duration</span><span class="ds-val">{{ fmtDur(selectedEmpStats.totalDuration) }}</span></div>
-          <div class="ds-row in-row"><span class="ds-label">Incoming</span><span class="ds-val">{{ selectedEmpStats.incoming }}</span></div>
-          <div class="ds-row in-row"><span class="ds-label">Incoming Duration</span><span class="ds-val">{{ fmtDur(selectedEmpStats.incomingDuration) }}</span></div>
-          <div class="ds-row out-row"><span class="ds-label">Outgoing</span><span class="ds-val">{{ selectedEmpStats.outgoing }}</span></div>
-          <div class="ds-row out-row"><span class="ds-label">Outgoing Duration</span><span class="ds-val">{{ fmtDur(selectedEmpStats.outgoingDuration) }}</span></div>
-          <div class="ds-row miss-row"><span class="ds-label">Missed</span><span class="ds-val">{{ selectedEmpStats.missed }}</span></div>
-          <div class="ds-row rej-row"><span class="ds-label">Rejected</span><span class="ds-val">{{ selectedEmpStats.rejected }}</span></div>
-          <div class="ds-row conn-row"><span class="ds-label">Connected</span><span class="ds-val">{{ selectedEmpStats.connected }}</span></div>
+          <div class="ds-row"><span class="ds-label">Total Calls</span><span class="ds-val">{{ selectedEmpStats.total
+              }}</span></div>
+          <div class="ds-row"><span class="ds-label">Call Duration</span><span class="ds-val">{{
+              fmtDur(selectedEmpStats.totalDuration) }}</span></div>
+          <div class="ds-row in-row"><span class="ds-label">Incoming</span><span class="ds-val">{{
+              selectedEmpStats.incoming }}</span></div>
+          <div class="ds-row in-row"><span class="ds-label">Incoming Duration</span><span class="ds-val">{{
+              fmtDur(selectedEmpStats.incomingDuration) }}</span></div>
+          <div class="ds-row out-row"><span class="ds-label">Outgoing</span><span class="ds-val">{{
+              selectedEmpStats.outgoing }}</span></div>
+          <div class="ds-row out-row"><span class="ds-label">Outgoing Duration</span><span class="ds-val">{{
+              fmtDur(selectedEmpStats.outgoingDuration) }}</span></div>
+          <div class="ds-row miss-row"><span class="ds-label">Missed</span><span class="ds-val">{{
+              selectedEmpStats.missed }}</span></div>
+          <div class="ds-row rej-row"><span class="ds-label">Rejected</span><span class="ds-val">{{
+              selectedEmpStats.rejected }}</span></div>
+          <div class="ds-row conn-row"><span class="ds-label">Connected</span><span class="ds-val">{{
+              selectedEmpStats.connected }}</span></div>
         </div>
         <div class="drilldown-meta" *ngIf="selectedEmployee">
           <div class="dm-row"><span>Registered</span><span>{{ fmtDate(selectedEmployee.createdAt) }}</span></div>
           <div class="dm-row"><span>Last Call</span><span>{{ fmtDate(selectedEmployee.lastCallTime) }}</span></div>
-          <div class="dm-row"><span>Last Sync</span><span style="color:var(--green)">{{ fmtDate(selectedEmployee.lastSyncTime) }}</span></div>
+          <div class="dm-row"><span>Last Sync</span><span style="color:var(--green)">{{
+              fmtDate(selectedEmployee.lastSyncTime) }}</span></div>
         </div>
       </div>
       <div *ngIf="drilldownTab==='calls'">
         <div *ngIf="selectedEmpCallsLoading" class="dash-loading">Loading calls&hellip;</div>
-        <div *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length===0" class="dash-empty" style="padding:1.5rem;">No individual call data.</div>
+        <div *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length===0" class="dash-empty" style="padding:1.5rem;">
+          No individual call data.</div>
         <div class="call-history-list" *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length>0">
           <div class="ch-item" *ngFor="let c of selectedEmpCalls">
             <span class="ch-type-badge" [class]="c.callType">{{ c.callType }}</span>
@@ -758,16 +1229,19 @@
     <div class="modal-brand" style="justify-content:flex-start;margin-bottom:1.5rem;">
       <h2 class="modal-title" style="margin:0;">Add Agent</h2>
     </div>
-    <p class="modal-subtitle" style="text-align:left;margin-bottom:2rem;">Add a new employee to your trace logging system.</p>
+    <p class="modal-subtitle" style="text-align:left;margin-bottom:2rem;">Add a new employee to your trace logging
+      system.</p>
     <div class="form-error" *ngIf="addEmployeeError">{{ addEmployeeError }}</div>
     <form class="modal-form" (submit)="onAddEmployeeSubmit($event)">
       <div class="form-group">
         <label for="emp-name">Full Name <span class="req">*</span></label>
-        <input type="text" id="emp-name" placeholder="Agent Name" [(ngModel)]="newEmployee.name" name="empName" required>
+        <input type="text" id="emp-name" placeholder="Agent Name" [(ngModel)]="newEmployee.name" name="empName"
+          required>
       </div>
       <div class="form-group">
         <label for="emp-mobile">Phone Number <span class="req">*</span></label>
-        <input type="tel" id="emp-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="newEmployee.mobile" name="empMobile" required>
+        <input type="tel" id="emp-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="newEmployee.mobile"
+          name="empMobile" required>
       </div>
       <button type="submit" class="btn-signup modal-submit" [disabled]="addEmployeeLoading" style="width:100%;">
         {{ addEmployeeLoading ? 'Adding...' : 'Add Employee' }}

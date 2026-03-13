@@ -1,14 +1,15 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { NgIf, NgFor, SlicePipe, DecimalPipe } from '@angular/common';
+import { NgIf, NgFor, SlicePipe, DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartType, registerables } from 'chart.js';
 import { AuthService, RegisterPayload, LoginPayload } from './services/auth.service';
 import { EmployeeService, Employee } from './services/employee.service';
 import { CallLogService, CallStats } from './services/calllog.service';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-root',
-  imports: [NgIf, NgFor, FormsModule, SlicePipe, DecimalPipe],
+  imports: [NgIf, NgFor, FormsModule, SlicePipe, DecimalPipe, DatePipe],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   encapsulation: ViewEncapsulation.None
@@ -55,12 +56,25 @@ export class AppComponent implements OnInit {
   isSignupOpen = false;
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'employees' | 'company' = 'overview';
+  dashTab: 'overview' | 'employees' | 'reports' | 'company' = 'overview';
+
+  // ── Advanced Filters ──────────────────────────────────────
+  filterTags = '';
+  filterEmployees = '';
+  filterCallType = '';
+  filterDuration = '';
+  filterCallTime = '';
+  excludePhoneNumbers = false;
+
+  tagOptions = ['Sales', 'Support', 'Admin', 'Marketing'];
+  callTypeOptions = ['Incoming', 'Outgoing', 'Missed', 'Rejected'];
+  durationOptions = ['< 1 min', '1-5 min', '> 5 min'];
+  timeOptions = ['Morning', 'Afternoon', 'Evening', 'Night'];
 
   // ── Period selector ────────────────────────────────────────
   selectedPeriod: 'today' | 'yesterday' | 'lastweek' | 'custom' = 'today';
-  customFrom = '';
-  customTo = '';
+  customFrom = new Date().toISOString().split('T')[0];
+  customTo = new Date().toISOString().split('T')[0];
   readonly periods = [
     { key: 'today', label: 'Today' },
     { key: 'yesterday', label: 'Yesterday' },
@@ -459,6 +473,7 @@ export class AppComponent implements OnInit {
 
   applyCustomRange(): void {
     if (!this.customFrom) return;
+    this.selectedPeriod = 'custom';
     this.fetchSummary();
     this.fetchEmployeeCallRows();
     if (this.selectedEmployee) this.openEmployee(this.selectedEmployee);
@@ -1068,5 +1083,49 @@ export class AppComponent implements OnInit {
         this.changePwdError = err?.error?.message || 'Server error.';
       }
     });
+  }
+
+  exportToExcel(): void {
+    const data = this.employeeCallRows.map((row, index) => ({
+      'Sr. No.': index + 1,
+      'Employee': `${row.emp.name} (${row.emp.mobile})`,
+      'Total Calls': row.stats?.total || 0,
+      'Total Duration': this.fmtDur(row.stats?.totalDuration || 0),
+      'Connected Calls': (row.stats?.incoming || 0) + (row.stats?.outgoing || 0),
+      'Conn. Calls Duration': this.fmtDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0)),
+      'Conn. Call Avg. Duration': this.fmtAvgDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0), (row.stats?.incoming || 0) + (row.stats?.outgoing || 0)),
+      'Working Hours': this.fmtDur(row.stats?.totalDuration || 0),
+      'Unique Clients': 0,
+      'Unique Conn. Calls': 0,
+      'Incoming Total': row.stats?.incoming || 0,
+      'Incoming Duration': this.fmtDur(row.stats?.incomingDuration || 0),
+      'Incoming Connected': row.stats?.incoming || 0,
+      'Outgoing Total': row.stats?.outgoing || 0,
+      'Outgoing Duration': this.fmtDur(row.stats?.outgoingDuration || 0),
+      'Outgoing Connected': row.stats?.outgoing || 0,
+      'Missed Total': row.stats?.missed || 0,
+      'Rejected Total': row.stats?.rejected || 0,
+      'Never Attended': 0,
+      'Not Pickup by Client': 0,
+      'Last Sync Time': row.emp.lastSyncTime ? new Date(row.emp.lastSyncTime).toLocaleString('en-IN') : 'Never'
+    }));
+
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Employee Summary');
+    XLSX.writeFile(wb, `Employee_Summary_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
+  }
+
+  resetFilters(): void {
+    this.filterTags = '';
+    this.filterEmployees = '';
+    this.filterCallType = '';
+    this.filterDuration = '';
+    this.filterCallTime = '';
+    this.excludePhoneNumbers = false;
+    this.customFrom = '';
+    this.customTo = '';
+    this.selectedPeriod = 'today';
+    this.onPeriodChange('today');
   }
 }
