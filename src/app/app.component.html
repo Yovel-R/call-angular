@@ -297,15 +297,16 @@
           <div class="form-group">
             <label for="su-mobile">Mobile Number <span class="req">*</span></label>
             <div class="mobile-input-wrap">
-              <select class="mobile-prefix-select" [(ngModel)]="signupForm.countryCode" name="suCountryCode" required>
-                <option value="+91">🇮🇳 +91</option>
-                <option value="+1">🇺🇸 +1</option>
-                <option value="+44">🇬🇧 +44</option>
-                <option value="+61">🇦🇺 +61</option>
-                <option value="+971">🇦🇪 +971</option>
-              </select>
-              <input type="tel" id="su-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="signupForm.mobile"
-                name="suMobile" required>
+              <div class="mobile-prefix-wrap">
+                <select class="mobile-prefix-select" [(ngModel)]="signupForm.countryCode" name="suCountryCode" required>
+                  <option value="+91">🇮🇳 +91</option>
+                  <option value="+1">🇺🇸 +1</option>
+                  <option value="+44">🇬🇧 +44</option>
+                  <option value="+61">🇦🇺 +61</option>
+                  <option value="+971">🇦🇪 +971</option>
+                </select>
+              </div>
+              <input type="tel" id="su-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="signupForm.mobile" name="suMobile" required>
             </div>
           </div>
         </div>
@@ -1426,11 +1427,14 @@
 <div class="modal-overlay" [class.open]="isAddEmployeeOpen" (click)="closeAddEmployee()">
   <div class="modal" (click)="$event.stopPropagation()">
     <button class="modal-close" (click)="closeAddEmployee()">&#x2715;</button>
-    <div class="modal-brand" style="justify-content:flex-start;margin-bottom:1.5rem;">
-      <h2 class="modal-title" style="margin:0;">Add Agent</h2>
+    <div class="modal-brand">
+      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor" />
+        </svg></div>
+      <span class="brand-name">TraceCall</span>
     </div>
-    <p class="modal-subtitle" style="text-align:left;margin-bottom:2rem;">Add a new employee to your trace logging
-      system.</p>
+    <h2 class="modal-title">Add Agent</h2>
+    <p class="modal-subtitle">Add a new employee to your trace logging system.</p>
     <div class="form-error" *ngIf="addEmployeeError">{{ addEmployeeError }}</div>
     <form class="modal-form" (submit)="onAddEmployeeSubmit($event)">
       <div class="form-group">
@@ -1440,12 +1444,14 @@
       </div>
       <div class="form-group">
         <label for="emp-mobile">Phone Number <span class="req">*</span></label>
-        <div style="display: flex; gap: 8px;">
-          <select [(ngModel)]="newEmployee.countryCode" name="empCC" style="width: 100px; border: 1px solid var(--border); border-radius: 12px; padding: 0.75rem; background: var(--bg-card); color: var(--text-1); font-size: 0.9rem;">
-            <option *ngFor="let c of countryCodes" [value]="c.code">{{ c.code }} ({{ c.name }})</option>
-          </select>
+        <div class="mobile-input-wrap">
+          <div class="mobile-prefix-wrap">
+            <select class="mobile-prefix-select" [(ngModel)]="newEmployee.countryCode" name="empCC" required>
+              <option *ngFor="let c of countryCodes" [value]="c.code">{{ c.flag }} {{ c.code }}</option>
+            </select>
+          </div>
           <input type="tel" id="emp-mobile" placeholder="9876543210" maxlength="15" [(ngModel)]="newEmployee.mobile"
-            name="empMobile" required style="flex: 1;">
+            name="empMobile" required>
         </div>
       </div>
       <button type="submit" class="btn-signup modal-submit" [disabled]="addEmployeeLoading" style="width:100%;">
@@ -1506,17 +1512,14 @@
 <div class="modal-overlay" [class.open]="isEditEmployeeOpen" (click)="closeEditEmployee()">
   <div class="modal" (click)="$event.stopPropagation()" style="max-width: 450px;">
     <button class="modal-close" (click)="closeEditEmployee()">&#x2715;</button>
-    <div class="modal-brand" style="margin-bottom: 2rem;">
-      <div class="modal-icon" style="background: var(--purple-fade); color: var(--purple); flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-      </div>
-      <div>
-        <h2 class="modal-title" style="margin-bottom: 2px;">Edit Employee</h2>
-        <p class="modal-subtitle" style="margin-bottom: 0; opacity: 0.8; font-size: 0.85rem;">Update employee name, phone, and tags.</p>
-      </div>
+    <div class="modal-brand">
+      <div class="brand-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M6.62 10.79C8.06 13.62 10.38 15.93 13.21 17.38L15.41 15.18C15.68 14.91 16.08 14.82 16.43 14.94C17.55 15.31 18.76 15.51 20 15.51C20.55 15.51 21 16.51V20C21 20.55 20.55 21 20 21C10.61 21 3 13.39 3 4C3 3.45 3.45 3 4 3H7.5C8.05 3 8.5 3.45 8.5 4C8.5 5.25 8.7 6.45 9.07 7.57C9.18 7.92 9.1 8.31 8.82 8.59L6.62 10.79Z" fill="currentColor" />
+        </svg></div>
+      <span class="brand-name">TraceCall</span>
     </div>
+    <h2 class="modal-title">Edit Employee</h2>
+    <p class="modal-subtitle">Update employee name, phone, and tags.</p>
 
     <form class="modal-form" (submit)="onEditEmployeeSubmit($event)">
       <div class="form-error" *ngIf="editEmployeeError">{{ editEmployeeError }}</div>
@@ -1531,9 +1534,13 @@
 
       <div class="form-group">
         <label for="edit-emp-mobile">Phone Number</label>
-        <div class="input-with-icon">
+        <div class="mobile-input-wrap">
+          <div class="mobile-prefix-wrap">
+            <select class="mobile-prefix-select" [(ngModel)]="editingEmployee.countryCode" name="editCC" required>
+              <option *ngFor="let c of countryCodes" [value]="c.code">{{ c.flag }} {{ c.code }}</option>
+            </select>
+          </div>
           <input type="text" id="edit-emp-mobile" [(ngModel)]="editingEmployee.mobile" name="mobile" placeholder="Enter phone number" required />
-          <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         </div>
       </div>
 

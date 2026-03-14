@@ -130,12 +130,12 @@ export class AppComponent implements OnInit {
   addEmployeeError = '';
   newEmployee = { name: '', mobile: '', countryCode: '+91' };
   countryCodes = [
-    { name: 'India', code: '+91' },
-    { name: 'USA', code: '+1' },
-    { name: 'UK', code: '+44' },
-    { name: 'UAE', code: '+971' },
-    { name: 'Australia', code: '+61' },
-    { name: 'Singapore', code: '+65' }
+    { name: 'India', code: '+91', flag: '🇮🇳' },
+    { name: 'USA', code: '+1', flag: '🇺🇸' },
+    { name: 'UK', code: '+44', flag: '🇬🇧' },
+    { name: 'UAE', code: '+971', flag: '🇦🇪' },
+    { name: 'Australia', code: '+61', flag: '🇦🇺' },
+    { name: 'Singapore', code: '+65', flag: '🇸🇬' }
   ];
 
   isEditEmployeeOpen = false;
