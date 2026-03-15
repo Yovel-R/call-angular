@@ -12,7 +12,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-  height: 68px;
+  height: 85px;
   display: flex;
   align-items: center;
   gap: 2rem;
@@ -27,14 +27,17 @@
 }
 
 .brand-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, var(--accent), var(--purple));
-  border-radius: 10px;
+  width: 160px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+}
+
+.brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .brand-name {
@@ -1629,7 +1632,7 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--purple));
+  background: var(--purple);
   color: white;
   display: flex;
   align-items: center;
