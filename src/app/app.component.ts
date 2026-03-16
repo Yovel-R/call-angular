@@ -1,15 +1,16 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { NgIf, NgFor, SlicePipe, DecimalPipe, DatePipe } from '@angular/common';
+import { NgIf, NgFor, NgClass, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartType, registerables } from 'chart.js';
 import { AuthService, RegisterPayload, LoginPayload } from './services/auth.service';
 import { EmployeeService, Employee } from './services/employee.service';
 import { CallLogService, CallStats } from './services/calllog.service';
+import { PaymentService } from './services/payment.service';
 import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-root',
-  imports: [NgIf, NgFor, FormsModule, SlicePipe, DecimalPipe, DatePipe],
+  imports: [NgIf, NgFor, NgClass, FormsModule, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css',
   encapsulation: ViewEncapsulation.None
@@ -26,6 +27,33 @@ export class AppComponent implements OnInit {
   signupSuccess = false;
   signupLoading = false;
   isTrialRequest = false;
+
+  // ── Payment ────────────────────────────────────────────────
+  paymentToDate = '';
+  paymentCostPreview: { days: number; teamSizeMax: number; amountRupees: number } | null = null;
+  paymentCostLoading = false;
+  paymentStep: 'idle' | 'paying' | 'done' = 'idle';
+  pendingCompanyCode = '';
+  paymentHistory: any[] = [];
+  paymentHistoryLoading = false;
+  renewToDate = '';
+  renewCostPreview: { days: number; teamSizeMax: number; amountRupees: number } | null = null;
+  renewLoading = false;
+
+  get minToDate(): string {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  }
+
+  get subscriptionExpired(): boolean {
+    if (!this.companyProfile) return false;
+    if (this.companyProfile.status === 'On due') return true;
+    if (this.companyProfile.subscriptionTo) {
+      return new Date(this.companyProfile.subscriptionTo) < new Date();
+    }
+    return false;
+  }
 
   openTrialSignup(): void {
     this.isTrialRequest = true;
@@ -224,6 +252,7 @@ export class AppComponent implements OnInit {
     private authService: AuthService,
     private employeeService: EmployeeService,
     private callLogService: CallLogService,
+    private paymentService: PaymentService,
   ) { }
 
   ngOnInit(): void {
@@ -286,6 +315,7 @@ export class AppComponent implements OnInit {
     this.companyProfileLoading = true;
     this.fetchCompanyProfile();
     this.fetchEmployees();
+    this.fetchPaymentHistory();
     // Preload past 7 days data on load to avoid spinners when toggling periods
     this.preloadDashboardData();
   }
@@ -981,17 +1011,169 @@ export class AppComponent implements OnInit {
     event.preventDefault();
     this.signupError = '';
     if (!this.passwordStrong) { this.signupError = 'Password does not meet strength requirements.'; return; }
-    this.signupLoading = true;
-    this.authService.register({ ...this.signupForm, isTrial: this.isTrialRequest }).subscribe({
+
+    if (this.isTrialRequest) {
+      // Trial flow: create account immediately
+      this.signupLoading = true;
+      this.authService.register({ ...this.signupForm, isTrial: true }).subscribe({
+        next: (res) => {
+          this.signupLoading = false;
+          if (res.success) this.signupSuccess = true;
+          else this.signupError = res.message;
+        },
+        error: (err) => {
+          this.signupLoading = false;
+          this.signupError = err?.error?.message || 'Something went wrong.';
+        },
+      });
+    } else {
+      // Paid flow: payment FIRST, account creation only after payment succeeds
+      if (!this.paymentToDate) { this.signupError = 'Please select a subscription end date.'; return; }
+      this.signupLoading = true;
+      this.launchNewAccountPayment();
+    }
+  }
+
+  /** PAYMENT-FIRST: Creates order via pre-order, opens Razorpay, account created only on success */
+  launchNewAccountPayment(): void {
+    this.paymentStep = 'paying';
+    this.paymentService.createPreOrder({
+      ...this.signupForm,
+      toDate: this.paymentToDate,
+    }).subscribe({
+      next: (order: any) => {
+        this.signupLoading = false;
+        if (!order.success) {
+          this.signupError = 'Failed to create payment order.';
+          this.paymentStep = 'idle';
+          return;
+        }
+        this.openRazorpay(order, false);
+      },
+      error: (err: any) => {
+        this.signupLoading = false;
+        this.signupError = err?.error?.message || 'Failed to connect to payment server.';
+        this.paymentStep = 'idle';
+      }
+    });
+  }
+
+  openRazorpay(order: any, isRenewal: boolean): void {
+    const options = {
+      key: order.keyId,
+      amount: order.amount,
+      currency: order.currency,
+      name: 'Softrate Record',
+      description: `Subscription — ${order.days} days`,
+      order_id: order.orderId,
+      prefill: { name: order.companyName, email: order.email, contact: order.mobile },
+      theme: { color: '#6366f1' },
+      handler: (response: any) => {
+        if (isRenewal) {
+          this.paymentService.verifyRenewal({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            companyCode: this.dashboardCode,
+          }).subscribe({
+            next: (res: any) => {
+              this.renewLoading = false;
+              if (res.success && this.companyProfile) {
+                this.paymentStep = 'done';
+                this.companyProfile.subscriptionTo = res.subscriptionTo;
+                this.companyProfile.subscriptionFrom = res.subscriptionFrom;
+                this.companyProfile.status = 'Paid';
+                this.renewCostPreview = null;
+                this.renewToDate = '';
+                this.fetchPaymentHistory();
+              }
+            },
+            error: () => { this.renewLoading = false; this.paymentStep = 'idle'; }
+          });
+        } else {
+          this.paymentService.verifyNewAccount({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+          }).subscribe({
+            next: (res: any) => {
+              if (res.success) {
+                this.paymentStep = 'done';
+                this.signupSuccess = true;
+              }
+            },
+            error: () => { this.paymentStep = 'idle'; }
+          });
+        }
+      },
+      modal: { ondismiss: () => { this.paymentStep = 'idle'; this.signupLoading = false; this.renewLoading = false; } }
+    };
+    const win = window as any;
+    if (win.Razorpay) {
+      new win.Razorpay(options).open();
+    } else {
+      alert('Razorpay SDK not loaded. Please refresh and try again.');
+      this.paymentStep = 'idle';
+      this.signupLoading = false;
+    }
+  }
+
+  renewSubscription(): void {
+    if (!this.renewToDate || !this.dashboardCode) return;
+    this.renewLoading = true;
+    this.paymentService.createRenewalOrder(this.dashboardCode, this.renewToDate).subscribe({
+      next: (order: any) => {
+        if (!order.success) { this.renewLoading = false; return; }
+        this.openRazorpay(order, true);
+      },
+      error: () => { this.renewLoading = false; }
+    });
+  }
+
+  onRenewToDateChange(): void {
+    if (!this.renewToDate || !this.companyProfile?.teamSize) {
+      this.renewCostPreview = null;
+      return;
+    }
+    const from = new Date();
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(this.renewToDate);
+    to.setHours(23, 59, 59, 999);
+    const days = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    
+    const teamSizeVal = parseInt(this.companyProfile.teamSize.toString(), 10);
+    const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
+    
+    this.renewCostPreview = { days, teamSizeMax, amountRupees: teamSizeMax * 10 * days };
+  }
+
+  onToDateChange(): void {
+    if (!this.paymentToDate || !this.signupForm.teamSize) {
+      this.paymentCostPreview = null;
+      return;
+    }
+    const from = new Date();
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(this.paymentToDate);
+    to.setHours(23, 59, 59, 999);
+    const days = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // teamSize is now a direct number input, fallback to 10 if invalid
+    const teamSizeVal = parseInt(this.signupForm.teamSize.toString(), 10);
+    const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
+    
+    this.paymentCostPreview = { days, teamSizeMax, amountRupees: teamSizeMax * 10 * days };
+  }
+
+  fetchPaymentHistory(): void {
+    if (!this.dashboardCode) return;
+    this.paymentHistoryLoading = true;
+    this.paymentService.getHistory(this.dashboardCode).subscribe({
       next: (res) => {
-        this.signupLoading = false;
-        if (res.success) this.signupSuccess = true;
-        else this.signupError = res.message;
+        this.paymentHistoryLoading = false;
+        if (res.success) this.paymentHistory = res.payments;
       },
-      error: (err) => {
-        this.signupLoading = false;
-        this.signupError = err?.error?.message || 'Something went wrong.';
-      },
+      error: () => { this.paymentHistoryLoading = false; }
     });
   }
 
