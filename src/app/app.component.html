@@ -1204,8 +1204,86 @@
             </div>
           </div>
 
+          <!-- Tag Management Card -->
+          <div class="company-card">
+            <h3 class="cc-title" style="margin-bottom:0.5rem;">Tag Management</h3>
+            <p style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 1.5rem;">Create and manage tags to
+              organize your employees into groups like Sales, Support, etc.</p>
+
+            <div *ngIf="tagManagementError" class="form-error" style="margin-bottom: 1rem;">{{ tagManagementError }}
+            </div>
+            <div *ngIf="tagManagementSuccess"
+              style="color:var(--green);font-weight:600;margin-bottom:1rem;font-size:0.85rem;">✓ {{ tagManagementSuccess
+              }}</div>
+
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <div style="display: flex; gap: 0.75rem;">
+                <input type="text" placeholder="Enter new tag name..."
+                  style="flex: 1; border: 1px solid var(--border); padding: 0.7rem; border-radius: 10px; font-size: 0.85rem;"
+                  [(ngModel)]="newTagInput" (keyup.enter)="addTag()">
+                <button (click)="addTag()" class="cta-primary"
+                  style="padding: 0 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.85rem;"
+                  [disabled]="tagManagementLoading">
+                  {{ tagManagementLoading ? '...' : 'Add' }}
+                </button>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+              <div *ngFor="let tag of tagOptions"
+                style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--purple); font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(99, 102, 241, 0.15);">
+                {{ tag }}
+                <button (click)="removeTag(tag)"
+                  style="border: none; background: transparent; color: var(--orange); padding: 0; display: flex; align-items: center; cursor: pointer; transition: 0.2s;"
+                  [disabled]="tagManagementLoading">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </div>
+              <div *ngIf="tagOptions.length === 0"
+                style="font-size: 0.85rem; color: var(--text-3); font-style: italic;">No tags created yet.</div>
+            </div>
+          </div>
+
+          <div class="company-card">
+            <h3 class="cc-title" style="margin-bottom:1.5rem;">Change Password</h3>
+            <div class="form-error" *ngIf="changePwdError">{{ changePwdError }}</div>
+            <div *ngIf="changePwdSuccess" style="color:var(--green);font-weight:600;margin-bottom:1rem;">✓ {{
+              changePwdSuccess }}</div>
+            <form class="modal-form" (submit)="onChangePasswordSubmit($event)">
+              <div class="form-group">
+                <label for="old-pwd">Current Password</label>
+                <input type="password" id="old-pwd" [(ngModel)]="changePwdForm.oldPassword" name="oldPwd" required>
+              </div>
+              <div class="form-group">
+                <label for="new-pwd">New Password</label>
+                <input type="password" id="new-pwd" [value]="changePwdForm.newPassword"
+                  (input)="onChangePwdInput($any($event.target).value)" name="newPwd" required>
+                <div class="pwd-checks" style="margin-top:8px;">
+                  <span [class.check-ok]="changePwdChecks.length">{{ changePwdChecks.length ? '✓' : '○' }} 8+
+                    characters</span>
+                  <span [class.check-ok]="changePwdChecks.upper">{{ changePwdChecks.upper ? '✓' : '○' }} Uppercase
+                    letter</span>
+                  <span [class.check-ok]="changePwdChecks.number">{{ changePwdChecks.number ? '✓' : '○' }} Number</span>
+                  <span [class.check-ok]="changePwdChecks.symbol">{{ changePwdChecks.symbol ? '✓' : '○' }} Symbol</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="confirm-pwd">Confirm New Password</label>
+                <input type="password" id="confirm-pwd" [(ngModel)]="changePwdForm.confirmPassword" name="confPwd"
+                  required>
+              </div>
+              <button type="submit" class="cta-primary" [disabled]="changePwdLoading || !changePwdStrong"
+                style="margin-top:1rem;">
+                {{ changePwdLoading ? 'Updating...' : 'Update Password' }}
+              </button>
+            </form>
+          </div>
+
           <!-- ── SUBSCRIPTION & PAYMENT CARD ── -->
-          <div class="company-card" style="grid-column:1/-1;">
+          <div class="company-card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
               <h3 class="cc-title" style="margin:0;">Subscription &amp; Payments</h3>
               <span [ngClass]="{
@@ -1267,107 +1345,63 @@
               </div>
               <div *ngIf="!paymentHistory.length && !paymentHistoryLoading" style="color:var(--text-3);font-size:0.85rem;font-style:italic;">No payment records yet.</div>
               <div class="top-list-table-container" *ngIf="paymentHistory.length">
-                <table class="emp-table" style="font-size:0.82rem;">
+                <table class="emp-table payment-history-table" style="font-size:0.82rem;">
                   <thead>
                     <tr>
                       <th>Date</th>
                       <th>Period</th>
+                      <th>Emp</th>
                       <th style="text-align:right">Amount</th>
                       <th>Status</th>
+                      <th style="text-align:right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr *ngFor="let p of paymentHistory">
                       <td>{{ p.createdAt | date:'dd MMM yyyy' }}</td>
                       <td style="color:var(--text-3);">{{ p.fromDate | date:'dd MMM' }} → {{ p.toDate | date:'dd MMM yyyy' }} ({{ p.days }}d)</td>
+                      <td>{{ p.teamSizeMax }}</td>
                       <td style="text-align:right;font-weight:600;">₹{{ (p.amount / 100) | number:'1.0-0' }}</td>
                       <td>
                         <span [style.color]="p.status === 'paid' ? 'var(--green)' : p.status === 'failed' ? 'var(--red)' : 'var(--orange)'">
                           {{ p.status | titlecase }}
                         </span>
                       </td>
+                      <td style="text-align:right">
+                        <div style="display:flex;justify-content:flex-end;gap:8px;">
+                          <!-- Download Invoice for PAID -->
+                          <button *ngIf="p.status === 'paid'" (click)="downloadInvoice(p)" title="Download Invoice"
+                            style="border:none;background:transparent;color:var(--accent-2);cursor:pointer;padding:2px;display:flex;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                              <polyline points="7 10 12 15 17 10"></polyline>
+                              <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                          </button>
+                          
+                          <!-- Pay/Retry for CREATED -->
+                          <button *ngIf="p.status === 'created' || p.status === 'failed'" (click)="retryPayment(p)" title="Pay Now"
+                            style="border:none;background:transparent;color:var(--orange);cursor:pointer;padding:2px;display:flex;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                              <line x1="1" y1="10" x2="23" y2="10"></line>
+                            </svg>
+                          </button>
+
+                          <!-- Delete for CREATED/FAILED -->
+                          <button *ngIf="p.status === 'created' || p.status === 'failed'" (click)="deleteOrder(p._id)" title="Delete Order"
+                            style="border:none;background:transparent;color:var(--pink);cursor:pointer;padding:2px;display:flex;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-
-          <div class="company-card">
-            <h3 class="cc-title" style="margin-bottom:1.5rem;">Change Password</h3>
-            <div class="form-error" *ngIf="changePwdError">{{ changePwdError }}</div>
-            <div *ngIf="changePwdSuccess" style="color:var(--green);font-weight:600;margin-bottom:1rem;">✓ {{
-              changePwdSuccess }}</div>
-            <form class="modal-form" (submit)="onChangePasswordSubmit($event)">
-              <div class="form-group">
-                <label for="old-pwd">Current Password</label>
-                <input type="password" id="old-pwd" [(ngModel)]="changePwdForm.oldPassword" name="oldPwd" required>
-              </div>
-              <div class="form-group">
-                <label for="new-pwd">New Password</label>
-                <input type="password" id="new-pwd" [value]="changePwdForm.newPassword"
-                  (input)="onChangePwdInput($any($event.target).value)" name="newPwd" required>
-                <div class="pwd-checks" style="margin-top:8px;">
-                  <span [class.check-ok]="changePwdChecks.length">{{ changePwdChecks.length ? '✓' : '○' }} 8+
-                    characters</span>
-                  <span [class.check-ok]="changePwdChecks.upper">{{ changePwdChecks.upper ? '✓' : '○' }} Uppercase
-                    letter</span>
-                  <span [class.check-ok]="changePwdChecks.number">{{ changePwdChecks.number ? '✓' : '○' }} Number</span>
-                  <span [class.check-ok]="changePwdChecks.symbol">{{ changePwdChecks.symbol ? '✓' : '○' }} Symbol</span>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="confirm-pwd">Confirm New Password</label>
-                <input type="password" id="confirm-pwd" [(ngModel)]="changePwdForm.confirmPassword" name="confPwd"
-                  required>
-              </div>
-              <button type="submit" class="cta-primary" [disabled]="changePwdLoading || !changePwdStrong"
-                style="margin-top:1rem;">
-                {{ changePwdLoading ? 'Updating...' : 'Update Password' }}
-              </button>
-            </form>
-          </div>
-
-          <!-- Tag Management Card -->
-          <div class="company-card">
-            <h3 class="cc-title" style="margin-bottom:0.5rem;">Tag Management</h3>
-            <p style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 1.5rem;">Create and manage tags to
-              organize your employees into groups like Sales, Support, etc.</p>
-
-            <div *ngIf="tagManagementError" class="form-error" style="margin-bottom: 1rem;">{{ tagManagementError }}
-            </div>
-            <div *ngIf="tagManagementSuccess"
-              style="color:var(--green);font-weight:600;margin-bottom:1rem;font-size:0.85rem;">✓ {{ tagManagementSuccess
-              }}</div>
-
-            <div class="form-group" style="margin-bottom: 1.5rem;">
-              <div style="display: flex; gap: 0.75rem;">
-                <input type="text" placeholder="Enter new tag name..."
-                  style="flex: 1; border: 1px solid var(--border); padding: 0.7rem; border-radius: 10px; font-size: 0.85rem;"
-                  [(ngModel)]="newTagInput" (keyup.enter)="addTag()">
-                <button (click)="addTag()" class="cta-primary"
-                  style="padding: 0 1.25rem; border-radius: 10px; font-weight: 600; font-size: 0.85rem;"
-                  [disabled]="tagManagementLoading">
-                  {{ tagManagementLoading ? '...' : 'Add' }}
-                </button>
-              </div>
-            </div>
-
-            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
-              <div *ngFor="let tag of tagOptions"
-                style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: rgba(99, 102, 241, 0.08); color: var(--purple); font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(99, 102, 241, 0.15);">
-                {{ tag }}
-                <button (click)="removeTag(tag)"
-                  style="border: none; background: transparent; color: var(--orange); padding: 0; display: flex; align-items: center; cursor: pointer; transition: 0.2s;"
-                  [disabled]="tagManagementLoading">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
-              <div *ngIf="tagOptions.length === 0"
-                style="font-size: 0.85rem; color: var(--text-3); font-style: italic;">No tags created yet.</div>
             </div>
           </div>
 

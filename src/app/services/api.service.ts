@@ -34,4 +34,10 @@ export class ApiService {
       headers: this.jsonHeaders,
     });
   }
+
+  delete<T>(path: string): Observable<T> {
+    return this.http.delete<T>(`${this.baseUrl}${path}`, {
+      headers: this.jsonHeaders,
+    });
+  }
 }

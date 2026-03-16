@@ -30,15 +30,32 @@ export interface OrderResponse {
   mobile: string;
 }
 
+export interface PaymentRecord {
+  _id: string;
+  companyCode: string;
+  razorpayOrderId: string;
+  razorpayPaymentId?: string;
+  amount: number;
+  fromDate: string;
+  toDate: string;
+  teamSizeMax: number;
+  days: number;
+  status: 'created' | 'paid' | 'failed';
+  paymentMethod?: string;
+  bank?: string;
+  bankTransactionId?: string;
+  createdAt: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   constructor(private api: ApiService) {}
 
   /** Preview cost without creating any order */
-  calculate(teamSize: string, toDate: string): Observable<PaymentCalculation> {
-    return this.api.get<PaymentCalculation>(
-      `/api/payment/calculate?teamSize=${encodeURIComponent(teamSize)}&toDate=${encodeURIComponent(toDate)}`
-    );
+  calculate(teamSize: string, toDate: string, companyCode?: string): Observable<PaymentCalculation> {
+    let url = `/api/payment/calculate?teamSize=${encodeURIComponent(teamSize)}&toDate=${encodeURIComponent(toDate)}`;
+    if (companyCode) url += `&companyCode=${encodeURIComponent(companyCode)}`;
+    return this.api.get<PaymentCalculation>(url);
   }
 
   /**
@@ -79,7 +96,11 @@ export class PaymentService {
     return this.api.post('/api/payment/verify-renewal', payload);
   }
 
-  getHistory(companyCode: string): Observable<any> {
-    return this.api.get(`/api/payment/history/${encodeURIComponent(companyCode)}`);
+  getHistory(companyCode: string): Observable<{ success: boolean; payments: PaymentRecord[] }> {
+    return this.api.get<{ success: boolean; payments: PaymentRecord[] }>(`/api/payment/history/${encodeURIComponent(companyCode)}`);
+  }
+
+  deleteOrder(id: string): Observable<any> {
+    return this.api.delete(`/api/payment/order/${id}`);
   }
 }

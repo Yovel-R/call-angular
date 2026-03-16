@@ -40,8 +40,15 @@ export class AppComponent implements OnInit {
   renewCostPreview: { days: number; teamSizeMax: number; amountRupees: number } | null = null;
   renewLoading = false;
 
+  razorpayKeyId = '';
+
   get minToDate(): string {
-    const d = new Date();
+    let d = new Date();
+    // If user has an active subscription, min renewal date should be after it expires
+    if (this.companyProfile?.subscriptionTo) {
+      const subTo = new Date(this.companyProfile.subscriptionTo);
+      if (subTo > d) d = subTo;
+    }
     d.setDate(d.getDate() + 1);
     return d.toISOString().split('T')[0];
   }
@@ -1059,8 +1066,9 @@ export class AppComponent implements OnInit {
   }
 
   openRazorpay(order: any, isRenewal: boolean): void {
+    if (order.keyId) this.razorpayKeyId = order.keyId;
     const options = {
-      key: order.keyId,
+      key: order.keyId || this.razorpayKeyId,
       amount: order.amount,
       currency: order.currency,
       name: 'Softrate Record',
@@ -1135,7 +1143,12 @@ export class AppComponent implements OnInit {
       this.renewCostPreview = null;
       return;
     }
-    const from = new Date();
+    const now = new Date();
+    let from = new Date();
+    if (this.companyProfile?.subscriptionTo && new Date(this.companyProfile.subscriptionTo) > now) {
+      from = new Date(this.companyProfile.subscriptionTo);
+      from.setDate(from.getDate() + 1);
+    }
     from.setHours(0, 0, 0, 0);
     const to = new Date(this.renewToDate);
     to.setHours(23, 59, 59, 999);
@@ -1175,6 +1188,96 @@ export class AppComponent implements OnInit {
       },
       error: () => { this.paymentHistoryLoading = false; }
     });
+  }
+
+  deleteOrder(id: string): void {
+    if (!confirm('Are you sure you want to delete this unpaid order?')) return;
+    this.paymentService.deleteOrder(id).subscribe({
+      next: (res) => {
+        if (res.success) this.fetchPaymentHistory();
+        else alert(res.message || 'Failed to delete order.');
+      },
+      error: (err) => alert(err?.error?.message || 'Server error.')
+    });
+  }
+
+  retryPayment(p: any): void {
+    const orderData = {
+      orderId: p.razorpayOrderId,
+      amount: p.amount,
+      currency: 'INR',
+      days: p.days,
+      companyName: this.companyProfile?.companyName,
+      email: this.companyProfile?.email,
+      mobile: this.companyProfile?.mobile
+    };
+    this.openRazorpay(orderData, true);
+  }
+
+  downloadInvoice(p: any): void {
+    const win = window.open('', '_blank');
+    if (!win) {
+      alert('Please allow popups to view the invoice.');
+      return;
+    }
+
+    const html = `
+      <html>
+      <head>
+        <title>Invoice - ${p.razorpayPaymentId || p.razorpayOrderId}</title>
+        <style>
+          body { font-family: sans-serif; padding: 40px; color: #333; }
+          .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+          .details { margin-top: 30px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+          th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+          .total { text-align: right; margin-top: 30px; font-size: 1.2rem; font-weight: bold; }
+          .footer { margin-top: 50px; font-size: 0.8rem; color: #999; text-align: center; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <h1>INVOICE</h1>
+            <p><strong>Softrate Record</strong><br>Subscription Service</p>
+          </div>
+          <div style="text-align: right">
+            <p>Date: ${new Date(p.createdAt).toLocaleDateString()}</p>
+            <p>Order ID: ${p.razorpayOrderId}</p>
+            ${p.razorpayPaymentId ? `<p>Payment ID: ${p.razorpayPaymentId}</p>` : ''}
+          </div>
+        </div>
+        <div class="details">
+          <p><strong>Bill To:</strong><br>${this.companyProfile?.companyName}<br>${this.companyProfile?.email}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Period</th>
+              <th>Capacity</th>
+              <th style="text-align: right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Subscription Renewal</td>
+              <td>${new Date(p.fromDate).toLocaleDateString()} to ${new Date(p.toDate).toLocaleDateString()}</td>
+              <td>${p.teamSizeMax} Users</td>
+              <td style="text-align: right">₹${(p.amount / 100).toLocaleString()}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="total">Total Paid: ₹${(p.amount / 100).toLocaleString()}</div>
+        <div class="footer">
+          Thank you for choosing Softrate Record! This is a system generated document.
+        </div>
+        <script>window.print();</script>
+      </body>
+      </html>
+    `;
+    win.document.write(html);
+    win.document.close();
   }
 
   onLoginSubmit(event: Event): void {
