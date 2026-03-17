@@ -184,6 +184,7 @@ export class AppComponent implements OnInit {
   syncAllLoading = false;
   syncEmpLoading = false;
   sidebarOpen = false;
+  sidebarMinimized = false;
 
   // ── Employee drilldown ─────────────────────────────────────
   selectedEmployee: Employee | null = null;
@@ -274,6 +275,27 @@ export class AppComponent implements OnInit {
         this.dashboardTeamSize = parseInt(user.teamSize) || 0;
         this._loadDashboard();
       } catch { localStorage.removeItem('tracecall_user'); }
+    }
+  }
+
+  switchTab(tab: any): void {
+    const prevTab = this.dashTab;
+    this.dashTab = tab;
+    this.sidebarOpen = false;
+
+    // Reset period to 'today' when moving from Reports back to Overview/Employees
+    // unless specifically requested otherwise. This prevents getting stuck in 'custom' filters.
+    if ((tab === 'overview' || tab === 'employees') && this.selectedPeriod === 'custom') {
+      this.onPeriodChange('today');
+    }
+
+    // If switching back to overview and we have data, ensure charts are rendered
+    // (since *ngIf removes the canvas from DOM when switching tabs)
+    if (tab === 'overview' && prevTab !== 'overview') {
+      setTimeout(() => {
+        if (this.summaryStats) this.renderDonutChart();
+        if (this.timelineData.length) this.renderTimelineChart();
+      }, 100);
     }
   }
 
@@ -788,7 +810,10 @@ export class AppComponent implements OnInit {
   renderTimelineChart(): void {
     if (this.timelineChart) { this.timelineChart.destroy(); this.timelineChart = null; }
     const canvas = document.getElementById('timelineChart') as HTMLCanvasElement;
-    if (!canvas) return;
+    if (!canvas || !canvas.offsetParent) {
+      setTimeout(() => this.renderTimelineChart(), 200);
+      return;
+    }
 
     const labels = this.timelineData.map(d =>
       new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' })
@@ -802,8 +827,8 @@ export class AppComponent implements OnInit {
     const ctx = canvas.getContext('2d');
     const grad = ctx ? ctx.createLinearGradient(0, 0, 0, 260) : null;
     if (grad) {
-      grad.addColorStop(0, 'rgba(239,68,68,0.15)');
-      grad.addColorStop(1, 'rgba(239,68,68,0)');
+      grad.addColorStop(0, 'rgba(61,125,254,0.18)');
+      grad.addColorStop(1, 'rgba(61,125,254,0)');
     }
 
     this.timelineChart = new Chart(canvas, {
@@ -813,13 +838,15 @@ export class AppComponent implements OnInit {
         datasets: [{
           label: 'Total Calls',
           data: totalCalls.length ? totalCalls : [0],
-          borderColor: '#ef4444',
-          backgroundColor: grad ?? 'rgba(239,68,68,0.1)',
+          borderColor: '#3D7DFE',
+          backgroundColor: grad ?? 'rgba(61,125,254,0.1)',
           fill: true,
-          tension: 0.5,
-          pointRadius: 0,
+          tension: 0.45,
+          pointRadius: 4,
           pointHoverRadius: 6,
-          pointBackgroundColor: '#ef4444',
+          pointBackgroundColor: '#ffffff',
+          pointBorderColor: '#3D7DFE',
+          pointBorderWidth: 2,
           borderWidth: 3
         }]
       },
@@ -863,8 +890,8 @@ export class AppComponent implements OnInit {
     
     const canvas = document.getElementById('donutChart') as HTMLCanvasElement;
     
-    // Guard: canvas not in DOM yet
-    if (!canvas) {
+    // Guard: canvas not in DOM yet or hidden
+    if (!canvas || !canvas.offsetParent) {
       setTimeout(() => this.renderDonutChart(), 200);
       return;
     }

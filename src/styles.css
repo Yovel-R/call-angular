@@ -8,21 +8,23 @@
 :root {
   --bg:          #ffffff;
   --bg-card:     #ffffff;
-  --bg-card-2:   #f4fbfa;
-  --border:      #e5e7eb;
-  --border-glow: rgba(99,102,241,0.3);
-  --accent:      #14b8a6;
-  --accent-2:    #0f766e;
-  --accent-dark: #0f766e;
+  --bg-card-2:   #f8fafc;
+  --border:      #e2e8f0;
+  --border-glow: rgba(61, 125, 254, 0.2);
+  --accent:      #3D7DFE;
+  --accent-2:    #2563eb;
+  --accent-dark: #1e1e1e;
+  --blue:        #3D7DFE;
   --green:       #10b981;
   --orange:      #f59e0b;
   --pink:        #ef4444;
+  --red:         #ef4444;
   --purple:      #6366f1;
-  --text-1:      #1f2937;
-  --text-2:      #4b5563;
-  --text-3:      #9ca3af;
+  --text-1:      #0f172a;
+  --text-2:      #475569;
+  --text-3:      #94a3b8;
   --text-heading:#111827;
-  --radius:      16px;
+  --radius:      20px;
   --font-head:   'Inter', sans-serif;
   --font-body:   'Inter', sans-serif;
 }

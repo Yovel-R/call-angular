@@ -333,7 +333,7 @@
           <input type="date" id="su-todate" [(ngModel)]="paymentToDate" name="suToDate"
             [min]="minToDate" (change)="onToDateChange()" required>
           <!-- Live cost preview -->
-          <div *ngIf="paymentCostPreview" class="payment-preview-box" style="margin-top:0.75rem;padding:0.85rem 1rem;border-radius:10px;background:linear-gradient(135deg,#6366f110,#818cf810);border:1px solid #6366f130;">
+          <div *ngIf="paymentCostPreview" class="payment-preview-box" style="margin-top:0.75rem;padding:0.85rem 1rem;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
             <div style="font-size:0.8rem;color:var(--text-3);margin-bottom:0.25rem;">Estimated Cost</div>
             <div style="display:flex;gap:1.5rem;align-items:baseline;flex-wrap:wrap;">
               <div><span style="font-size:1.6rem;font-weight:700;color:#6366f1;">₹{{ paymentCostPreview.amountRupees | number }}</span></div>
@@ -370,8 +370,13 @@
         </div>
       </div>
       <div class="nav-auth" style="gap:1rem;">
-        <span class="user-badge" style="font-size:.85rem;opacity:.8;">{{ dashboardCompany }} &middot; {{ dashboardCode
-          }}</span>
+        <span class="user-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          {{ dashboardCompany }} &middot; {{ dashboardCode }}
+        </span>
         <button class="btn-login" (click)="logout()">Log Out</button>
       </div>
     </div>
@@ -382,52 +387,55 @@
     <div class="dash-sidebar-overlay" [class.active]="sidebarOpen" (click)="sidebarOpen = false"></div>
 
     <!-- Sidebar -->
-    <aside class="dash-sidebar" [class.active]="sidebarOpen">
+    <aside class="dash-sidebar" [class.active]="sidebarOpen" [class.minimized]="sidebarMinimized">
+      <div class="sidebar-top">
+        <div class="sidebar-header" *ngIf="!sidebarMinimized">Main Navigation</div>
+      </div>
+      
       <button class="sidebar-item" [class.active]="dashTab==='overview'"
-        (click)="dashTab='overview'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-          <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-          <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-          <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" stroke-width="2" />
-        </svg>
-        Dashboard
+        (click)="switchTab('overview')" [title]="sidebarMinimized ? 'Dashboard' : ''">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        <span>Dashboard</span>
       </button>
+
       <button class="sidebar-item" [class.active]="dashTab==='employees'"
-        (click)="dashTab='employees'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
-          <path d="M2 21c0-4 3.134-7 7-7h4c3.866 0 7 3 7 7" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" />
-        </svg>
-        Employees
+        (click)="switchTab('employees')" [title]="sidebarMinimized ? 'Employees' : ''">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Employees</span>
       </button>
+
       <button class="sidebar-item" [class.active]="dashTab==='reports'"
-        (click)="dashTab='reports'; selectedPeriod='custom'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M9 17h6M9 13h6m2 9a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2h10z"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-        Periodic Reports
+        (click)="dashTab='reports'; selectedPeriod='custom'; sidebarOpen=false" [title]="sidebarMinimized ? 'Periodic Reports' : ''">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-bar-chart"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-4"/><path d="M8 18v-2"/><path d="M16 18v-6"/></svg>
+        <span>Periodic Reports</span>
       </button>
-      <button class="sidebar-item" [class.active]="dashTab==='company'" (click)="dashTab='company'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V21M3 21H21M9 7H11M9 11H11M9 15H11M13 7H15M13 11H15M13 15H15"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-        Company
+
+      <div class="sidebar-separator"></div>
+      <div class="sidebar-header" *ngIf="!sidebarMinimized">Organization</div>
+
+      <button class="sidebar-item" [class.active]="dashTab==='company'" (click)="switchTab('company')" [title]="sidebarMinimized ? 'Company Settings' : ''">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building-2"><path d="M3 21h18"/><path d="M3 7v1a3 3 0 0 0 6 0V7m0 1a3 3 0 0 0 6 0V7H3"/><path d="M19 21v-7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v7"/><path d="M9 17v1"/><path d="M15 17v1"/></svg>
+        <span>Company Settings</span>
       </button>
-      <button class="sidebar-item" [class.active]="dashTab==='support'" (click)="dashTab='support'; sidebarOpen=false">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-        Help & Support
+
+      <button class="sidebar-item" [class.active]="dashTab==='support'" (click)="switchTab('support')" [title]="sidebarMinimized ? 'Help & Support' : ''">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>Help & Support</span>
       </button>
+
+      <div class="sidebar-spacer" style="flex: 1;"></div>
+
+      <div class="sidebar-footer">
+        <button class="sidebar-toggle" (click)="sidebarMinimized = !sidebarMinimized" [title]="sidebarMinimized ? 'Expand Sidebar' : 'Collapse Sidebar'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide" [class.lucide-chevron-left]="!sidebarMinimized" [class.lucide-chevron-right]="sidebarMinimized">
+            <polyline *ngIf="!sidebarMinimized" points="15 18 9 12 15 6"/><polyline *ngIf="sidebarMinimized" points="9 18 15 12 9 6"/>
+          </svg>
+          <span *ngIf="!sidebarMinimized" style="margin-left: 12px; font-size: 0.9rem; font-weight: 500;">Collapse</span>
+        </button>
+      </div>
     </aside>
 
-    <main class="dash-main">
+    <main class="dash-main" [class.expanded]="sidebarMinimized">
 
       <!-- ══ OVERVIEW TAB ══ -->
       <div *ngIf="dashTab==='overview'">
@@ -453,7 +461,16 @@
             (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
         </div>
 
-        <div *ngIf="summaryLoading" class="dash-loading">Loading stats&hellip;</div>
+        <!-- SKELETON LOADING STATE -->
+        <div *ngIf="summaryLoading" class="dash-loading">
+          <div class="skeleton-grid">
+            <div class="skeleton-card skeleton" *ngFor="let i of [1,2,3,4]"></div>
+          </div>
+          <div class="charts-row">
+            <div class="chart-card flex-2 skeleton" style="height: 350px;"></div>
+            <div class="chart-card flex-1 skeleton" style="height: 350px;"></div>
+          </div>
+        </div>
         <div *ngIf="!summaryLoading && !summaryStats" class="dash-empty">No call data synced yet for this period. Open
           the mobile app to sync.</div>
 
@@ -463,7 +480,7 @@
           <div class="top-stats-row">
 
             <!-- Card 1: Connected Calls -->
-            <div class="kpi-card">
+            <div class="kpi-card animate-fade-in-up stagger-1">
               <div class="kpi-info">
                 <span class="kpi-val">{{ summaryStats.connected }}</span>
                 <span class="kpi-label">Connected Calls</span>
@@ -484,7 +501,7 @@
             </div>
 
             <!-- Card 2: Duration -->
-            <div class="kpi-card">
+            <div class="kpi-card animate-fade-in-up stagger-2">
               <div class="kpi-info">
                 <span class="kpi-val">{{ summaryStats.totalDuration ? (summaryStats.totalDuration / 60 | number:'1.0-0')
                   : '0' }}m</span>
@@ -506,7 +523,7 @@
             </div>
 
             <!-- Card 3: Total Calls -->
-            <div class="kpi-card">
+            <div class="kpi-card animate-fade-in-up stagger-3">
               <div class="kpi-info">
                 <span class="kpi-val">{{ summaryStats.total }}</span>
                 <span class="kpi-label">Total Calls</span>
@@ -526,7 +543,7 @@
             </div>
 
             <!-- Card 4: Missed -->
-            <div class="kpi-card">
+            <div class="kpi-card animate-fade-in-up stagger-4">
               <div class="kpi-info">
                 <span class="kpi-val">{{ summaryStats.missed }}</span>
                 <span class="kpi-label">Missed</span>
@@ -552,7 +569,7 @@
           <div class="charts-row">
 
             <!-- Statistics card: Line chart LEFT + Donut RIGHT -->
-            <div class="chart-card flex-2" style="background:var(--bg-card-2);">
+            <div class="chart-card flex-2 animate-fade-in-up stagger-5" style="background:var(--bg-card-2);">
 
               <!-- Card header -->
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
@@ -1650,15 +1667,14 @@
         <div *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length===0" class="dash-empty" style="padding:1.5rem;">
           No individual call data.</div>
         <div class="call-history-list" *ngIf="!selectedEmpCallsLoading && selectedEmpCalls.length>0">
-          <div class="ch-item" *ngFor="let c of selectedEmpCalls | slice:0:5">
-            <span class="ch-type-badge" [class]="c.callType">{{ c.callType }}</span>
-            <div class="ch-info">
-              <div class="ch-number">{{ c.name || c.number || 'Unknown' }}</div>
-              <div class="ch-sub" *ngIf="c.name">{{ c.number }}</div>
+          <div class="ch-item" *ngFor="let c of selectedEmpCalls | slice:0:4" style="padding: 0.85rem 0.5rem;">
+            <div class="log-avatar" style="width: 28px; height: 28px; font-size: 0.75rem;">{{ (c.name || '?').charAt(0).toUpperCase() }}</div>
+            <div class="ch-info" style="margin-left: 4px;">
+              <div class="ch-number" style="font-size: 0.82rem; font-weight: 700;">{{ c.name || c.number }}</div>
+              <div class="ch-sub" style="font-size: 0.7rem; opacity: 0.7;">{{ c.timestamp | date:'hh:mm a' }} &bull; {{ c.callType }}</div>
             </div>
             <div class="ch-right">
-              <div class="ch-time">{{ fmtTime(c.timestamp) }}</div>
-              <div class="ch-dur" *ngIf="c.duration > 0">{{ fmtDur(c.duration) }}</div>
+              <div class="ch-dur" style="font-size: 0.78rem; font-weight: 800; color: var(--accent);">{{ c.duration > 0 ? fmtDur(c.duration) : '—' }}</div>
             </div>
           </div>
           <button *ngIf="selectedEmpCalls.length > 5" class="cta-secondary"
@@ -1719,29 +1735,78 @@
   </div>
 </div>
 
-<!-- ========== VIEW ALL CALLS MODAL ========== -->
+<!-- ========== VIEW ALL CALLS MODAL (Detailed & Professional) ========== -->
 <div class="modal-overlay" [class.open]="showAllCallsModal" (click)="closeAllCallsModal()">
-  <div class="modal" style="max-width: 600px; width: 90%; max-height: 85vh; display: flex; flex-direction: column;"
-    (click)="$event.stopPropagation()">
+  <div class="modal history-modal-wide" (click)="$event.stopPropagation()">
     <button class="modal-close" (click)="closeAllCallsModal()">&#x2715;</button>
-    <div class="modal-brand" style="justify-content:flex-start;margin-bottom:1rem;">
-      <h2 class="modal-title" style="margin:0;">All Calls</h2>
-    </div>
-    <p class="modal-subtitle" style="text-align:left;margin-bottom:1.5rem;">Showing all call history for {{
-      selectedEmployee?.name || 'this agent' }}.</p>
 
-    <div class="call-history-list" style="overflow-y: auto; flex: 1; padding-right: 0.5rem; margin-right: -0.5rem;">
-      <div class="ch-item" *ngFor="let c of selectedEmpCalls">
-        <span class="ch-type-badge" [class]="c.callType">{{ c.callType }}</span>
-        <div class="ch-info">
-          <div class="ch-number">{{ c.name || c.number || 'Unknown' }}</div>
-          <div class="ch-sub" *ngIf="c.name">{{ c.number }}</div>
+    <div class="detailed-history-header">
+      <div class="header-left">
+        <h2 class="modal-title"><span style="color: var(--accent); font-size: 1.05rem; letter-spacing: 1px;">Detailed Call </span><br>History</h2>
+        <p class="modal-subtitle">For <strong>{{ selectedEmployee?.name }}</strong></p>
+      </div>
+
+      <!-- Quick Stats Header in Modal -->
+      <div class="log-header-stats animate-fade-in-up stagger-1">
+        <div class="log-stat-item">
+          <span class="log-stat-val total">{{ selectedEmpStats?.total || 0 }}</span>
+          <span class="log-stat-label">Total Logs</span>
         </div>
-        <div class="ch-right" style="text-align: right;">
-          <div class="ch-time" style="font-weight: 500;">{{ c.timestamp | date:'dd MMM yyyy, hh:mm a' }}</div>
-          <div class="ch-dur" *ngIf="c.duration > 0">{{ fmtDur(c.duration) }}</div>
+        <div class="log-stat-item">
+          <span class="log-stat-val connected">{{ selectedEmpStats?.connected || 0 }}</span>
+          <span class="log-stat-label">Connected</span>
+        </div>
+        <div class="log-stat-item">
+          <span class="log-stat-val time">{{ fmtDur(selectedEmpStats?.totalDuration || 0) }}</span>
+          <span class="log-stat-label">Total Time</span>
+        </div>
+        <div class="log-stat-item">
+          <span class="log-stat-val missed">{{ selectedEmpStats?.missed || 0 }}</span>
+          <span class="log-stat-label">Missed</span>
         </div>
       </div>
+    </div>
+
+    <div class="log-grid-container">
+      <div class="premium-log-table-wrap">
+        <table class="premium-log-table">
+          <thead>
+            <tr>
+              <th>Contact Details</th>
+              <th>Type</th>
+              <th>Timestamp</th>
+              <th>Duration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="log-row" *ngFor="let c of selectedEmpCalls">
+              <td class="log-cell">
+                <div class="contact-cell">
+                  <div class="log-avatar">{{ (c.name || '?').charAt(0).toUpperCase() }}</div>
+                  <div>
+                    <div class="log-name">{{ c.name || 'Unknown Contact' }}</div>
+                    <div class="log-phone">{{ c.number }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="log-cell">
+                <span class="ch-type-badge" [class]="c.callType">{{ c.callType }}</span>
+              </td>
+              <td class="log-cell">
+                <div style="font-size: 0.85rem; font-weight: 500;">{{ c.timestamp | date:'dd MMM, hh:mm a' }}</div>
+              </td>
+              <td class="log-cell">
+                <div class="dur-pill" *ngIf="c.duration > 0">{{ fmtDur(c.duration) }}</div>
+                <span *ngIf="c.duration <= 0" style="color: var(--text-3); font-size: 0.8rem;">—</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top: 1.5rem; text-align: right;">
+      <button class="btn-login" (click)="closeAllCallsModal()" style="padding: 0.75rem 2rem;">Close Log</button>
     </div>
   </div>
 </div>
