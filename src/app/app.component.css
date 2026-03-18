@@ -1171,7 +1171,7 @@
   width: 240px;
   flex-shrink: 0;
   border-right: 1px solid var(--border);
-  padding: 1.5rem 0.75rem;
+  padding: 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -1241,7 +1241,7 @@
   color: var(--text-3);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 1.5rem 1rem 0.5rem;
+  padding: 0.75rem 1rem 0.5rem;
 }
 
 .sidebar-separator {
@@ -1313,7 +1313,7 @@
 /* Main content */
 .dash-main {
   flex: 1;
-  padding: 2.5rem 3rem;
+  padding: 0.75rem 1rem;
   overflow-y: auto;
   overflow-x: hidden;
   margin-left: 240px;
@@ -1716,16 +1716,23 @@
 
 .top-list-table th {
   text-align: left;
-  padding: 0.6rem 0.5rem;
+  padding: 0.6rem 0.75rem;
   color: var(--text-2);
   font-weight: 500;
   font-size: 0.8rem;
 }
 
 .top-list-table td {
-  padding: 0.9rem 0.5rem;
+  padding: 0.6rem 0.75rem;
   color: var(--text-1);
   border-bottom: 1px solid var(--border);
+}
+
+.top-list-table th:nth-child(3),
+.top-list-table td:nth-child(3) {
+  min-width: 120px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .top-list-table tbody tr:hover {
@@ -1834,7 +1841,7 @@
 .emp-cell {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: 0.6rem;
 }
 
 .emp-name {

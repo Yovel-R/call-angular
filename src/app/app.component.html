@@ -467,7 +467,7 @@
             <div class="skeleton-card skeleton" *ngFor="let i of [1,2,3,4]"></div>
           </div>
           <div class="charts-row">
-            <div class="chart-card flex-2 skeleton" style="height: 350px;"></div>
+            <div class="chart-card flex-1 skeleton" style="height: 350px;"></div>
             <div class="chart-card flex-1 skeleton" style="height: 350px;"></div>
           </div>
         </div>
@@ -569,7 +569,7 @@
           <div class="charts-row">
 
             <!-- Statistics card: Line chart LEFT + Donut RIGHT -->
-            <div class="chart-card flex-2 animate-fade-in-up stagger-5" style="background:var(--bg-card-2);">
+            <div class="chart-card flex-1 animate-fade-in-up stagger-5" style="background:var(--bg-card-2);">
 
               <!-- Card header -->
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
@@ -625,7 +625,7 @@
 
             <!-- Top Employees card -->
             <div class="chart-card flex-1">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
                 <h3
                   style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">
                   Top Employees</h3>
@@ -674,112 +674,112 @@
 
           <!-- ── BOTTOM STATS ROW ── -->
           <div class="bottom-stats-grid"
-            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-top:1.5rem;">
+            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-top:1.5rem;">
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 {{ summaryStats.total }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Total Calls</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Total Calls</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 {{ fmtDur(summaryStats.totalDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Call Duration</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Call Duration</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--blue);font-family:var(--font-head);line-height:1.2;">
                 {{ summaryStats.incoming }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Incoming</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Incoming</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 {{ fmtDur(summaryStats.incomingDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Incoming Duration</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Incoming Duration</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--green);font-family:var(--font-head);line-height:1.2;">
                 {{ summaryStats.outgoing }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Outgoing</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Outgoing</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 {{ fmtDur(summaryStats.outgoingDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Outgoing Duration</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Outgoing Duration</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--red);font-family:var(--font-head);line-height:1.2;">
                 {{ summaryStats.missed }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Missed</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Missed</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--pink);font-family:var(--font-head);line-height:1.2;">
                 {{ summaryStats.rejected }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Rejected</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Rejected</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 0</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Never Attended</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Never Attended</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 {{ summaryStats.outgoing - summaryStats.connected > 0 ? summaryStats.outgoing - summaryStats.connected :
                 0 }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Not Pickup by Client
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Not Pickup by Client
               </div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 {{ employeeCallRows.length }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Unique Clients</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Unique Clients</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
                 {{ fmtDur(summaryStats.totalDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Working Hours</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Working Hours</div>
             </div>
 
             <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:1.25rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
+              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
               <div
                 style="font-size:1.5rem;font-weight:700;color:var(--green);font-family:var(--font-head);line-height:1.2;">
                 {{ summaryStats.connected }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:4px;font-weight:500;">Connected Calls</div>
+              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Connected Calls</div>
             </div>
 
           </div><!-- /bottom-stats-grid -->
@@ -836,11 +836,10 @@
               <tr>
                 <th>Employee</th>
                 <th>Tag</th>
-                <th>Device</th>
                 <th>App Ver.</th>
                 <th>Last Call</th>
                 <th>Last Sync</th>
-                <th>Action</th>
+                <th style="min-width: 140px; text-align: center;">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -908,7 +907,6 @@
                     </div>
                   </ng-container>
                 </td>
-                <td style="font-size:.78rem;color:var(--text-3);white-space:nowrap;">{{ emp.deviceModel || '—' }}</td>
                 <td style="font-size:.78rem;color:var(--text-3);">{{ emp.appVersion || '—' }}</td>
                 <td style="font-size:.78rem;white-space:nowrap;"
                   [style.color]="emp.lastCallTime ? 'var(--text-1)' : 'var(--text-3)'">{{ fmtDate(emp.lastCallTime) }}
@@ -916,7 +914,7 @@
                 <td style="font-size:.78rem;white-space:nowrap;"
                   [style.color]="emp.lastSyncTime ? 'var(--green)' : 'var(--text-3)'">{{ fmtDate(emp.lastSyncTime) }}
                 </td>
-                <td>
+                <td style="text-align: center;">
                   <button class="action-btn" (click)="$event.stopPropagation(); openEditEmployee(emp)"
                     title="Edit employee" style="margin-right: 4px; color: var(--purple);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
