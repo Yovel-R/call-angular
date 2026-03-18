@@ -3692,3 +3692,182 @@
   display: inline-block;
   white-space: nowrap;
 }
+/* ── New Company Tab Layout ── */
+.company-tab-container {
+  padding: 1rem 0;
+  max-width: 1300px;
+}
+
+.company-tab-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+@media (min-width: 1024px) {
+  .company-tab-grid {
+    grid-template-columns: 480px 1fr;
+  }
+}
+
+.company-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.company-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.company-card-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.cc-avatar {
+  background: #3b82f6 !important;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.cc-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.cc-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.cc-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.cc-detail label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+  display: block;
+}
+
+.cc-detail div {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Password checks */
+.pwd-checks-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.pwd-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.check-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  transition: background 0.2s;
+}
+
+.pwd-check-item.check-ok {
+  color: #64748b;
+}
+
+.pwd-check-item.check-ok .check-dot {
+  background: #10b981;
+}
+
+/* Status Badges */
+.badge-paid { background: #dcfce7 !important; color: #166534 !important; }
+.badge-trial { background: #fef9c3 !important; color: #854d0e !important; }
+.badge-due { background: #fee2e2 !important; color: #991b1b !important; }
+.badge-pending { background: #f1f5f9 !important; color: #475569 !important; }
+
+/* Table adjustments */
+.payment-history-table th {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  padding: 0.75rem 0.5rem;
+  background: #f8fafc;
+}
+
+.payment-history-table td {
+  padding: 1rem 0.5rem;
+  font-size: 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+
+.cc-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.cc-detail label {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .cc-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-anim {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.bounce-anim {
+  animation: bounce 0.5s ease-in-out infinite;
+}
