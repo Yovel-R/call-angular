@@ -43,14 +43,27 @@ export class AppComponent implements OnInit {
   razorpayKeyId = '';
 
   get minToDate(): string {
-    let d = new Date();
-    // If user has an active subscription, min renewal date should be after it expires
+    // Start from today (local)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let base = new Date(today);
+
     if (this.companyProfile?.subscriptionTo) {
-      const subTo = new Date(this.companyProfile.subscriptionTo);
-      if (subTo > d) d = subTo;
+      // Parse subscriptionTo in LOCAL time — avoid UTC off-by-one in IST
+      const raw: string = this.companyProfile.subscriptionTo.substring(0, 10); // "YYYY-MM-DD"
+      const [sY, sM, sD] = raw.split('-').map(Number);
+      const subEnd = new Date(sY, sM - 1, sD, 23, 59, 59);
+      if (subEnd > today) base = new Date(sY, sM - 1, sD); // keep as the sub-end day
     }
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
+
+    // Minimum selectable = one day AFTER base (day after expiry, or tomorrow if expired)
+    base.setDate(base.getDate() + 1);
+
+    // Format as "YYYY-MM-DD" using LOCAL date parts (NOT toISOString which shifts to UTC)
+    const y = base.getFullYear();
+    const m = String(base.getMonth() + 1).padStart(2, '0');
+    const d = String(base.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   get subscriptionExpired(): boolean {
@@ -60,6 +73,24 @@ export class AppComponent implements OnInit {
       return new Date(this.companyProfile.subscriptionTo) < new Date();
     }
     return false;
+  }
+
+  /** Days left until subscription ends. Negative = already expired. null = no sub date or still on trial. */
+  get subscriptionDaysLeft(): number | null {
+    if (!this.companyProfile?.subscriptionTo) return null;
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const end = new Date(this.companyProfile.subscriptionTo);
+    end.setHours(0, 0, 0, 0);
+    return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  /** Show the due-end alert if ≤7 days remaining (including expired) */
+  get showDueAlert(): boolean {
+    if (!this.loggedIn || !this.companyProfile) return false;
+    const days = this.subscriptionDaysLeft;
+    if (days === null) return false;
+    return days <= 7;
   }
 
   openTrialSignup(): void {
@@ -1170,20 +1201,38 @@ export class AppComponent implements OnInit {
       this.renewCostPreview = null;
       return;
     }
-    const now = new Date();
-    let from = new Date();
-    if (this.companyProfile?.subscriptionTo && new Date(this.companyProfile.subscriptionTo) > now) {
-      from = new Date(this.companyProfile.subscriptionTo);
-      from.setDate(from.getDate() + 1);
+
+    // Today at midnight (local time) — used as the "start" when subscription has expired
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let from: Date;
+
+    if (this.companyProfile?.subscriptionTo) {
+      // Parse subscriptionTo in LOCAL time to avoid UTC off-by-one in IST
+      const [sY, sM, sD] = this.companyProfile.subscriptionTo.substring(0, 10).split('-').map(Number);
+      const subEnd = new Date(sY, sM - 1, sD, 23, 59, 59, 999);
+
+      if (subEnd >= today) {
+        // Subscription still active → start from the day AFTER it ends
+        from = new Date(sY, sM - 1, sD + 1, 0, 0, 0, 0);
+      } else {
+        // Subscription already expired → start from today
+        from = today;
+      }
+    } else {
+      // No subscription at all → start from today
+      from = today;
     }
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(this.renewToDate);
-    to.setHours(23, 59, 59, 999);
+
+    // Parse the user-selected end date in LOCAL time
+    const [toY, toM, toD] = this.renewToDate.split('-').map(Number);
+    const to = new Date(toY, toM - 1, toD, 23, 59, 59, 999);
     const days = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     const teamSizeVal = parseInt(this.companyProfile.teamSize.toString(), 10);
     const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
-    
+
     this.renewCostPreview = { days, teamSizeMax, amountRupees: teamSizeMax * 10 * days };
   }
 
@@ -1194,8 +1243,9 @@ export class AppComponent implements OnInit {
     }
     const from = new Date();
     from.setHours(0, 0, 0, 0);
-    const to = new Date(this.paymentToDate);
-    to.setHours(23, 59, 59, 999);
+    // Parse the date string in LOCAL time to avoid UTC off-by-one in IST (and other UTC+ zones).
+    const [toY, toM, toD] = this.paymentToDate.split('-').map(Number);
+    const to = new Date(toY, toM - 1, toD, 23, 59, 59, 999);
     const days = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
     
     // teamSize is now a direct number input, fallback to 10 if invalid
