@@ -226,7 +226,7 @@
         <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password"
           [(ngModel)]="loginForm.password" name="loginPassword" required>
       </div>
-      <a href="#" class="forgot-link">Forgot password?</a>
+      <a href="#" class="forgot-link" (click)="openForgotPwd(); $event.preventDefault()">Forgot password?</a>
       <button type="submit" class="btn-signup modal-submit" [disabled]="loginLoading">{{ loginLoading ? 'Signing in…' :
         'Log In' }}</button>
     </form>
@@ -351,6 +351,85 @@
     </ng-container>
     <p class="modal-switch" *ngIf="!signupSuccess">Already have an account? <a href="#"
         (click)="openLogin(); $event.preventDefault()">Log In</a></p>
+  </div>
+</div>
+
+<!-- ========== FORGOT PASSWORD MODAL ========== -->
+<div class="modal-overlay" [class.open]="isForgotPwdOpen" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModals()">✕</button>
+    <div class="modal-brand">
+      <div class="brand-icon">
+        <img src="assets/icon/logo.png" alt="DealVoice Logo">
+      </div>
+    </div>
+    <h2 class="modal-title">Reset password</h2>
+    <p class="modal-subtitle">Enter your email and we'll send you a link to reset your password.</p>
+    
+    <div class="form-error" *ngIf="forgotError">{{ forgotError }}</div>
+    
+    <div class="signup-success" *ngIf="forgotSuccess">
+      <div class="success-icon">✓</div>
+      <h3>Email Sent!</h3>
+      <p>{{ forgotSuccess }}</p>
+      <button type="button" class="btn-signup modal-submit" (click)="closeModals()">Got it</button>
+    </div>
+
+    <form class="modal-form" (submit)="onForgotPwdSubmit($event)" *ngIf="!forgotSuccess">
+      <div class="form-group">
+        <label for="forgot-email">Email Address</label>
+        <input type="email" id="forgot-email" placeholder="you&#64;company.com" [(ngModel)]="forgotEmail" name="forgotEmail" required>
+      </div>
+      <button type="submit" class="btn-signup modal-submit" [disabled]="forgotLoading">
+        {{ forgotLoading ? 'Sending link…' : 'Send reset link' }}
+      </button>
+    </form>
+    
+    <p class="modal-switch" *ngIf="!forgotSuccess">Remember your password? <a href="#" (click)="openLogin(); $event.preventDefault()">Log In</a></p>
+  </div>
+</div>
+
+<!-- ========== RESET PASSWORD MODAL ========== -->
+<div class="modal-overlay" [class.open]="isResetPwdOpen" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModals()">✕</button>
+    <div class="modal-brand">
+      <div class="brand-icon">
+        <img src="assets/icon/logo.png" alt="DealVoice Logo">
+      </div>
+    </div>
+    <h2 class="modal-title">New password</h2>
+    <p class="modal-subtitle">Set a secure password for your account.</p>
+
+    <div class="form-error" *ngIf="resetError">{{ resetError }}</div>
+
+    <div class="signup-success" *ngIf="resetSuccess">
+      <div class="success-icon">✓</div>
+      <h3>Password Reset!</h3>
+      <p>{{ resetSuccess }}</p>
+      <button type="button" class="btn-signup modal-submit" (click)="openLogin()">Log In</button>
+    </div>
+
+    <form class="modal-form" (submit)="onResetPwdSubmit($event)" *ngIf="!resetSuccess">
+      <div class="form-group">
+        <label for="reset-password">New Password</label>
+        <input type="password" id="reset-password" placeholder="Min. 8 chars + A + 1 + !" 
+          [value]="resetNewPassword" (input)="onResetPasswordInput($any($event.target).value)" required>
+        <div class="pwd-checks">
+          <span [class.check-ok]="resetPwdChecks.length">{{ resetPwdChecks.length ? '✓' : '○' }} 8+ characters</span>
+          <span [class.check-ok]="resetPwdChecks.upper">{{ resetPwdChecks.upper ? '✓' : '○' }} Uppercase letter</span>
+          <span [class.check-ok]="resetPwdChecks.number">{{ resetPwdChecks.number ? '✓' : '○' }} Number</span>
+          <span [class.check-ok]="resetPwdChecks.symbol">{{ resetPwdChecks.symbol ? '✓' : '○' }} Symbol (!&#64;#…)</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="reset-confirm">Confirm Password</label>
+        <input type="password" id="reset-confirm" placeholder="••••••••" [(ngModel)]="resetConfirmPassword" name="resetConfirm" required>
+      </div>
+      <button type="submit" class="btn-signup modal-submit" [disabled]="resetLoading || !isResetPasswordStrong">
+        {{ resetLoading ? 'Updating password…' : 'Update password' }}
+      </button>
+    </form>
   </div>
 </div>
 
@@ -587,7 +666,7 @@
           <div class="charts-row">
 
             <!-- Statistics card: Line chart LEFT + Donut RIGHT -->
-            <div class="chart-card flex-1 animate-fade-in-up stagger-5" style="background:var(--bg-card-2);">
+            <div class="chart-card flex-1 animate-fade-in-up stagger-5" style="background:#f2f7ff;">
 
               <!-- Card header -->
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
@@ -691,113 +770,133 @@
           </div><!-- /charts-row -->
 
           <!-- ── BOTTOM STATS ROW ── -->
-          <div class="bottom-stats-grid"
-            style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-top:1.5rem;">
+          <div class="bottom-stats-grid">
 
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                {{ summaryStats.total }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Total Calls</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                {{ fmtDur(summaryStats.totalDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Call Duration</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--blue);font-family:var(--font-head);line-height:1.2;">
-                {{ summaryStats.incoming }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Incoming</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                {{ fmtDur(summaryStats.incomingDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Incoming Duration</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--green);font-family:var(--font-head);line-height:1.2;">
-                {{ summaryStats.outgoing }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Outgoing</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                {{ fmtDur(summaryStats.outgoingDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Outgoing Duration</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--red);font-family:var(--font-head);line-height:1.2;">
-                {{ summaryStats.missed }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Missed</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--pink);font-family:var(--font-head);line-height:1.2;">
-                {{ summaryStats.rejected }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Rejected</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                0</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Never Attended</div>
-            </div>
-
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                {{ summaryStats.outgoing - summaryStats.connected > 0 ? summaryStats.outgoing - summaryStats.connected :
-                0 }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Not Pickup by Client
+            <!-- 1. Total Calls -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-indigo-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                </div>
+                <span class="stat-label-v2">Total Calls</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ summaryStats.total }}</span>
+                <span class="stat-unit-v2">Calls</span>
               </div>
             </div>
 
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                {{ employeeCallRows.length }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Unique Clients</div>
+            <!-- 2. Call Duration -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-purple-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <span class="stat-label-v2">Call Duration</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ shortDur(summaryStats.totalDuration) }}</span>
+                <span class="stat-unit-v2">Total</span>
+              </div>
             </div>
 
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--text-heading);font-family:var(--font-head);line-height:1.2;">
-                {{ fmtDur(summaryStats.totalDuration) }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Working Hours</div>
+            <!-- 3. Incoming -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-blue-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"></line><polyline points="17 17 7 17 7 7"></polyline></svg>
+                </div>
+                <span class="stat-label-v2">Incoming</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ summaryStats.incoming }}</span>
+                <span class="stat-unit-v2">Calls</span>
+              </div>
             </div>
 
-            <div class="kpi-card-mini"
-              style="background:var(--bg-card-2);padding:0.85rem;border-radius:12px;border:1px solid var(--border);text-align:center;">
-              <div
-                style="font-size:1.5rem;font-weight:700;color:var(--green);font-family:var(--font-head);line-height:1.2;">
-                {{ summaryStats.connected }}</div>
-              <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;font-weight:500;">Connected Calls</div>
+            <!-- 4. Incoming Duration -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-blue-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <span class="stat-label-v2">In Duration</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ shortDur(summaryStats.incomingDuration) }}</span>
+                <span class="stat-unit-v2">Talk</span>
+              </div>
+            </div>
+
+            <!-- 5. Outgoing -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-orange-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+                </div>
+                <span class="stat-label-v2">Outgoing</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ summaryStats.outgoing }}</span>
+                <span class="stat-unit-v2">Calls</span>
+              </div>
+            </div>
+
+            <!-- 6. Outgoing Duration -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-orange-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                </div>
+                <span class="stat-label-v2">Out Duration</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ shortDur(summaryStats.outgoingDuration) }}</span>
+                <span class="stat-unit-v2">Talk</span>
+              </div>
+            </div>
+
+            <!-- 7. Missed -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-red-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"></path><line x1="23" y1="1" x2="1" y2="23"></line></svg>
+                </div>
+                <span class="stat-label-v2">Missed</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ summaryStats.missed }}</span>
+                <span class="stat-unit-v2">Calls</span>
+              </div>
+            </div>
+
+            <!-- 8. Rejected -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-pink-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+                </div>
+                <span class="stat-label-v2">Rejected</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ summaryStats.rejected }}</span>
+                <span class="stat-unit-v2">Calls</span>
+              </div>
+            </div>
+
+            
+            <!-- 11. Connected Calls -->
+            <div class="stat-card-v2" *ngIf="summaryStats">
+              <div class="stat-card-top">
+                <div class="stat-icon-wrap bg-green-light">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                </div>
+                <span class="stat-label-v2">Connected</span>
+              </div>
+              <div class="stat-card-bottom">
+                <span class="stat-value-v2">{{ summaryStats.connected }}</span>
+                <span class="stat-unit-v2">Calls</span>
+              </div>
             </div>
 
           </div><!-- /bottom-stats-grid -->
@@ -1328,7 +1427,7 @@
     
               <!-- ── SUBSCRIPTION & PAYMENT CARD ── -->
               <div class="company-card">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
                   <h3 class="cc-title" style="margin:0;">Subscription &amp; Payments</h3>
                   <span [ngClass]="{
                     'badge-paid': companyProfile?.status === 'Paid',
@@ -1341,7 +1440,7 @@
                 </div>
     
                 <!-- Subscription dates -->
-                <div class="cc-details-grid" style="margin-bottom:2rem;">
+                <div class="cc-details-grid" style="margin-bottom:0.75rem;">
                   <div class="cc-detail">
                     <label>PLAN START</label>
                     <div style="font-weight: 600;">{{ companyProfile?.subscriptionFrom ? (companyProfile.subscriptionFrom | date:'dd MMM yyyy') : '—' }}</div>
@@ -1350,13 +1449,13 @@
                     <label>PLAN EXPIRES</label>
                     <div [style.color]="subscriptionExpired ? '#dc2626' : '#10b981'" style="font-weight: 600;">
                       {{ companyProfile?.subscriptionTo ? (companyProfile.subscriptionTo | date:'dd MMM yyyy') : '—' }}
-                      <span *ngIf="subscriptionExpired" style="margin-left:6px;font-size:0.75rem;">(Expired)</span>
+                      <span *ngIf="subscriptionExpired" style="margin-left:6px;font-size:1rem;">(Expired)</span>
                     </div>
                   </div>
                 </div>
     
                 <!-- Renew section -->
-                <div style="padding:1.5rem;background:#fff;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:2rem;">
+                <div style="padding:1.5rem;background:#fff;border-radius:12px;border:1px solid #e2e8f0;margin-bottom:1rem;">
                   <div style="font-weight:700;color:var(--text-1);margin-bottom:1rem;font-size:0.95rem;">Renew / Extend Subscription</div>
                   <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
                     <div style="flex:1;min-width:200px;">

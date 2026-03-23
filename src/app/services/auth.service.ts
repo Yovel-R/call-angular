@@ -48,6 +48,14 @@ export class AuthService {
     return this.api.post<ApiResponse>('/api/auth/login', payload);
   }
 
+  forgotPassword(email: string): Observable<ApiResponse> {
+    return this.api.post<ApiResponse>('/api/auth/forgot-password', { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<ApiResponse> {
+    return this.api.post<ApiResponse>('/api/auth/reset-password', { token, newPassword });
+  }
+
   getCompanyProfile(companyCode: string): Observable<any> {
     return this.api.get(`/api/auth/company/${encodeURIComponent(companyCode)}`);
   }

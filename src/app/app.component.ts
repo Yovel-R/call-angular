@@ -120,6 +120,21 @@ export class AppComponent implements OnInit {
   isMobileMenuOpen = false;
   isLoginOpen = false;
   isSignupOpen = false;
+  isForgotPwdOpen = false;
+  isResetPwdOpen = false;
+
+  forgotEmail = '';
+  forgotLoading = false;
+  forgotError = '';
+  forgotSuccess = '';
+
+  resetTokenValue = '';
+  resetNewPassword = '';
+  resetConfirmPassword = '';
+  resetLoading = false;
+  resetError = '';
+  resetSuccess = '';
+  resetPwdChecks = { length: false, upper: false, number: false, symbol: false };
 
   // ── Dashboard tabs ─────────────────────────────────────────
   dashTab: 'overview' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
@@ -138,8 +153,40 @@ export class AppComponent implements OnInit {
     workingHours: ''
   };
   adminRmLoading = false;
-
   rmCountdown = '';
+
+  openLogin(): void {
+    this.closeModals();
+    this.isLoginOpen = true;
+    this.loginError = '';
+  }
+
+  openSignup(): void {
+    this.closeModals();
+    this.isSignupOpen = true;
+    this.signupError = '';
+    this.signupSuccess = false;
+  }
+
+  openForgotPwd(): void {
+    this.closeModals();
+    this.isForgotPwdOpen = true;
+    this.forgotError = '';
+    this.forgotSuccess = '';
+    this.forgotEmail = '';
+  }
+
+  closeModals(): void {
+    this.isLoginOpen = false;
+    this.isSignupOpen = false;
+    this.isMobileMenuOpen = false;
+    this.isForgotPwdOpen = false;
+    this.isResetPwdOpen = false;
+    this.showShareModal = false;
+    this.isAddEmployeeOpen = false;
+    this.isEditEmployeeOpen = false;
+    this.showAllCallsModal = false;
+  }
   private rmTimerInterval: any;
 
   get canRequestRm(): boolean {
@@ -264,6 +311,18 @@ export class AppComponent implements OnInit {
   changePwdSuccess = '';
   changePwdChecks = { length: false, upper: false, number: false, symbol: false };
 
+  onResetPasswordInput(val: string): void {
+    this.resetNewPassword = val;
+    this.resetPwdChecks.length = val.length >= 8;
+    this.resetPwdChecks.upper = /[A-Z]/.test(val);
+    this.resetPwdChecks.number = /[0-9]/.test(val);
+    this.resetPwdChecks.symbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val);
+  }
+
+  get isResetPasswordStrong(): boolean {
+    return Object.values(this.resetPwdChecks).every(v => v === true);
+  }
+
   editingAddress = false;
   editAddressValue = '';
   saveAddressLoading = false;
@@ -279,6 +338,7 @@ export class AppComponent implements OnInit {
   // Employee Tagging Inline
   editTagEmpId: string | null = null;
   inlineTagValue: string = '';
+  activeEmployeeCount: number = 0; // State for dashboard cards
   showInlineDropdown: string | null = null;
   savingTag = false;
 
@@ -307,6 +367,16 @@ export class AppComponent implements OnInit {
         this._loadDashboard();
       } catch { localStorage.removeItem('tracecall_user'); }
     }
+
+    // Check for reset token in URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('resetToken');
+    if (token) {
+      this.resetTokenValue = token;
+      this.isResetPwdOpen = true;
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }
 
   switchTab(tab: any): void {
@@ -333,6 +403,16 @@ export class AppComponent implements OnInit {
   // ── Helpers ───────────────────────────────────────────────
   fmtDur(seconds: number): string {
     if (!seconds) return '—';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  }
+
+  shortDur(seconds: number): string {
+    if (!seconds) return '0s';
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     const s = seconds % 60;
@@ -631,6 +711,9 @@ export class AppComponent implements OnInit {
       emp,
       stats: statsMap[emp.mobile] ?? null,
     }));
+    
+    // Count employees who have at least 1 call in the current period
+    this.activeEmployeeCount = this.employeeCallRows.filter(r => r.stats && (r.stats.total || 0) > 0).length;
   }
 
   applyCustomRange(): void {
@@ -1065,9 +1148,61 @@ export class AppComponent implements OnInit {
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
-  openLogin(): void { this.isLoginOpen = true; this.isSignupOpen = false; }
-  openSignup(): void { this.isSignupOpen = true; this.isLoginOpen = false; }
-  closeModals(): void { this.isLoginOpen = false; this.isSignupOpen = false; }
+  // (Original duplicates removed here. Modal methods moved to top)
+
+  onForgotPwdSubmit(event: Event): void {
+    event.preventDefault();
+    if (!this.forgotEmail) return;
+    this.forgotLoading = true;
+    this.forgotError = '';
+    this.forgotSuccess = '';
+
+    this.authService.forgotPassword(this.forgotEmail).subscribe({
+      next: (res) => {
+        this.forgotLoading = false;
+        if (res.success) {
+          this.forgotSuccess = res.message;
+        } else {
+          this.forgotError = res.message;
+        }
+      },
+      error: (err) => {
+        this.forgotLoading = false;
+        this.forgotError = err?.error?.message || 'Server error. Please try again.';
+      }
+    });
+  }
+
+  onResetPwdSubmit(event: Event): void {
+    event.preventDefault();
+    if (!this.isResetPasswordStrong) {
+      this.resetError = 'Password does not meet strength requirements.';
+      return;
+    }
+    if (this.resetNewPassword !== this.resetConfirmPassword) {
+      this.resetError = 'Passwords do not match.';
+      return;
+    }
+
+    this.resetLoading = true;
+    this.resetError = '';
+    this.resetSuccess = '';
+
+    this.authService.resetPassword(this.resetTokenValue, this.resetNewPassword).subscribe({
+      next: (res) => {
+        this.resetLoading = false;
+        if (res.success) {
+          this.resetSuccess = res.message;
+        } else {
+          this.resetError = res.message;
+        }
+      },
+      error: (err) => {
+        this.resetLoading = false;
+        this.resetError = err?.error?.message || 'Server error or invalid token.';
+      }
+    });
+  }
 
   onPasswordInput(value: string): void {
     this.signupForm.password = value;
