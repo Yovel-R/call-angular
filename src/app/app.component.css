@@ -903,6 +903,7 @@
   text-decoration: none;
   align-self: flex-end;
   margin-top: -0.25rem;
+  cursor: pointer;
 }
 
 .forgot-link:hover {

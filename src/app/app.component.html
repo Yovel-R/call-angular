@@ -235,6 +235,85 @@
   </div>
 </div>
 
+<!-- ========== FORGOT PASSWORD MODAL ========== -->
+<div class="modal-overlay" [class.open]="isForgotPwdOpen" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModals()">✕</button>
+    <div class="modal-brand">
+      <div class="brand-icon">
+        <img src="assets/icon/logo.png" alt="DealVoice Logo">
+      </div>
+    </div>
+    <h2 class="modal-title">Reset password</h2>
+    <p class="modal-subtitle">Enter your email and we'll send you a link to reset your password.</p>
+    
+    <div class="form-error" *ngIf="forgotError">{{ forgotError }}</div>
+    
+    <div class="signup-success" *ngIf="forgotSuccess">
+      <div class="success-icon">✓</div>
+      <h3>Email Sent!</h3>
+      <p>{{ forgotSuccess }}</p>
+      <button type="button" class="btn-signup modal-submit" (click)="closeModals()">Got it</button>
+    </div>
+
+    <form class="modal-form" (submit)="onForgotPwdSubmit($event)" *ngIf="!forgotSuccess">
+      <div class="form-group">
+        <label for="forgot-email">Email Address</label>
+        <input type="email" id="forgot-email" placeholder="you&#64;company.com" [(ngModel)]="forgotEmail" name="forgotEmail" required>
+      </div>
+      <button type="submit" class="btn-signup modal-submit" [disabled]="forgotLoading">
+        {{ forgotLoading ? 'Sending link…' : 'Send reset link' }}
+      </button>
+    </form>
+    
+    <p class="modal-switch" *ngIf="!forgotSuccess">Remember your password? <a href="#" (click)="openLogin(); $event.preventDefault()">Log In</a></p>
+  </div>
+</div>
+
+<!-- ========== RESET PASSWORD MODAL ========== -->
+<div class="modal-overlay" [class.open]="isResetPwdOpen" (click)="closeModals()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeModals()">✕</button>
+    <div class="modal-brand">
+      <div class="brand-icon">
+        <img src="assets/icon/logo.png" alt="DealVoice Logo">
+      </div>
+    </div>
+    <h2 class="modal-title">New password</h2>
+    <p class="modal-subtitle">Set a secure password for your account.</p>
+
+    <div class="form-error" *ngIf="resetError">{{ resetError }}</div>
+
+    <div class="signup-success" *ngIf="resetSuccess">
+      <div class="success-icon">✓</div>
+      <h3>Password Reset!</h3>
+      <p>{{ resetSuccess }}</p>
+      <button type="button" class="btn-signup modal-submit" (click)="openLogin()">Log In</button>
+    </div>
+
+    <form class="modal-form" (submit)="onResetPwdSubmit($event)" *ngIf="!resetSuccess">
+      <div class="form-group">
+        <label for="reset-password">New Password</label>
+        <input type="password" id="reset-password" placeholder="Min. 8 chars + A + 1 + !" 
+          [value]="resetNewPassword" (input)="onResetPasswordInput($any($event.target).value)" required>
+        <div class="pwd-checks">
+          <span [class.check-ok]="resetPwdChecks.length">{{ resetPwdChecks.length ? '✓' : '○' }} 8+ characters</span>
+          <span [class.check-ok]="resetPwdChecks.upper">{{ resetPwdChecks.upper ? '✓' : '○' }} Uppercase letter</span>
+          <span [class.check-ok]="resetPwdChecks.number">{{ resetPwdChecks.number ? '✓' : '○' }} Number</span>
+          <span [class.check-ok]="resetPwdChecks.symbol">{{ resetPwdChecks.symbol ? '✓' : '○' }} Symbol (!&#64;#…)</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="reset-confirm">Confirm Password</label>
+        <input type="password" id="reset-confirm" placeholder="••••••••" [(ngModel)]="resetConfirmPassword" name="resetConfirm" required>
+      </div>
+      <button type="submit" class="btn-signup modal-submit" [disabled]="resetLoading || !isResetPasswordStrong">
+        {{ resetLoading ? 'Updating password…' : 'Update password' }}
+      </button>
+    </form>
+  </div>
+</div>
+
 <!-- ========== SIGNUP MODAL ========== -->
 <div class="modal-overlay" [class.open]="isSignupOpen" (click)="closeModals()">
   <div class="modal modal-wide" (click)="$event.stopPropagation()">
@@ -354,40 +433,7 @@
   </div>
 </div>
 
-<!-- ========== FORGOT PASSWORD MODAL ========== -->
-<div class="modal-overlay" [class.open]="isForgotPwdOpen" (click)="closeModals()">
-  <div class="modal" (click)="$event.stopPropagation()">
-    <button class="modal-close" (click)="closeModals()">✕</button>
-    <div class="modal-brand">
-      <div class="brand-icon">
-        <img src="assets/icon/logo.png" alt="DealVoice Logo">
-      </div>
-    </div>
-    <h2 class="modal-title">Reset password</h2>
-    <p class="modal-subtitle">Enter your email and we'll send you a link to reset your password.</p>
-    
-    <div class="form-error" *ngIf="forgotError">{{ forgotError }}</div>
-    
-    <div class="signup-success" *ngIf="forgotSuccess">
-      <div class="success-icon">✓</div>
-      <h3>Email Sent!</h3>
-      <p>{{ forgotSuccess }}</p>
-      <button type="button" class="btn-signup modal-submit" (click)="closeModals()">Got it</button>
-    </div>
-
-    <form class="modal-form" (submit)="onForgotPwdSubmit($event)" *ngIf="!forgotSuccess">
-      <div class="form-group">
-        <label for="forgot-email">Email Address</label>
-        <input type="email" id="forgot-email" placeholder="you&#64;company.com" [(ngModel)]="forgotEmail" name="forgotEmail" required>
-      </div>
-      <button type="submit" class="btn-signup modal-submit" [disabled]="forgotLoading">
-        {{ forgotLoading ? 'Sending link…' : 'Send reset link' }}
-      </button>
-    </form>
-    
-    <p class="modal-switch" *ngIf="!forgotSuccess">Remember your password? <a href="#" (click)="openLogin(); $event.preventDefault()">Log In</a></p>
-  </div>
-</div>
+<!-- Signup Modal Placeholder -->
 
 <!-- ========== RESET PASSWORD MODAL ========== -->
 <div class="modal-overlay" [class.open]="isResetPwdOpen" (click)="closeModals()">
