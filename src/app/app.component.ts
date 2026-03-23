@@ -1448,58 +1448,239 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    const amountRupees = p.amount / 100;
+    const days = p.days || 30; // fallback if missing
+    const ratePerDay = p.paymentRatePerDay || 10; // fallback if missing
+    
+    // Fallback company info if profile is not fully loaded
+    const companyName = this.companyProfile?.companyName || 'Valued Customer';
+    const companyEmail = this.companyProfile?.email || '';
+    const companyAddress = this.companyProfile?.companyAddress || 'No address provided';
+
     const html = `
+      <!DOCTYPE html>
       <html>
       <head>
-        <title>Invoice - ${p.razorpayPaymentId || p.razorpayOrderId}</title>
+        <meta charset="utf-8">
+        <title>Invoice - ${p.razorpayOrderId}</title>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
         <style>
-          body { font-family: sans-serif; padding: 40px; color: #333; }
-          .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; }
-          .details { margin-top: 30px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
-          .total { text-align: right; margin-top: 30px; font-size: 1.2rem; font-weight: bold; }
-          .footer { margin-top: 50px; font-size: 0.8rem; color: #999; text-align: center; }
+          @page { size: A4; margin: 0; }
+          body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            margin: 0; 
+            padding: 0;
+            background: #fff;
+            color: #1a1a1a;
+            -webkit-print-color-adjust: exact;
+          }
+          .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 30mm 20mm;
+            box-sizing: border-box;
+          }
+          .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 50px;
+          }
+          .logo {
+            height: 48px;
+            margin-bottom: 24px;
+          }
+          .seller-info {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            line-height: 1.5;
+          }
+          .invoice-grid {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 40px;
+            margin-bottom: 60px;
+            font-size: 14px;
+          }
+          .grid-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #000;
+          }
+          .grid-content {
+            line-height: 1.6;
+          }
+          .client-name {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 15px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 40px;
+            margin-bottom: 30px;
+          }
+          th {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #eee;
+            text-transform: uppercase;
+            font-size: 12px;
+            color: #666;
+            letter-spacing: 0.05em;
+          }
+          td {
+            padding: 20px 10px;
+            border-bottom: 1px solid #f9f9f9;
+            font-size: 14px;
+            vertical-align: top;
+          }
+          .item-desc {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+          }
+          .item-subtext {
+            color: #666;
+            font-size: 12px;
+            display: block;
+          }
+          .summary-container {
+            border-top: 2px solid #000;
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+          }
+          .summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+          }
+          .summary-label {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 0.05em;
+          }
+          .summary-val {
+            font-weight: 400;
+            font-size: 14px;
+          }
+          .grand-total {
+            font-size: 32px;
+            font-weight: 700;
+            color: #000;
+          }
+          .notes {
+            margin-top: 80px;
+            padding-top: 20px;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.6;
+          }
+          .footer-brand {
+            margin-top: 10px;
+            font-weight: 700;
+            font-size: 14px;
+            color: #000;
+          }
+          @media print {
+            body { background: none; }
+            .a4-container { margin: 0; padding: 25mm 15mm; }
+          }
         </style>
       </head>
       <body>
-        <div class="header">
-          <div>
-            <h1>INVOICE</h1>
-            <p><strong>Softrate Record</strong><br>Subscription Service</p>
+        <div class="a4-container">
+          <div class="header">
+            <img class="logo" src="https://calluserfrontend.netlify.app/assets/icon/logo.png" alt="DealVoice">
+            <div class="seller-info">
+              Softrate Global<br>
+              dealvoice.co | support@softrate.com
+            </div>
           </div>
-          <div style="text-align: right">
-            <p>Date: ${new Date(p.createdAt).toLocaleDateString()}</p>
-            <p>Order ID: ${p.razorpayOrderId}</p>
-            ${p.razorpayPaymentId ? `<p>Payment ID: ${p.razorpayPaymentId}</p>` : ''}
+
+          <div class="invoice-grid">
+            <div class="grid-label">Invoice</div>
+            <div class="grid-content">
+              ${new Date(p.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}<br>
+              Order #${p.razorpayOrderId}
+            </div>
+
+            <div class="grid-label">Client</div>
+            <div class="grid-content">
+              <div class="client-name">${companyName}</div>
+              Company Email: ${companyEmail}<br>
+              ${companyAddress}
+            </div>
+
+            <div class="grid-label">Transaction</div>
+            <div class="grid-content">
+              Payment ID: <strong>${p.razorpayPaymentId || 'N/A'}</strong><br>
+              Method: <strong>Secured via Razorpay</strong><br>
+              Date: <strong>${new Date(p.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</strong>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 45%;">Description</th>
+                <th style="width: 15%;">Days</th>
+                <th style="width: 20%;">Rate / Day</th>
+                <th style="width: 20%; text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="item-desc">Subscription - DealVoice Business</div>
+                  <span class="item-subtext">Subscription Period: ${new Date(p.fromDate).toLocaleDateString()} to ${new Date(p.toDate).toLocaleDateString()}</span>
+                  <span class="item-subtext">Total User Capacity: ${p.teamSizeMax} Users</span>
+                </td>
+                <td>${days}</td>
+                <td>₹${ratePerDay.toLocaleString()}</td>
+                <td style="text-align: right; font-weight: 600;">₹${amountRupees.toLocaleString()}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="summary-container">
+            <div class="summary-item">
+              <div class="summary-label">Subtotal</div>
+              <div class="summary-val">₹${amountRupees.toLocaleString()}</div>
+            </div>
+            <div class="summary-item">
+              <div class="summary-label">Tax (0%)</div>
+              <div class="summary-val">₹0.00</div>
+            </div>
+            <div class="summary-item" style="align-items: flex-end;">
+              <div class="summary-label">Total</div>
+              <div class="grand-total">₹${amountRupees.toLocaleString()}</div>
+            </div>
+          </div>
+
+          <div class="notes">
+            Please note that this is a system-generated invoice. For any queries regarding this payment or your subscription, feel free to reach out to our support team.
+            Thank you for your confidence in DealVoice.
+          </div>
+
+          <div class="footer-brand">
+            Softrate Global.
           </div>
         </div>
-        <div class="details">
-          <p><strong>Bill To:</strong><br>${this.companyProfile?.companyName}<br>${this.companyProfile?.email}</p>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th>Period</th>
-              <th>Capacity</th>
-              <th style="text-align: right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Subscription Renewal</td>
-              <td>${new Date(p.fromDate).toLocaleDateString()} to ${new Date(p.toDate).toLocaleDateString()}</td>
-              <td>${p.teamSizeMax} Users</td>
-              <td style="text-align: right">₹${(p.amount / 100).toLocaleString()}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="total">Total Paid: ₹${(p.amount / 100).toLocaleString()}</div>
-        <div class="footer">
-          Thank you for choosing Softrate Record! This is a system generated document.
-        </div>
-        <script>window.print();</script>
+        <script>
+          window.onload = () => {
+            setTimeout(() => {
+              window.print();
+              setTimeout(() => window.close(), 500);
+            }, 1000);
+          };
+        </script>
       </body>
       </html>
     `;
