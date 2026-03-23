@@ -176,6 +176,12 @@ export class AppComponent implements OnInit {
     this.forgotEmail = '';
   }
 
+  openForgotFromSettings(): void {
+    const email = this.companyProfile?.email || '';
+    this.openForgotPwd();
+    this.forgotEmail = email;
+  }
+
   closeModals(): void {
     this.isLoginOpen = false;
     this.isSignupOpen = false;
