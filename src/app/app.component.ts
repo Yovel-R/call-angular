@@ -846,9 +846,18 @@ export class AppComponent implements OnInit {
       return;
     }
 
-    const labels = this.timelineData.map(d =>
-      new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' })
-    );
+    const isHourly = this.timelineData.length > 0 && this.timelineData[0]._isHourly;
+    const labels = this.timelineData.map(d => {
+      const dt = new Date(d.date);
+      if (isHourly) {
+        // Show hours: 08 AM, 02 PM, etc.
+        const h = dt.getHours();
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const displayH = h % 12 || 12;
+        return `${String(displayH).padStart(2, '0')} ${ampm}`;
+      }
+      return dt.toLocaleDateString('en-US', { weekday: 'short' });
+    });
     const totalCalls = this.timelineData.map(d =>
       (d.incoming || 0) + (d.outgoing || 0) + (d.missed || 0) + (d.rejected || 0)
     );
@@ -1004,7 +1013,7 @@ export class AppComponent implements OnInit {
       const calls = [...this.selectedEmpCalls].reverse();
       calls.forEach(c => {
         const d = new Date(c.timestamp);
-        const k = this.selectedPeriod === 'today'
+        const k = (this.selectedPeriod === 'today' || this.selectedPeriod === 'yesterday')
           ? (d.getHours() % 12 || 12) + (d.getHours() >= 12 ? ' PM' : ' AM')
           : d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' });
         map.set(k, (map.get(k) || 0) + 1);
