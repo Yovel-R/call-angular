@@ -1384,8 +1384,8 @@ export class AppComponent implements OnInit {
     const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
 
     const subtotal = teamSizeMax * 10 * days;
-    const tax = Math.round(subtotal * 0.18);
-    this.renewCostPreview = { days, teamSizeMax, amountRupees: subtotal + tax };
+    const tax = subtotal * 0.18;
+    this.renewCostPreview = { days, teamSizeMax, amountRupees: parseFloat((subtotal + tax).toFixed(2)) };
   }
 
   onToDateChange(): void {
@@ -1405,8 +1405,8 @@ export class AppComponent implements OnInit {
     const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
     
     const subtotal = teamSizeMax * 10 * days;
-    const tax = Math.round(subtotal * 0.18);
-    this.paymentCostPreview = { days, teamSizeMax, amountRupees: subtotal + tax };
+    const tax = subtotal * 0.18;
+    this.paymentCostPreview = { days, teamSizeMax, amountRupees: parseFloat((subtotal + tax).toFixed(2)) };
   }
 
   fetchPaymentHistory(): void {
@@ -1601,7 +1601,7 @@ export class AppComponent implements OnInit {
       <body>
         <div class="a4-container">
           <div class="header">
-            <img class="logo" src="https://calluserfrontend.netlify.app/assets/icon/logo.png" alt="DealVoice">
+            <img class="logo" src="/assets/icon/logo.png" alt="DealVoice">
             <div class="seller-info">
               Softrate Technologies Private Limited<br>
               dealvoice.co | support@softrate.com | GSTN: 33ABKCS4479F1Z2
@@ -1656,15 +1656,15 @@ export class AppComponent implements OnInit {
           <div class="summary-container">
             <div class="summary-item">
               <div class="summary-label">Subtotal</div>
-              <div class="summary-val">₹${((p.subtotal || (p.amount / 1.18)) / 100).toLocaleString()}</div>
+              <div class="summary-val">₹${((p.subtotal || (p.amount / 1.18)) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
             <div class="summary-item">
               <div class="summary-label">Tax (18% GST)</div>
-              <div class="summary-val">₹${((p.tax || (p.amount - (p.amount / 1.18))) / 100).toLocaleString()}</div>
+              <div class="summary-val">₹${((p.tax || (p.amount - (p.amount / 1.18))) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
             <div class="summary-item" style="align-items: flex-end;">
               <div class="summary-label">Total Amount</div>
-              <div class="grand-total">₹${(p.amount / 100).toLocaleString()}</div>
+              <div class="grand-total">₹${(p.amount / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
             </div>
           </div>
 

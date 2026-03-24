@@ -1525,12 +1525,14 @@
                           <line x1="1" y1="10" x2="23" y2="10"></line>
                         </ng-container>
                       </svg>
-                      {{ renewLoading ? 'Opening...' : 'Renew Now' }}
+                      {{ renewLoading ? 'Processing...' : 'Renew Now' }}
                     </button>
                   </div>
                   <div *ngIf="renewCostPreview" style="margin-top:0.85rem;font-size:0.85rem;color:#64748b;">
-                    Total (Incl. 18% GST): <strong style="color:#4f46e5;">₹{{ renewCostPreview.amountRupees | number }}</strong>
-                    <span style="font-size:0.8rem;opacity:0.8;"> ({{ renewCostPreview.teamSizeMax }} people × ₹10 × {{ renewCostPreview.days }} days)</span>
+                    Total (Incl. 18% GST): <strong style="color:#4f46e5;">₹{{ renewCostPreview.amountRupees | number:'1.2-2' }}</strong>
+                    <div style="font-size:0.8rem;opacity:0.8;margin-top:4px;">
+                      ({{ renewCostPreview.teamSizeMax }} people × ₹10 × {{ renewCostPreview.days }} days + 18% GST)
+                    </div>
                   </div>
                 </div>
     
@@ -1563,7 +1565,7 @@
                           <td>{{ p.createdAt | date:'dd MMM yyyy' }}</td>
                           <td style="color:#64748b;">{{ p.fromDate | date:'dd MMM' }} → {{ p.toDate | date:'dd MMM yyyy' }} ({{ p.days }}d)</td>
                           <td>{{ p.teamSizeMax }}</td>
-                          <td style="text-align:right;font-weight:700;color:var(--text-1);">₹{{ (p.amount / 100) | number:'1.0-0' }}</td>
+                          <td style="text-align:right;font-weight:700;color:var(--text-1);">₹{{ (p.amount / 100) | number:'1.2-2' }}</td>
                           <td>
                             <span [style.color]="p.status === 'paid' ? '#10b981' : p.status === 'failed' ? '#ef4444' : '#f59e0b'" style="font-weight:600;">
                               {{ p.status | titlecase }}
