@@ -1383,7 +1383,9 @@ export class AppComponent implements OnInit {
     const teamSizeVal = parseInt(this.companyProfile.teamSize.toString(), 10);
     const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
 
-    this.renewCostPreview = { days, teamSizeMax, amountRupees: teamSizeMax * 10 * days };
+    const subtotal = teamSizeMax * 10 * days;
+    const tax = Math.round(subtotal * 0.18);
+    this.renewCostPreview = { days, teamSizeMax, amountRupees: subtotal + tax };
   }
 
   onToDateChange(): void {
@@ -1402,7 +1404,9 @@ export class AppComponent implements OnInit {
     const teamSizeVal = parseInt(this.signupForm.teamSize.toString(), 10);
     const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
     
-    this.paymentCostPreview = { days, teamSizeMax, amountRupees: teamSizeMax * 10 * days };
+    const subtotal = teamSizeMax * 10 * days;
+    const tax = Math.round(subtotal * 0.18);
+    this.paymentCostPreview = { days, teamSizeMax, amountRupees: subtotal + tax };
   }
 
   fetchPaymentHistory(): void {
@@ -1599,8 +1603,8 @@ export class AppComponent implements OnInit {
           <div class="header">
             <img class="logo" src="https://calluserfrontend.netlify.app/assets/icon/logo.png" alt="DealVoice">
             <div class="seller-info">
-              Softrate Global<br>
-              dealvoice.co | support@softrate.com
+              Softrate Technologies Private Limited<br>
+              dealvoice.co | support@softrate.com | GSTN: 33ABKCS4479F1Z2
             </div>
           </div>
 
@@ -1632,7 +1636,7 @@ export class AppComponent implements OnInit {
                 <th style="width: 45%;">Description</th>
                 <th style="width: 15%;">Days</th>
                 <th style="width: 20%;">Rate / Day</th>
-                <th style="width: 20%; text-align: right;">Total</th>
+                <th style="width: 20%; text-align: right;">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -1644,7 +1648,7 @@ export class AppComponent implements OnInit {
                 </td>
                 <td>${days}</td>
                 <td>₹${ratePerDay.toLocaleString()}</td>
-                <td style="text-align: right; font-weight: 600;">₹${amountRupees.toLocaleString()}</td>
+                <td style="text-align: right; font-weight: 600;">₹${((p.subtotal || (p.amount / 1.18)) / 100).toLocaleString()}</td>
               </tr>
             </tbody>
           </table>
@@ -1652,15 +1656,15 @@ export class AppComponent implements OnInit {
           <div class="summary-container">
             <div class="summary-item">
               <div class="summary-label">Subtotal</div>
-              <div class="summary-val">₹${amountRupees.toLocaleString()}</div>
+              <div class="summary-val">₹${((p.subtotal || (p.amount / 1.18)) / 100).toLocaleString()}</div>
             </div>
             <div class="summary-item">
-              <div class="summary-label">Tax (0%)</div>
-              <div class="summary-val">₹0.00</div>
+              <div class="summary-label">Tax (18% GST)</div>
+              <div class="summary-val">₹${((p.tax || (p.amount - (p.amount / 1.18))) / 100).toLocaleString()}</div>
             </div>
             <div class="summary-item" style="align-items: flex-end;">
-              <div class="summary-label">Total</div>
-              <div class="grand-total">₹${amountRupees.toLocaleString()}</div>
+              <div class="summary-label">Total Amount</div>
+              <div class="grand-total">₹${(p.amount / 100).toLocaleString()}</div>
             </div>
           </div>
 
@@ -1670,7 +1674,7 @@ export class AppComponent implements OnInit {
           </div>
 
           <div class="footer-brand">
-            Softrate Global.
+            Softrate Technologies Private Limited.
           </div>
         </div>
         <script>

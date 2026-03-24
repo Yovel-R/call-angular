@@ -413,7 +413,7 @@
             [min]="minToDate" (change)="onToDateChange()" required>
           <!-- Live cost preview -->
           <div *ngIf="paymentCostPreview" class="payment-preview-box" style="margin-top:0.75rem;padding:0.85rem 1rem;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
-            <div style="font-size:0.8rem;color:var(--text-3);margin-bottom:0.25rem;">Estimated Cost</div>
+            <div style="font-size:0.8rem;color:var(--text-3);margin-bottom:0.25rem;">Total (Incl. 18% GST)</div>
             <div style="display:flex;gap:1.5rem;align-items:baseline;flex-wrap:wrap;">
               <div><span style="font-size:1.6rem;font-weight:700;color:#6366f1;">₹{{ paymentCostPreview.amountRupees | number }}</span></div>
               <div style="font-size:0.8rem;color:var(--text-3);line-height:1.5;">
@@ -1529,7 +1529,7 @@
                     </button>
                   </div>
                   <div *ngIf="renewCostPreview" style="margin-top:0.85rem;font-size:0.85rem;color:#64748b;">
-                    Estimated: <strong style="color:#4f46e5;">₹{{ renewCostPreview.amountRupees | number }}</strong>
+                    Total (Incl. 18% GST): <strong style="color:#4f46e5;">₹{{ renewCostPreview.amountRupees | number }}</strong>
                     <span style="font-size:0.8rem;opacity:0.8;"> ({{ renewCostPreview.teamSizeMax }} people × ₹10 × {{ renewCostPreview.days }} days)</span>
                   </div>
                 </div>
