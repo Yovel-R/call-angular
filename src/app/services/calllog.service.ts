@@ -12,6 +12,8 @@ export interface CallStats {
   totalDuration: number;
   total: number;
   connected: number;
+  incomingConnected: number;
+  outgoingConnected: number;
 }
 
 export interface EmployeeCallStat {
@@ -23,6 +25,9 @@ export interface EmployeeCallStat {
   rejected: number;
   totalDuration: number;
   total: number;
+  connected: number;
+  incomingConnected: number;
+  outgoingConnected: number;
 }
 
 @Injectable({ providedIn: 'root' })

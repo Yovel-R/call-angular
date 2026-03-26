@@ -1241,10 +1241,10 @@
                 <td>{{ fmtDur(row.stats?.totalDuration || 0) }}</td>
 
                 <!-- Connected equals Incoming + Outgoing -->
-                <td>{{ (row.stats?.incoming || 0) + (row.stats?.outgoing || 0) }}</td>
+                <td>{{ row.stats?.connected || 0 }}</td>
                 <td>{{ fmtDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0)) }}</td>
                 <td>{{ fmtAvgDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0),
-                  (row.stats?.incoming || 0) + (row.stats?.outgoing || 0)) }}</td>
+                  row.stats?.connected || 0) }}</td>
 
                 <!-- Working Hours (mirrors total duration) -->
                 <td>{{ fmtDur(row.stats?.totalDuration || 0) }}</td>
@@ -1256,14 +1256,14 @@
                 <ng-container *ngIf="!filterCallType || filterCallType === 'Incoming'">
                   <td>{{ row.stats?.incoming || 0 }}</td>
                   <td>{{ fmtDur(row.stats?.incomingDuration || 0) }}</td>
-                  <td>{{ row.stats?.incoming || 0 }}</td>
+                  <td>{{ row.stats?.incomingConnected || 0 }}</td>
                 </ng-container>
 
                 <!-- OUTGOING -->
                 <ng-container *ngIf="!filterCallType || filterCallType === 'Outgoing'">
                   <td>{{ row.stats?.outgoing || 0 }}</td>
                   <td>{{ fmtDur(row.stats?.outgoingDuration || 0) }}</td>
-                  <td>{{ row.stats?.outgoing || 0 }}</td>
+                  <td>{{ row.stats?.outgoingConnected || 0 }}</td>
                 </ng-container>
 
                 <!-- MISSED / REJECTED -->
@@ -1272,8 +1272,8 @@
 
                 <!-- OTHER -->
                 <td>0</td> <!-- Never attended -->
-                <td>{{ ((row.stats?.outgoing || 0) - (row.stats?.outgoing || 0)) > 0 ? ((row.stats?.outgoing || 0) -
-                  (row.stats?.outgoing || 0)) : 0 }}</td> <!-- Not pickup -->
+                <td>{{ ((row.stats?.outgoing || 0) - (row.stats?.outgoingConnected || 0)) > 0 ? ((row.stats?.outgoing || 0) -
+                  (row.stats?.outgoingConnected || 0)) : 0 }}</td> <!-- Not pickup -->
                 <td style="white-space:nowrap;font-size:0.8rem;color:var(--text-2);">{{ row.emp.lastSyncTime ?
                   (row.emp.lastSyncTime | date:'dd MMM yyyy, hh:mm a') : 'Never' }}</td>
               </tr>

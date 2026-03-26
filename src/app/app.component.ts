@@ -2210,9 +2210,9 @@ Thank You.`;
         'Employee': `${row.emp.name} (${row.emp.mobile})`,
         'Total Calls': row.stats?.total || 0,
         'Total Duration': this.fmtDur(row.stats?.totalDuration || 0),
-        'Connected Calls': (row.stats?.incoming || 0) + (row.stats?.outgoing || 0),
+        'Connected Calls': row.stats?.connected || 0,
         'Conn. Calls Duration': this.fmtDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0)),
-        'Conn. Call Avg. Duration': this.fmtAvgDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0), (row.stats?.incoming || 0) + (row.stats?.outgoing || 0)),
+        'Conn. Call Avg. Duration': this.fmtAvgDur((row.stats?.incomingDuration || 0) + (row.stats?.outgoingDuration || 0), row.stats?.connected || 0),
         'Working Hours': this.fmtDur(row.stats?.totalDuration || 0),
         'Unique Clients': 0,
         'Unique Conn. Calls': 0
@@ -2221,13 +2221,13 @@ Thank You.`;
       if (!this.filterCallType || this.filterCallType === 'Incoming') {
         obj['Incoming Total'] = row.stats?.incoming || 0;
         obj['Incoming Duration'] = this.fmtDur(row.stats?.incomingDuration || 0);
-        obj['Incoming Connected'] = row.stats?.incoming || 0;
+        obj['Incoming Connected'] = row.stats?.incomingConnected || 0;
       }
       
       if (!this.filterCallType || this.filterCallType === 'Outgoing') {
         obj['Outgoing Total'] = row.stats?.outgoing || 0;
         obj['Outgoing Duration'] = this.fmtDur(row.stats?.outgoingDuration || 0);
-        obj['Outgoing Connected'] = row.stats?.outgoing || 0;
+        obj['Outgoing Connected'] = row.stats?.outgoingConnected || 0;
       }
       
       if (!this.filterCallType || this.filterCallType === 'Missed') {
