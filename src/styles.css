@@ -5,6 +5,11 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
 :root {
   --bg:          #ffffff;
   --bg-card:     #ffffff;
@@ -25,7 +30,7 @@
   --text-3:      #94a3b8;
   --text-heading:#111827;
   --radius:      20px;
-  --font-head:   'Inter', sans-serif;
+  --font-head:   'Space Grotesk', sans-serif;
   --font-body:   'Inter', sans-serif;
 }
 

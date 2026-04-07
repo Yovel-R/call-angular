@@ -1,9 +1,9 @@
 <div class="page-wrapper" *ngIf="!loggedIn">
 
   <!-- ========== NAVBAR ========== -->
-  <nav class="navbar">
+  <nav class="navbar" [class.navbar-scrolled]="isNavbarScrolled">
     <div class="nav-container">
-      <div class="nav-brand">
+      <div class="nav-brand" (click)="goHome()" style="cursor:pointer;">
         <div class="brand-icon">
           <img src="assets/icon/logo.png" alt="DealVoice Logo">
         </div>
@@ -39,91 +39,531 @@
 
   <!-- ========== HERO ========== -->
   <section class="hero">
-    <div class="hero-bg-grid"></div>
-    <div class="hero-orb hero-orb-1"></div>
-    <div class="hero-orb hero-orb-2"></div>
     <div class="hero-container">
-      <div class="hero-badge"><span class="badge-dot"></span>Real-time Call Intelligence</div>
-      <h1 class="hero-title">Track Every Call.<br><span class="gradient-text">Optimize Every Interaction.</span></h1>
-      <p class="hero-subtitle">DealVoice gives your team full visibility into every incoming and outgoing call. Monitor
-        agents in real-time, analyze patterns, and boost performance with AI-driven insights.</p>
-      <div class="hero-cta">
-        <button class="cta-primary" (click)="openTrialSignup()">
-          Get Free Trial
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-              stroke-linejoin="round" />
-          </svg>
-        </button>
-        <button class="cta-secondary" (click)="openSignup(); isTrialRequest=false;">
-          Sign Up Paid
-        </button>
-      </div>
-      <div class="hero-stats">
-        <div class="stat-item"><span class="stat-number">2M+</span><span class="stat-label">Calls Tracked</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat-item"><span class="stat-number">500+</span><span class="stat-label">Organizations</span></div>
-        <div class="stat-divider"></div>
-        <div class="stat-item"><span class="stat-number">99.9%</span><span class="stat-label">Uptime SLA</span></div>
+      <h1 class="hero-title">The Intelligent CRM for<br><span class="gradient-text">sales deal closing.</span></h1>
+      
+      <div class="hero-action-row">
+        <div class="hero-cta">
+          <button class="cta-primary" (click)="openTrialSignup()">
+            Book a demo
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </button>
+        </div>
+        <p class="hero-subtitle">DealVoice automates the heavy lifting of sales pipeline management. Live in hours. Learning from every deal.</p>
       </div>
     </div>
-    <div class="hero-dashboard">
-      <div class="dashboard-card">
-        <div class="dashboard-header">
-          <div class="dashboard-title"><span class="live-dot"></span>Live Call Monitor</div>
-          <span class="dashboard-date">Today, 4:12 PM</span>
+    <div class="hero-image-wrapper" (mousemove)="onHeroMouseMove($event)" 
+         (mouseenter)="isDashHovered = true" (mouseleave)="isDashHovered = false">
+      <img src="assets/images/hero page.png" alt="DealVoice Dashboard Preview" class="dashboard-preview-image grayscale">
+      <div class="color-reveal" [style.--mouse-x]="dashMouseX + '%'" [style.--mouse-y]="dashMouseY + '%'"
+           [class.active]="isDashHovered">
+        <img src="assets/images/hero page.png" alt="" class="dashboard-preview-image">
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TRUSTED BY ========== -->
+  <section class="trusted-by">
+    <div class="trusted-container">
+      <h2 class="trusted-header">Trusted by <span class="dark-text">high-performing sales teams</span></h2>
+      <div class="logo-grid">
+        <div class="logo-card">
+          <div class="logo-placeholder">BAHN<span class="light-text">BKK</span></div>
         </div>
-        <div class="call-list">
-          <div class="call-item call-active">
-            <div class="call-avatar">RS</div>
-            <div class="call-info"><span class="caller-name">Raj Sharma</span><span class="caller-number">+91 9876 543
-                210</span></div>
-            <div class="call-meta"><span class="call-duration active">04:22</span><span
-                class="call-badge incoming">Incoming</span></div>
+        <div class="logo-card">
+          <div class="logo-placeholder smaller">CONSULTING</div>
+        </div>
+        <div class="logo-card">
+          <div class="logo-placeholder-mkk">
+            <span class="mkk-main">mkk</span>
+            <span class="mkk-sub">meine krankenkasse</span>
           </div>
-          <div class="call-item">
-            <div class="call-avatar av2">PK</div>
-            <div class="call-info"><span class="caller-name">Priya Kumar</span><span class="caller-number">+91 9845 231
-                101</span></div>
-            <div class="call-meta"><span class="call-duration">02:07</span><span
-                class="call-badge outgoing">Outgoing</span></div>
-          </div>
-          <div class="call-item">
-            <div class="call-avatar av3">AM</div>
-            <div class="call-info"><span class="caller-name">Arjun Mehta</span><span class="caller-number">+91 9004 876
-                532</span></div>
-            <div class="call-meta"><span class="call-duration">00:53</span><span class="call-badge missed">Missed</span>
+        </div>
+        <div class="logo-card">
+          <div class="logo-placeholder-hintco">
+            <div class="hintco-icon">
+              <span></span><span></span>
             </div>
+            <span class="hintco-text">Hintco</span>
           </div>
         </div>
-        <div class="dashboard-metrics">
-          <div class="metric"><span class="metric-value">42</span><span class="metric-label">Active Calls</span></div>
-          <div class="metric"><span class="metric-value">3m 14s</span><span class="metric-label">Avg Duration</span>
+        <div class="logo-card">
+          <div class="logo-placeholder-sutherland">
+            <svg viewBox="0 0 24 24" class="sutherland-icon"><path d="M12 2L2 7l10 5l10-5l-10-5zM2 17l10 5l10-5M2 12l10 5l10-5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            SUTHERLAND
           </div>
-          <div class="metric"><span class="metric-value">96%</span><span class="metric-label">Connect Rate</span></div>
+        </div>
+        <div class="logo-card">
+          <div class="logo-placeholder-zurich">
+            <div class="zurich-icon">Z</div>
+            ZURICH
+          </div>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- ========== BENEFITS ========== -->
+  <section class="benefits">
+    <div class="benefits-container">
+      <div class="benefits-badge">
+        <span class="badge-dot"></span>
+        Benefits
+      </div>
+      <h2 class="benefits-title">
+        Smart Sales Automation: <span class="dark-text">Efficiency at scale with intelligent workflows</span>
+      </h2>
+
+      <div class="benefits-grid">
+        <!-- Manual Work Card -->
+        <div class="benefit-card warning">
+          <div class="benefit-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 18c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <h3 class="benefit-card-title">Your sales reps are buried in manual work</h3>
+          <p class="benefit-card-desc">
+            Sales reps in growing teams spend 30–50% of their time on repetitive tasks logging calls, updating pipelines, chasing follow-ups. The cost: slower deal cycles, growing backlogs, and burned-out reps.
+          </p>
+        </div>
+
+        <!-- AI Agent Card -->
+        <div class="benefit-card success">
+          <div class="benefit-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="black" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <div class="benefit-content-wrap">
+            <div class="benefit-text">
+              <h3 class="benefit-card-title">An intelligent CRM built for modern sales execution</h3>
+              <p class="benefit-card-desc">
+                DealVoice handles the heavy lifting of your sales process from automated follow-ups and conversation tracking to lead organization and performance insights. The result: faster deal closures, better engagement, and sales teams focused on selling, not admin work.
+              </p>
+            </div>
+            <div class="tag-cloud-visual">
+              <div class="tag-row">
+                <span class="tag-pill">Lead Management</span>
+                <span class="tag-pill">Live Calls Tracking</span>
+                <span class="tag-pill">WhatsApp & SMS Conversations</span>
+              </div>
+              <div class="tag-row offset">
+                <span class="tag-pill">Follow-up Bookmarking</span>
+                <span class="tag-pill">Performance Monitoring</span>
+              </div>
+              <div class="tag-row">
+                <span class="tag-pill">Sales Analytics</span>
+                <span class="tag-pill">Team Monitoring</span>
+              </div>
+              <!-- Connector line visual -->
+              <svg class="connector-line" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0,80 L40,65 L70,75 L100,10" stroke="#14b8a6" fill="none" stroke-width="2"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">> 95 <span class="unit">%</span></div>
+          <div class="stat-label">follow-up accuracy rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">80 <span class="unit">%</span></div>
+          <div class="stat-label">faster deal closing</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">< 1 <span class="unit">min</span></div>
+          <div class="stat-label">per lead update</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CUSTOM CTA / CUSTOMIZATION ========== -->
+  <section class="custom-cta">
+    <div class="cta-container">
+      <h2 class="cta-title">
+        Need a smart CRM tailored for your<br>
+        <span class="highlight">specific sales workflows?</span>
+      </h2>
+      <p class="cta-subtitle">
+        We’ll customize it to match your process, faster and better than anyone else.
+      </p>
+      
+      <div class="cta-details">
+        <p>
+          We analyze your sales flow, identify high-impact touchpoints, and configure DealVoice to fit your team — live in days, not months. From there, DealVoice learns from every deal and gets smarter continuously.
+        </p>
+      </div>
+
+      <button class="cta-action-btn" (click)="openTrialSignup()">
+        Let’s build your sales system
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </section>
+  <!-- ========== HOW IT WORKS ========== -->
+  <section class="how-it-works">
+    <div class="how-container">
+      <div class="benefits-badge">
+        <span class="badge-dot"></span>
+        HOW IT WORKS
+      </div>
+      <h2 class="benefits-title">
+        How it <span class="dark-text">works</span>
+      </h2>
+      <p class="section-subtitle">
+        Sales teams working with DealVoice get more done — faster, better, every deal
+      </p>
+
+      <div class="step-grid">
+        <!-- Step 1 -->
+        <div class="step-card">
+          <div class="step-header">
+            <span class="step-number">1. </span>
+            <h3 class="step-title">Install DealVoice</h3>
+          </div>
+          <p class="step-desc">Download and set up DealVoice from the Play Store in minutes.</p>
+          <div class="step-ui-visual">
+            <img src="assets/images/how-to/step-1.webp" alt="Instructional Visual 1">
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <div class="step-header">
+            <span class="step-number">2. </span>
+            <h3 class="step-title">Connect your team</h3>
+          </div>
+          <p class="step-desc">Enter your organization key to securely connect your team and workflows.</p>
+          <div class="step-ui-visual">
+            <img src="assets/images/how-to/step-2.webp" alt="Instructional Visual 2">
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <div class="step-header">
+            <span class="step-number">3. </span>
+            <h3 class="step-title">Start tracking & selling</h3>
+          </div>
+          <p class="step-desc">Begin managing conversations, tracking leads, and monitoring performance — all in one place.</p>
+          <div class="step-ui-visual">
+            <img src="assets/images/how-to/step-3.webp" alt="Instructional Visual 3">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TESTIMONIALS ========== -->
+  <section class="testimonials">
+    <div class="testimonial-container">
+      <div class="testimonial-header-row">
+        <div class="header-left">
+          <div class="benefits-badge">
+            <span class="badge-dot"></span>
+            Customer reviews
+          </div>
+          <h2 class="benefits-title">
+            How DealVoice automates deal closing, <span class="dark-text">in our customers’ words</span>
+          </h2>
+        </div>
+        <div class="slider-nav">
+          <button class="nav-btn prev" (click)="prevTestimonial()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <button class="nav-btn next" (click)="nextTestimonial()">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div> <!-- End header-row -->
+
+      <div class="testimonial-slider-viewport">
+        <div class="testimonial-slider-track" [style.transform]="'translateX(-' + (currentTestimonialIndex * 100) + '%)'">
+          <div class="testimonial-card" *ngFor="let testimonial of testimonials">
+            <div class="card-left">
+              <img [src]="testimonial.image" alt="Customer Profile" class="portrait">
+            </div>
+            <div class="card-middle">
+              <p class="quote">“{{ testimonial.quote }}”</p>
+              <div class="card-footer">
+                <div class="reviewer-info">
+                  <h4 class="name">{{ testimonial.author }}</h4>
+                  <p class="role">{{ testimonial.title }}</p>
+                </div>
+                <div class="customer-logo">
+                  <div class="placeholder-company-logo">
+                    <span class="dot"></span>
+                    Partner Firm
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-right">
+              <div class="impact-stats-stack">
+                <div class="impact-stat" *ngFor="let stat of testimonial.stats">
+                  <div class="stat-main">
+                    <span class="value">{{ stat.value }}</span>
+                    <div class="stat-icon-wrapper">
+                      <svg viewBox="0 0 24 24" width="12" height="12" class="stat-arrow-diag"><path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" stroke-width="2.5" fill="none"/></svg>
+                    </div>
+                  </div>
+                  <p class="label">{{ stat.label }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TRANSFORM BANNER ========== -->
+  <section class="transform-banner">
+    <div class="banner-gradient-mesh">
+      <div class="mesh-orb orb-1"></div>
+      <div class="mesh-orb orb-2"></div>
+      <div class="mesh-orb orb-3"></div>
+    </div>
+    <div class="banner-container">
+      <h2 class="banner-title">
+        Transform your <span class="highlight">sales team performance</span>
+      </h2>
+      <button class="banner-btn" (click)="openTrialSignup()">
+        Talk to Sales
+      </button>
+    </div>
+  </section>
+
+  
+
+  
+  <!-- ========== IMPACT / DIFFERENTIATORS ==========
+  <section class="impact" id="analytics">
+    <div class="impact-container">
+      <div class="impact-content">
+        <div class="impact-badge">
+          <span class="badge-dot pulse-dot"></span>
+          The DealVoice Advantage
+        </div>
+        <h2 class="impact-title">Why Leading Teams <span class="gradient-text">Choose DealVoice</span></h2>
+        <p class="impact-desc">While most platforms just log calls, DealVoice provides the real-time visibility and omnichannel control you need to lead your industry. We differ by delivering intelligence, not just data.</p>
+        
+        <div class="impact-stats">
+          <div class="stat-item">
+            <div class="stat-value">100%</div>
+            <div class="stat-desc">Zero-latency tracking. Watch your team's live pulse without the standard 30-second delay.</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">Native</div>
+            <div class="stat-desc">Official WhatsApp Business API integration built directly into your dashboard.</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">Automated</div>
+            <div class="stat-desc">AI-powered agent scoring evaluates every call so you don't have to listen to hours of audio.</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">Instant</div>
+            <div class="stat-desc">Go live in less than 5 minutes with our Frictionless Onboarding — no setup fees required.</div>
+          </div>
+        </div>
+      </div>
+      <div class="impact-visual">
+         <img src="assets/images/left-image.png" alt="How we differ - Competitive Advantage" class="impact-img">
+      </div>
+    </div>
+  </section> -->
+
+  <!-- ========== PRICING ========== -->
+  <section class="pricing" id="pricing">
+    <div class="header-decoration-wrap">
+      <div class="pricing-orb-1"></div>
+      <div class="pricing-orb-2"></div>
+    </div>
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-tag">FLEXIBLE PRICING</span>
+        <h2 class="section-title">Scale with Confidence</h2>
+        <p class="section-subtitle">From solo entrepreneurs to large enterprises, we have a plan that fits your ambition.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Basic -->
+        <div class="pricing-card">
+          <div class="plan-name">Basic</div>
+          <div class="plan-price">
+            <span class="price-currency">₹</span>
+            <span class="price-amount">90</span>
+            <span class="price-period">Per User/Month</span>
+          </div>
+          <button class="plan-cta" (click)="openSignup()">Sign Up Now</button>
+          
+          <ul class="plan-features">
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              1 Free Phone Number
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Free WhatsApp Business API
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Voicemail
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Click to Dial
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              SMS (Text messages) & MMS
+            </li>
+          </ul>
+        </div>
+
+        <!-- Starter -->
+        <div class="pricing-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">
+            <span class="price-currency">₹</span>
+            <span class="price-amount">1,659</span>
+            <span class="price-period">Per User/Month</span>
+          </div>
+          <button class="plan-cta primary" (click)="openTrialSignup()">10-Day Free Trial</button>
+          
+          <div class="plan-subtitle">Everything in Basic + Telephony</div>
+          <ul class="plan-features">
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Unlimited Minutes (In/Out)
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Free WhatsApp Business API
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              100 SMS Monthly
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Basic Report Analytics
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Free Omnichannel Inbox
+            </li>
+          </ul>
+          <div class="view-all-features">View all Features</div>
+        </div>
+
+        <!-- Professional -->
+        <div class="pricing-card popular">
+          <div class="popular-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.27 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Most Popular
+          </div>
+          <div class="plan-name">Professional</div>
+          <div class="plan-price">
+            <span class="price-currency">₹</span>
+            <span class="price-amount">2,759</span>
+            <span class="price-period">Per User/Month</span>
+          </div>
+          <button class="plan-cta primary" (click)="openTrialSignup()">10-Day Free Trial</button>
+          
+          <div class="plan-subtitle">Everything in Starter +</div>
+          <ul class="plan-features">
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Unlimited Minutes (In/Out)
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Free WhatsApp Business API
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              500 SMS Monthly
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Advanced Call Recordings
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Deeper Reports / Analytics
+            </li>
+          </ul>
+          <div class="view-all-features">View all Features</div>
+        </div>
+
+        <!-- Ultimate -->
+        <div class="pricing-card">
+          <div class="plan-name">Ultimate</div>
+          <div class="plan-price">
+            <span class="price-currency">₹</span>
+            <span class="price-amount">3,865</span>
+            <span class="price-period">Per User/Month</span>
+          </div>
+          <button class="plan-cta primary" (click)="openTrialSignup()">10-Day Free Trial</button>
+          
+          <div class="plan-subtitle">Everything in Professional +</div>
+          <ul class="plan-features">
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Unlimited Minutes (In/Out)
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              1000 SMS Monthly
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Dedicated Account Manager
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Custom API Integrations
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Single Sign-On (SSO) Support
+            </li>
+            <li class="plan-feature">
+              <svg class="feature-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Premium CRM-Based Routing
+            </li>
+          </ul>
+          <div class="view-all-features">View all Features</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
   <!-- ========== FEATURES ========== -->
   <section class="features" id="features">
     <div class="section-container">
       <div class="section-header">
-        <span class="section-tag">FEATURES</span>
-        <h2 class="section-title">Everything you need to master your calls</h2>
-        <p class="section-subtitle">From real-time monitoring to deep analytics — DealVoice has it all.</p>
+        <span class="section-tag">CORE FEATURES</span>
+        <h2 class="section-title">Everything you need to master your communication</h2>
+        <p class="section-subtitle">DealVoice provides a comprehensive suite of tools designed to optimize every interaction.</p>
       </div>
       <div class="features-grid">
+        <!-- Feature 1: Real-Time Monitoring -->
         <div class="feature-card feature-large">
-          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+          <div class="feature-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" />
+              <path d="M2 17L12 22L22 17" />
+              <path d="M2 12L12 17L22 12" />
             </svg></div>
-          <h3>Real-Time Call Monitoring</h3>
-          <p>Watch every active call as it happens. See agent, duration, caller ID, and connection quality — updated
-            every second.</p>
+          <h3>Real-Time Call Tracking</h3>
+          <p>Monitor every incoming and outgoing call as it happens. Get live updates on agent status, call duration, and connection quality.</p>
           <div class="feature-visual">
             <div class="mini-chart">
               <div class="bar" style="height:40%"></div>
@@ -136,56 +576,65 @@
             </div>
           </div>
         </div>
+
+        <!-- Feature 2: Smart Analytics -->
         <div class="feature-card">
-          <div class="feature-icon icon-purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M9 19V13L3 7V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-              <path d="M9 19V9L15 3V19H9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
-              <path d="M15 19V7L21 13V19H15Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+          <div class="feature-icon icon-purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+              <path d="M22 12A10 10 0 0 0 12 2v10z" />
             </svg></div>
-          <h3>Smart Analytics</h3>
-          <p>Uncover call patterns, peak hours, and agent performance metrics with intuitive dashboards.</p>
+          <h3>Advanced Analytics</h3>
+          <p>Uncover deep insights into call patterns, peak hours, and team performance with intuitive, interactive dashboards.</p>
         </div>
+
+        <!-- Feature 3: Call Recordings -->
         <div class="feature-card">
-          <div class="feature-icon icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                stroke="currentColor" stroke-width="2" />
-              <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <div class="feature-icon icon-green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" y1="19" x2="12" y2="23" />
+              <line x1="8" y1="23" x2="16" y2="23" />
             </svg></div>
-          <h3>Call History &amp; Replay</h3>
-          <p>Access complete call history with date-time filtering. Review past calls and agent interactions easily.</p>
+          <h3>Automatic Call Recording</h3>
+          <p>Record every conversation for compliance and quality assurance. Replay, download, or share recordings in seconds.</p>
         </div>
+
+        <!-- Feature 4: Agent Performance -->
         <div class="feature-card">
-          <div class="feature-icon icon-orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M18 8H19C20.1046 8 21 8.89543 21 10V20C21 21.1046 20.1046 22 19 22H5C3.89543 22 3 21.1046 3 20V10C3 8.89543 3.89543 8 5 8H6"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              <path d="M8 8V6C8 4.34315 9.34315 3 11 3H13C14.6569 3 16 4.34315 16 6V8" stroke="currentColor"
-                stroke-width="2" />
-              <path d="M12 13V17M10 15H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+          <div class="feature-icon icon-orange"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <polyline points="16 11 18 13 22 9" />
             </svg></div>
-          <h3>Agent Management</h3>
-          <p>Assign numbers to agents, track active/inactive status, and manage teams from a single control panel.</p>
+          <h3>Agent Performance Tracking</h3>
+          <p>Monitor agent activity and productivity. Set targets, track connection rates, and improve overall team efficiency.</p>
         </div>
+
+        <!-- Feature 5: WhatsApp & SMS Integration -->
         <div class="feature-card">
-          <div class="feature-icon icon-pink"><svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M15 17H20L18.3 14.7C18.1 14.4 18 14 18 13.6V10C18 7.3 16 5 13.5 4.2V4C13.5 2.9 12.6 2 11.5 2C10.4 2 9.5 2.9 9.5 4V4.2C7 5 5 7.3 5 10V13.6C5 14 4.9 14.4 4.7 14.7L3 17H9M15 17H9M15 17C15 18.7 13.4 20 11.5 20C9.6 20 8 18.7 8 17"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <div class="feature-icon icon-pink"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </svg></div>
-          <h3>Smart Alerts</h3>
-          <p>Get instant SMS or email alerts for missed calls, long-hold durations, or unusual call volumes.</p>
+          <h3>Omnichannel Integration</h3>
+          <p>Connect your official WhatsApp Business API and SMS gateway to manage all customer communication from one hub.</p>
         </div>
+
+        <!-- Feature 6: Smart Alerts -->
         <div class="feature-card feature-cta-card">
-          <h3>Ready to trace your first call?</h3>
-          <p>Set up takes less than 5 minutes. No credit card required.</p>
-          <button class="btn-signup" style="margin-top:1.5rem;width:100%;"
-            (click)="isTrialRequest=false; openSignup()">Start for Free →</button>
+          <div class="feature-icon" style="background: white; color: var(--accent);"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+          </svg></div>
+          <h3>Smart Instant Alerts</h3>
+          <p>Get immediate notifications for missed calls, long wait times, or unusual activity via SMS, Email, or Webhooks.</p>
+          <button class="btn-signup" style="margin-top:1.5rem;width:100%; border: 1px solid rgba(255,255,255,0.3);"
+            (click)="isTrialRequest=false; openSignup()">Get Started Now →</button>
         </div>
       </div>
     </div>
   </section>
 
+  
   <!-- ========== FOOTER ========== -->
   <footer class="footer">
     <div class="footer-container">
@@ -482,9 +931,9 @@
 <!-- ========== DASHBOARD (Post-Login) ========== -->
 <div class="dashboard-wrapper" *ngIf="loggedIn">
 
-  <nav class="navbar dashboard-nav">
+  <nav class="navbar dashboard-nav" [class.navbar-scrolled]="isNavbarScrolled">
     <div class="nav-container">
-      <div class="nav-brand">
+      <div class="nav-brand" (click)="goHome()" style="cursor:pointer;">
         <button class="dash-hamburger" (click)="toggleSidebar()">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" />
@@ -520,7 +969,7 @@
           </button>
         </ng-container>
 
-        <button class="btn-login" (click)="logout()">Log Out</button>
+        <button class="btn-login" (click)="openLogoutConfirm()">Log Out</button>
       </div>
     </div>
   </nav>
@@ -2090,5 +2539,22 @@
         {{ editEmployeeLoading ? 'Updating...' : 'Save Changes' }}
       </button>
     </form>
+  </div>
+</div>
+<!-- ========== LOGOUT CONFIRMATION MODAL ========== -->
+<div class="modal-overlay" [class.open]="isLogoutConfirmOpen" (click)="closeLogoutConfirm()">
+  <div class="modal logout-confirm-modal" (click)="$event.stopPropagation()" style="max-width: 400px;">
+    <button class="modal-close" (click)="closeLogoutConfirm()">✕</button>
+    <div class="modal-brand" style="margin-bottom: 1.5rem;">
+      <div class="brand-icon">
+        <img src="assets/icon/logo.png" alt="DealVoice Logo">
+      </div>
+    </div>
+    <h2 class="modal-title" style="margin: 0 0 0.5rem 0; text-align: center; width: 100%;">Log Out</h2>
+    <p class="modal-subtitle" style="text-align: center; width: 100%;">Are you sure you want to log out of your account?</p>
+    <div class="modal-actions" style="display: flex; gap: 1rem; margin-top: 2rem; width: 100%;">
+      <button type="button" class="cta-secondary" style="flex: 1; padding: 0.75rem; border-radius: 10px; justify-content: center;" (click)="closeLogoutConfirm()">Cancel</button>
+      <button type="button" class="btn-login" style="flex: 1; padding: 0.75rem; background: #ef4444; border-color: #ef4444; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center;" (click)="logout()">Log Out</button>
+    </div>
   </div>
 </div>

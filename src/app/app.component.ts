@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, HostListener } from '@angular/core';
 import { NgIf, NgFor, NgClass, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartType, registerables } from 'chart.js';
@@ -17,6 +17,19 @@ import * as XLSX from 'xlsx';
 })
 export class AppComponent implements OnInit {
   title = 'web-page';
+  isNavbarScrolled = false;
+
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    this.isNavbarScrolled = window.scrollY > 20;
+  }
+
+  goHome() {
+    if (this.loggedIn) {
+      this.loggedIn = false;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   // ── Signup / Login ─────────────────────────────────────────
   signupForm: RegisterPayload = {
@@ -85,6 +98,64 @@ export class AppComponent implements OnInit {
     return Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   }
 
+  // Spotlight Effect
+  dashMouseX = 50;
+  dashMouseY = 50;
+  isDashHovered = false;
+
+  onHeroMouseMove(event: MouseEvent): void {
+    const target = event.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    this.dashMouseX = ((event.clientX - rect.left) / rect.width) * 100;
+    this.dashMouseY = ((event.clientY - rect.top) / rect.height) * 100;
+  }
+
+  // --- Testimonials Slider Logic ---
+  currentTestimonialIndex = 0;
+  testimonials = [
+    {
+      quote: "DealVoice understands sales. Our reps were skeptical at first two weeks in, nobody wanted to go back. Follow-ups that used to slip through the cracks now get closed on time, at a higher conversion rate.",
+      author: "Rajesh Kumar",
+      title: "Head of Sales, Regional Distribution Company",
+      image: "assets/images/testimony/person 1.webp",
+      logo: "assets/images/logo-1.png",
+      stats: [
+        { value: "15 hrs", label: "saved per month per sales rep", icon: "arrow" },
+        { value: "99%", label: "user satisfaction score", icon: "arrow" }
+      ]
+    },
+    {
+      quote: "DealVoice completely changed how our team handles sales. What used to take hours of manual follow-ups and tracking is now automated and organized. Within weeks, our team saw faster responses, better conversions, and no lead slipping through the cracks.",
+      author: "Murugan",
+      title: "Sales Head, KAG Tiles",
+      image: "assets/images/testimony/person 2.webp",
+      logo: "assets/images/logo-2.png",
+      stats: [
+        { value: "12 hrs", label: "saved per month per user", icon: "arrow" },
+        { value: "95%", label: "user satisfaction score", icon: "arrow" }
+      ]
+    },
+    {
+      quote: "Managing a team of 20 reps used to feel like chaos deals falling through, no visibility, constant follow-ups missed. DealVoice gave us a real-time view of every rep's performance and every deal in the pipeline. Our close rate jumped in the first month.",
+      author: "Priya Menon",
+      title: "Sales Manager, Viruksham Innovations",
+      image: "assets/images/testimony/person 2.webp",
+      logo: "assets/images/logo-2.png",
+      stats: [
+        { value: "30%", label: "Increase in deal close rate", icon: "arrow" },
+        { value: "3X", label: "faster follow-up response time", icon: "arrow" }
+      ]
+    }
+  ];
+
+  nextTestimonial(): void {
+    this.currentTestimonialIndex = (this.currentTestimonialIndex + 1) % this.testimonials.length;
+  }
+
+  prevTestimonial(): void {
+    this.currentTestimonialIndex = (this.currentTestimonialIndex - 1 + this.testimonials.length) % this.testimonials.length;
+  }
+
   /** Show the due-end alert if ≤7 days remaining (including expired) */
   get showDueAlert(): boolean {
     if (!this.loggedIn || !this.companyProfile) return false;
@@ -140,11 +211,12 @@ export class AppComponent implements OnInit {
   dashTab: 'overview' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
   showShareModal = false;
   shareMessage = '';
+  isLogoutConfirmOpen = false;
 
   // ── Support & RM ───────────────────────────────────────────
   rmRequestLoading = false;
   rmRequestMessage = '';
-  
+
   adminRm = {
     name: '',
     phone: '',
@@ -192,6 +264,7 @@ export class AppComponent implements OnInit {
     this.isAddEmployeeOpen = false;
     this.isEditEmployeeOpen = false;
     this.showAllCallsModal = false;
+    this.isLogoutConfirmOpen = false;
   }
   private rmTimerInterval: any;
 
@@ -307,7 +380,7 @@ export class AppComponent implements OnInit {
     return this.employeeCallRows.filter(row => {
       // Filter by Tags
       if (this.filterTags && (!row.emp.tags || !row.emp.tags.includes(this.filterTags))) return false;
-      
+
       // Filter by Employee mobile
       if (this.filterEmployees && row.emp.mobile !== this.filterEmployees) return false;
 
@@ -526,8 +599,8 @@ export class AppComponent implements OnInit {
   fetchSummary(forceReload = false): void {
     // If we have it preloaded, skip hitting the API
     if (!forceReload && this.selectedPeriod !== 'custom' && this.preloadedCache[this.selectedPeriod].summaryLoaded) {
-       this.applyFilterLocally();
-       return;
+      this.applyFilterLocally();
+      return;
     }
 
     this.summaryLoading = true;
@@ -545,12 +618,12 @@ export class AppComponent implements OnInit {
         if (res.success) {
           this.summaryStats = res.stats;
           this.fetchPreviousStats(res.from, res.to);
-          
+
           setTimeout(() => {
             this.renderDonutChart();
             if (this.timelineData.length) this.renderTimelineChart();
           }, 500);
-          
+
         } else {
           this.summaryLoading = false;
         }
@@ -681,30 +754,30 @@ export class AppComponent implements OnInit {
     }
 
     const cache = this.preloadedCache[this.selectedPeriod];
-    
+
     // Only parse and display everything IF the big 3 are completely loaded, AND the employees list is loaded
     if (cache.summaryLoaded && cache.timelineLoaded && cache.employeesLoaded) {
       this.summaryStats = cache.summary || null;
       this.timelineData = cache.timeline || [];
-      
+
       // We only compute metrics if prev is loaded too, or we fallback if the summary API call was successful
       if (cache.prevSummaryLoaded && cache.summary) {
         this.calculateMetrics(this.summaryStats!, cache.prevSummary);
       } else if (cache.summary) {
         this.calculateMetrics(this.summaryStats!, null);
       }
-      
+
       // Delay map employee stats until `this.employees` array is successfully populated
       if (!this.employeesLoading) {
         this.mapEmployeeStats(cache.employees || []);
         this.empCallLoading = false;
       }
-      
+
       setTimeout(() => {
         if (this.summaryStats) this.renderDonutChart();
         if (this.timelineData && this.timelineData.length) this.renderTimelineChart();
       }, 50);
-      
+
       this.summaryLoading = false;
     }
   }
@@ -717,7 +790,7 @@ export class AppComponent implements OnInit {
       emp,
       stats: statsMap[emp.mobile] ?? null,
     }));
-    
+
     // Count employees who have at least 1 call in the current period
     this.activeEmployeeCount = this.employeeCallRows.filter(r => r.stats && (r.stats.total || 0) > 0).length;
   }
@@ -739,14 +812,14 @@ export class AppComponent implements OnInit {
         this.employeesLoading = false;
         if (res.success && res.employees) {
           this.employees = res.employees;
-          
+
           if (this.selectedPeriod !== 'custom') {
-             // Let the locally loaded trigger map it if cache is ready
-             const cache = this.preloadedCache[this.selectedPeriod];
-             if (cache.employeesLoaded) {
-                 this.mapEmployeeStats(cache.employees || []);
-                 this.empCallLoading = false;
-             }
+            // Let the locally loaded trigger map it if cache is ready
+            const cache = this.preloadedCache[this.selectedPeriod];
+            if (cache.employeesLoaded) {
+              this.mapEmployeeStats(cache.employees || []);
+              this.empCallLoading = false;
+            }
           } else {
             this.fetchEmployeeCallRows();
           }
@@ -763,7 +836,7 @@ export class AppComponent implements OnInit {
 
   fetchEmployeeCallRows(forceRefresh = false): void {
     if (!this.dashboardCode) return;
-    
+
     // Check if we can just use the preloaded array
     if (!forceRefresh && this.selectedPeriod !== 'custom') {
       const cache = this.preloadedCache[this.selectedPeriod];
@@ -809,7 +882,7 @@ export class AppComponent implements OnInit {
 
   syncAll(): void {
     this.syncAllLoading = true;
-    
+
     if (this.selectedPeriod === 'custom') {
       this.fetchSummary();
       this.fetchEmployeeCallRows();
@@ -1012,19 +1085,19 @@ export class AppComponent implements OnInit {
   }
 
   renderDonutChart(): void {
-    if (this.donutChart) { 
-      this.donutChart.destroy(); 
-      this.donutChart = null; 
+    if (this.donutChart) {
+      this.donutChart.destroy();
+      this.donutChart = null;
     }
-    
+
     const canvas = document.getElementById('donutChart') as HTMLCanvasElement;
-    
+
     // Guard: canvas not in DOM yet or hidden
     if (!canvas || !canvas.offsetParent) {
       setTimeout(() => this.renderDonutChart(), 200);
       return;
     }
-    
+
     if (!this.summaryStats) return;
 
     const s = this.summaryStats;
@@ -1399,11 +1472,11 @@ export class AppComponent implements OnInit {
     const [toY, toM, toD] = this.paymentToDate.split('-').map(Number);
     const to = new Date(toY, toM - 1, toD, 23, 59, 59, 999);
     const days = Math.ceil((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     // teamSize is now a direct number input, fallback to 10 if invalid
     const teamSizeVal = parseInt(this.signupForm.teamSize.toString(), 10);
     const teamSizeMax = isNaN(teamSizeVal) ? 10 : teamSizeVal;
-    
+
     const subtotal = teamSizeMax * 10 * days;
     const tax = subtotal * 0.18;
     this.paymentCostPreview = { days, teamSizeMax, amountRupees: parseFloat((subtotal + tax).toFixed(2)) };
@@ -1415,7 +1488,10 @@ export class AppComponent implements OnInit {
     this.paymentService.getHistory(this.dashboardCode).subscribe({
       next: (res) => {
         this.paymentHistoryLoading = false;
-        if (res.success) this.paymentHistory = res.payments;
+        if (res.success) {
+          this.paymentHistory = res.payments;
+          if ((res as any).keyId) this.razorpayKeyId = (res as any).keyId;
+        }
       },
       error: () => { this.paymentHistoryLoading = false; }
     });
@@ -1440,7 +1516,8 @@ export class AppComponent implements OnInit {
       days: p.days,
       companyName: this.companyProfile?.companyName,
       email: this.companyProfile?.email,
-      mobile: this.companyProfile?.mobile
+      mobile: this.companyProfile?.mobile,
+      keyId: this.razorpayKeyId
     };
     this.openRazorpay(orderData, true);
   }
@@ -1455,7 +1532,7 @@ export class AppComponent implements OnInit {
     const amountRupees = p.amount / 100;
     const days = p.days || 30; // fallback if missing
     const ratePerDay = p.paymentRatePerDay || 10; // fallback if missing
-    
+
     // Fallback company info if profile is not fully loaded
     const companyName = this.companyProfile?.companyName || 'Valued Customer';
     const companyEmail = this.companyProfile?.email || '';
@@ -1726,6 +1803,14 @@ export class AppComponent implements OnInit {
 
   goToLoginFromSuccess(): void { this.openLogin(); this.signupSuccess = false; }
 
+  openLogoutConfirm(): void {
+    this.isLogoutConfirmOpen = true;
+  }
+
+  closeLogoutConfirm(): void {
+    this.isLogoutConfirmOpen = false;
+  }
+
   logout(): void {
     this.loggedIn = false;
     this.dashboardCompany = '';
@@ -1733,6 +1818,7 @@ export class AppComponent implements OnInit {
     this.employees = [];
     this.summaryStats = null;
     this.selectedEmployee = null;
+    this.isLogoutConfirmOpen = false;
     if (this.timelineChart) { this.timelineChart.destroy(); this.timelineChart = null; }
     if (this.donutChart) { this.donutChart.destroy(); this.donutChart = null; }
     localStorage.removeItem('tracecall_user');
@@ -1877,7 +1963,7 @@ export class AppComponent implements OnInit {
           emp.tags = res.employee.tags;
 
           if (finalTag && !this.tagOptions.includes(finalTag)) {
-             this.tagOptions.push(finalTag);
+            this.tagOptions.push(finalTag);
           }
 
           this.editTagEmpId = null;
@@ -1928,7 +2014,7 @@ export class AppComponent implements OnInit {
     if (!this.dashboardCode) return;
     this.rmRequestLoading = true;
     this.rmRequestMessage = '';
-    
+
     this.authService.requestRm(this.dashboardCode).subscribe({
       next: (res: any) => {
         this.rmRequestLoading = false;
@@ -1949,7 +2035,7 @@ export class AppComponent implements OnInit {
 
   startRmTimer(requestTime: any): void {
     if (this.rmTimerInterval) clearInterval(this.rmTimerInterval);
-    
+
     const update = () => {
       const start = new Date(requestTime).getTime();
       const end = start + (8 * 60 * 60 * 1000);
@@ -1975,7 +2061,7 @@ export class AppComponent implements OnInit {
   assignAdminRm(): void {
     if (!this.dashboardCode) return;
     this.adminRmLoading = true;
-    
+
     this.authService.assignRm(this.dashboardCode, this.adminRm).subscribe({
       next: (res: any) => {
         this.adminRmLoading = false;
@@ -2025,7 +2111,7 @@ export class AppComponent implements OnInit {
     if (!this.dashboardCode) return;
     this.tagManagementLoading = true;
     this.tagManagementError = '';
-    
+
     this.authService.updateCompanyTags(this.dashboardCode, this.tagOptions).subscribe({
       next: (res: any) => {
         this.tagManagementLoading = false;
@@ -2050,7 +2136,7 @@ export class AppComponent implements OnInit {
     const code = this.companyProfile.companyCode || 'N/A';
     const email = this.companyProfile.email || 'N/A';
     const mobile = this.companyProfile.mobile || 'N/A';
-    
+
     this.shareMessage = `Hello,
 
 To register your employee using Callyzer Biz mobile app, please follow the step-by-step instructions mentioned in the link below:
@@ -2139,7 +2225,7 @@ Thank You.`;
         if (res.success) {
           this.companyProfile.teamSize = res.teamSize;
           this.dashboardTeamSize = parseInt(res.teamSize);
-          
+
           const raw = localStorage.getItem('tracecall_user');
           if (raw) {
             try {
@@ -2148,7 +2234,7 @@ Thank You.`;
               localStorage.setItem('tracecall_user', JSON.stringify(user));
             } catch { }
           }
-          
+
           this.editingTeamSize = false;
           this.saveTeamSizeSuccess = 'Team size updated!';
           setTimeout(() => this.saveTeamSizeSuccess = '', 3000);
@@ -2223,17 +2309,17 @@ Thank You.`;
         obj['Incoming Duration'] = this.fmtDur(row.stats?.incomingDuration || 0);
         obj['Incoming Connected'] = row.stats?.incomingConnected || 0;
       }
-      
+
       if (!this.filterCallType || this.filterCallType === 'Outgoing') {
         obj['Outgoing Total'] = row.stats?.outgoing || 0;
         obj['Outgoing Duration'] = this.fmtDur(row.stats?.outgoingDuration || 0);
         obj['Outgoing Connected'] = row.stats?.outgoingConnected || 0;
       }
-      
+
       if (!this.filterCallType || this.filterCallType === 'Missed') {
         obj['Missed Total'] = row.stats?.missed || 0;
       }
-      
+
       if (!this.filterCallType || this.filterCallType === 'Rejected') {
         obj['Rejected Total'] = row.stats?.rejected || 0;
       }
