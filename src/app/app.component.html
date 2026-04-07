@@ -209,7 +209,7 @@
         </div>
       </div> <!-- End header-row -->
 
-      <div class="testimonial-slider-viewport">
+      <div class="testimonial-slider-viewport" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
         <div class="testimonial-slider-track" [style.transform]="'translateX(-' + (currentTestimonialIndex * 100) + '%)'">
           <div class="testimonial-card" *ngFor="let testimonial of testimonials">
             <div class="card-left">

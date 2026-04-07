@@ -156,6 +156,27 @@ export class AppComponent implements OnInit {
     this.currentTestimonialIndex = (this.currentTestimonialIndex - 1 + this.testimonials.length) % this.testimonials.length;
   }
 
+  touchStartX = 0;
+  touchEndX = 0;
+
+  onTouchStart(event: TouchEvent): void {
+    this.touchStartX = event.changedTouches[0].screenX;
+  }
+
+  onTouchEnd(event: TouchEvent): void {
+    this.touchEndX = event.changedTouches[0].screenX;
+    this.handleSwipeGesture();
+  }
+
+  handleSwipeGesture(): void {
+    const swipeThreshold = 50; 
+    if (this.touchEndX < this.touchStartX - swipeThreshold) {
+      this.nextTestimonial();
+    } else if (this.touchEndX > this.touchStartX + swipeThreshold) {
+      this.prevTestimonial();
+    }
+  }
+
   /** Show the due-end alert if ≤7 days remaining (including expired) */
   get showDueAlert(): boolean {
     if (!this.loggedIn || !this.companyProfile) return false;
