@@ -4347,6 +4347,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   line-height: 1.1;
   letter-spacing: -0.04em;
   max-width: 900px;
+  margin-bottom: 1rem;
 }
 
 .benefits-title .dark-text {
@@ -4421,7 +4422,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  justify-content: center;
 }
 
 .tag-row {
@@ -4788,7 +4788,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
    SECURITY SECTION
    ============================================= */
 .security-section {
-  padding: 8rem 4rem;
+  padding: 1rem 4rem;
   background: #fff;
 }
 
@@ -5066,7 +5066,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
    TESTIMONIALS SECTION
    ============================================= */
 .testimonials {
-  padding: 1rem 2rem;
+  padding: 1rem 2rem 2rem 2rem;
   background: #fff;
 }
 
@@ -5272,6 +5272,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
    CUSTOM CRM CTA SECTION
    ============================================= */
 .custom-cta {
+  margin: 1rem 0rem;
   padding: 5rem 4rem;
   background: #111827; /* Darker charcoal */
   color: white;
