@@ -1,4 +1,16 @@
-<div class="page-wrapper" *ngIf="!loggedIn">
+<!-- ========== SPLASH SCREEN ========== -->
+<div class="splash-screen" *ngIf="showSplash" [class.fade-out]="!showSplash">
+  <div class="splash-content">
+    <div class="splash-logo">
+      <img src="assets/icon/logo.png" alt="DealVoice Logo">
+    </div>
+    <div class="splash-loader">
+      <div class="loader-bar"></div>
+    </div>
+  </div>
+</div>
+
+<div class="landing-wrapper" *ngIf="!loggedIn" [class.ready]="!showSplash">
 
   <!-- ========== NAVBAR ========== -->
   <nav class="navbar" [class.navbar-scrolled]="isNavbarScrolled">
@@ -1014,7 +1026,7 @@
 </div>
 
 <!-- ========== DASHBOARD (Post-Login) ========== -->
-<div class="dashboard-wrapper" *ngIf="loggedIn">
+<div class="dashboard-wrapper" *ngIf="loggedIn" [class.ready]="!showSplash">
 
   <nav class="navbar dashboard-nav" [class.navbar-scrolled]="isNavbarScrolled">
     <div class="nav-container">

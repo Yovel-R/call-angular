@@ -18,6 +18,7 @@ import * as XLSX from 'xlsx';
 export class AppComponent implements OnInit {
   currentPage: 'home' | 'pricing' = 'home';
   isNavbarScrolled = false;
+  showSplash = true;
 
   @HostListener('window:scroll', [])
   onWindowScroll() {
@@ -475,6 +476,13 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    window.scrollTo({ top: 0 });
+    
+    // Hide splash screen after 2.2s
+    setTimeout(() => {
+      this.showSplash = false;
+    }, 2200);
+
     Chart.register(...registerables);
     const raw = localStorage.getItem('tracecall_user');
     if (raw) {
