@@ -5193,7 +5193,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
    SECURITY SECTION
    ============================================= */
 .security-section {
-  padding: 1rem 4rem;
+  padding: 1rem 0;
   background: #fff;
 }
 
@@ -5291,19 +5291,21 @@ input[type="date"]::-webkit-calendar-picker-indicator {
    ============================================= */
 .get-started-cta {
   padding: 1.5rem 4rem;
-  /* Matching the reduced padding theme */
+
   background: #fff;
 }
 
 .cta-banner {
   position: relative;
-  border-radius: 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  border-radius: 8px;
   background: #0f172a;
   overflow: hidden;
   padding: 4rem 2rem;
   /* Reduced padding */
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .green-mesh {
@@ -5396,6 +5398,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 
 /* Values Grid */
 .cta-values-grid {
+  max-width: 1300px;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
@@ -5410,10 +5414,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   text-align: left;
 }
 
-.value-card:hover {
-  background: #fff;
-  border-color: #e2e8f0;
-}
+
 
 .value-card.full-width {
   grid-column: span 2;
