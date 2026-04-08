@@ -1204,7 +1204,7 @@
 /* Main content */
 .dash-main {
   flex: 1;
-  padding: 7.5rem 1.5rem 2rem;
+  padding: 6.5rem 1.5rem 2rem;
   /* Space for fixed navbar */
   overflow-y: auto;
   overflow-x: hidden;
@@ -1707,8 +1707,9 @@
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background: var(--purple);
-  color: white;
+  background: #f1f5f9; /* Slate 100 - Human generated look */
+  color: #475569;      /* Slate 600 - Sophisticated text color */
+  border: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3021,7 +3022,7 @@
 .stat-value-v2 {
   font-size: 1.6rem;
   /* Reduced from 1.85rem */
-  font-weight: 800;
+  font-weight: 600;
   color: var(--text-heading);
   font-family: var(--font-head);
   letter-spacing: -0.02em;
