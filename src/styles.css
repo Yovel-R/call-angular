@@ -27,11 +27,13 @@ html {
   --purple:      #6366f1;
   --text-1:      #0f172a;
   --text-2:      #475569;
-  --text-3:      #94a3b8;
+  --text-3:      #8d8d8d;
   --text-heading:#111827;
   --radius:      20px;
-  --font-head:   'Montserrat', sans-serif;
-  --font-body:   'Inter', sans-serif;
+  --font-head:   'Onest', 'Inter', sans-serif;
+  --font-body:   'Onest', 'Inter', sans-serif;
+  --font-main:   'Onest', 'Inter', sans-serif;
+  --font-mono:   'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
 }
 
 html {

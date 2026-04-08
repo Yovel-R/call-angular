@@ -40,7 +40,7 @@
   <!-- ========== HERO ========== -->
   <section class="hero">
     <div class="hero-container">
-      <h1 class="hero-title">The Intelligent CRM for<br><span class="gradient-text">sales deal closing.</span></h1>
+      <h1 class="hero-title"><span style="color: #8d8d8d !important;">The Intelligent CRM for</span><br><span class="gradient-text">sales deal closing.</span></h1>
       
       <div class="hero-action-row">
         <div class="hero-cta">
@@ -101,7 +101,11 @@
         <!-- Manual Work Card -->
         <div class="benefit-card warning">
           <div class="benefit-icon">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 18c-.77 1.333.192 3 1.732 3z"/></svg>
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+              <line x1="12" y1="9" x2="12" y2="13"></line>
+              <line x1="12" y1="17" x2="12.01" y2="17"></line>
+            </svg>
           </div>
           <h3 class="benefit-card-title">Your sales reps are buried in manual work</h3>
           <p class="benefit-card-desc">
@@ -125,7 +129,6 @@
               <div class="tag-row">
                 <span class="tag-pill">Lead Management</span>
                 <span class="tag-pill">Live Calls Tracking</span>
-                <span class="tag-pill">WhatsApp & SMS Conversations</span>
               </div>
               <div class="tag-row offset">
                 <span class="tag-pill">Follow-up Bookmarking</span>
@@ -137,7 +140,14 @@
               </div>
               <!-- Connector line visual -->
               <svg class="connector-line" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M0,80 L40,65 L70,75 L100,10" stroke="#14b8a6" fill="none" stroke-width="2"/>
+                <defs>
+                  <linearGradient id="area-grad" x1="0%" y1="100%" x2="0%" y2="0%">
+                    <stop offset="0%" style="stop-color:#00f0aa;stop-opacity:0" />
+                    <stop offset="100%" style="stop-color:#00f0aa;stop-opacity:0.15" />
+                  </linearGradient>
+                </defs>
+                <path d="M0,100 L40,85 L70,95 L100,50 V100 H0 Z" fill="url(#area-grad)" />
+                <path d="M0,100 L40,85 L70,95 L100,50" stroke="#00f0aa" fill="none" stroke-width="2" stroke-linejoin="round" style="opacity: 0.6;"/>
               </svg>
             </div>
           </div>
@@ -283,8 +293,25 @@
             <h3 class="step-title">Install DealVoice</h3>
           </div>
           <p class="step-desc">Download and set up DealVoice from the Play Store in minutes.</p>
-          <div class="step-ui-visual">
-            <img src="/assets/images/how-to/step-1.webp" alt="Instructional Visual 1">
+          <p class="ps-intro-text">Perfect for teams on the move. Access your leads, track calls, and close deals from anywhere with our native Android experience.</p>
+          <div class="ps-divider"></div>
+          <span class="ps-platform-label">AVAILABLE ON ANDROID</span>
+          <div class="step-app-preview">
+            <!-- <div class="app-icon-small">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="white"><path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,11.5L10,17H12.5L11,21L15,14H12.5L14,9H12.5L12,11.5Z"/></svg>
+            </div> -->
+            <div class="app-meta-mini">
+              <span class="app-rating">★★★★★ 4.9/5</span>
+              <div class="app-trust-wrapper">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="#10b981"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                <span class="app-trust-tag">Highly Rated on Play Store</span>
+              </div>
+            </div>
+          </div>
+          <div class="play-store-badge-container">
+            <a href="https://play.google.com/store/apps/details?id=com.dealvoice.app" target="_blank" class="play-store-link">
+              <img src="assets/images/trust/google-play-store-badge-en.jpg" alt="Get it on Google Play" class="play-store-badge-img">
+            </a>
           </div>
         </div>
 
@@ -912,7 +939,7 @@
               </div>
             </div>
           </div>
-          <small style="display:block;margin-top:6px;color:#94a3b8;font-size:0.75rem;">Your plan is active from today to the date you pick. Payment is processed securely via Razorpay.</small>
+          <small style="display:block;margin-top:6px;color:#8d8d8d;font-size:0.75rem;">Your plan is active from today to the date you pick. Payment is processed securely via Razorpay.</small>
         </div>
         <button type="submit" class="btn-signup modal-submit" [disabled]="signupLoading || !passwordStrong || paymentStep==='paying'">
           {{ signupLoading ? 'Creating account…' : paymentStep==='paying' ? 'Opening payment…' : isTrialRequest ? 'Request Trial →' : 'Create & Pay →' }}
@@ -1800,7 +1827,7 @@
                     <div>{{ companyProfile.email }}</div>
                   </div>
                   <div class="cc-detail"><label>PHONE NUMBER</label>
-                    <div style="font-family: monospace;">{{ companyProfile.countryCode }} {{ companyProfile.mobile }}</div>
+                    <div style="font-family: var(--font-mono);">{{ companyProfile.countryCode }} {{ companyProfile.mobile }}</div>
                   </div>
                   <div class="cc-detail"><label>INDUSTRY</label>
                     <div>{{ companyProfile.industry }}</div>
@@ -1954,7 +1981,7 @@
                     style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: #f0f4ff; color: #4f46e5; font-size: 0.82rem; font-weight: 600; border: 1px solid #e0e7ff;">
                     {{ tag }}
                     <button (click)="removeTag(tag)"
-                      style="border: none; background: transparent; color: #94a3b8; padding: 0; display: flex; align-items: center; cursor: pointer; transition: 0.2s;"
+                      style="border: none; background: transparent; color: #8d8d8d; padding: 0; display: flex; align-items: center; cursor: pointer; transition: 0.2s;"
                       [disabled]="tagManagementLoading">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -2141,7 +2168,7 @@
                     Connect Code</span>
                   <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.25rem;">
                     <h3
-                      style="font-size: 1.5rem; font-weight: 700; color: var(--text-1); margin: 0; letter-spacing: -0.01em; font-family: 'JetBrains Mono', Courier, monospace;">
+                      style="font-size: 1.5rem; font-weight: 700; color: var(--text-1); margin: 0; letter-spacing: -0.01em; font-family: var(--font-mono);">
                       {{ companyProfile?.companyCode }}</h3>
                   </div>
                 </div>
@@ -2258,7 +2285,7 @@
               <div
                 style="margin-top: 0.75rem; background: var(--bg-main); padding: 1rem; border-radius: 14px; border: 1px solid var(--border); display: flex; align-items: center; gap: 1rem;">
                 <input type="text" readonly value="https://help.callyzer.co/article/how-to-register-your-emp/"
-                  style="flex: 1; border: none; background: transparent; color: var(--text-2); font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; outline: none;">
+                  style="flex: 1; border: none; background: transparent; color: var(--text-2); font-size: 0.8rem; font-family: var(--font-mono); outline: none;">
                 <button (click)="copyConnectCodeLink()"
                   style="background: var(--text-1); color: #fff; border: none; padding: 6px 14px; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;">Copy</button>
               </div>
