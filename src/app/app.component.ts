@@ -16,7 +16,7 @@ import * as XLSX from 'xlsx';
   encapsulation: ViewEncapsulation.None
 })
 export class AppComponent implements OnInit {
-  title = 'web-page';
+  currentPage: 'home' | 'pricing' = 'home';
   isNavbarScrolled = false;
 
   @HostListener('window:scroll', [])
@@ -24,11 +24,31 @@ export class AppComponent implements OnInit {
     this.isNavbarScrolled = window.scrollY > 20;
   }
 
+  setPage(page: 'home' | 'pricing') {
+    this.currentPage = page;
+    this.isMobileMenuOpen = false;
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  scrollToSection(sectionId: string, page: 'home' | 'pricing' = 'home') {
+    if (this.currentPage !== page) {
+      this.setPage(page);
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById(sectionId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+    this.isMobileMenuOpen = false;
+  }
+
   goHome() {
     if (this.loggedIn) {
       this.loggedIn = false;
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.setPage('home');
   }
 
   // ── Signup / Login ─────────────────────────────────────────

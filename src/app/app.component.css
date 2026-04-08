@@ -5127,7 +5127,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   justify-content: space-between;
   background: #25353d;
   padding: 1.5rem 3rem;
-  border-radius: 12px;
+  border-radius: 6px;
   gap: 2rem;
 }
 
@@ -5154,7 +5154,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .trust-card.wide {
   background: #25353d;
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 6px;
   border: none;
   display: flex;
   align-items: center;
@@ -5317,7 +5317,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   background: #ededed;
   padding: 1.5rem 2rem;
   /* Reduced padding */
-  border-radius: 12px;
+  border-radius: 6px;
   /* border: 1px solid #f1f5f9; */
   text-align: left;
 }
@@ -5684,6 +5684,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   .cta-subtitle {
     font-size: 1.25rem;
   }
+}
+
+.pricing-page-benefits {
+  padding-top: 100px !important;
 }
 
 .impact {

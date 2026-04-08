@@ -9,10 +9,11 @@
         </div>
       </div>
       <div class="nav-links">
-        <a href="#features" class="nav-link">Features</a>
-        <a href="#analytics" class="nav-link">Analytics</a>
-        <a href="#pricing" class="nav-link">Pricing</a>
-        <a href="#about" class="nav-link">About</a>
+        <a (click)="setPage('home')" class="nav-link" [class.active]="currentPage === 'home'" style="cursor:pointer;">Home</a>
+        <a (click)="scrollToSection('features', currentPage)" class="nav-link" style="cursor:pointer;">Features</a>
+        <a (click)="scrollToSection('security', currentPage)" class="nav-link" style="cursor:pointer;">Security</a>
+        <a (click)="setPage('pricing')" class="nav-link" [class.active]="currentPage === 'pricing'" style="cursor:pointer;">Pricing</a>
+        <a (click)="scrollToSection('about', currentPage)" class="nav-link" style="cursor:pointer;">About</a>
       </div>
       <div class="nav-auth">
         <button class="btn-login" (click)="openLogin()">Log In</button>
@@ -25,10 +26,11 @@
       </button>
     </div>
     <div class="mobile-menu" [class.open]="isMobileMenuOpen">
-      <a href="#features" class="nav-link" (click)="toggleMobileMenu()">Features</a>
-      <a href="#analytics" class="nav-link" (click)="toggleMobileMenu()">Analytics</a>
-      <a href="#pricing" class="nav-link" (click)="toggleMobileMenu()">Pricing</a>
-      <a href="#about" class="nav-link" (click)="toggleMobileMenu()">About</a>
+      <a (click)="setPage('home')" class="nav-link">Home</a>
+      <a (click)="scrollToSection('features', currentPage)" class="nav-link">Features</a>
+      <a (click)="scrollToSection('security', currentPage)" class="nav-link">Security</a>
+      <a (click)="setPage('pricing')" class="nav-link">Pricing</a>
+      <a (click)="scrollToSection('about', currentPage)" class="nav-link">About</a>
       <div class="mobile-auth">
         <button class="btn-login" (click)="openLogin(); toggleMobileMenu()">Log In</button>
         <button class="btn-signup" (click)="isTrialRequest=false; openSignup(); toggleMobileMenu()">Sign Up
@@ -37,8 +39,10 @@
     </div>
   </nav>
 
-  <!-- ========== HERO ========== -->
-  <section class="hero">
+  <!-- ========== HOME SECTIONS ========== -->
+  <ng-container *ngIf="currentPage === 'home'">
+    <!-- ========== HERO ========== -->
+    <section class="hero">
     <div class="hero-container">
       <h1 class="hero-title"><span style="color: #8d8d8d !important;">The Intelligent CRM for</span><br><span class="gradient-text">sales deal closing.</span></h1>
       
@@ -85,9 +89,10 @@
       </div>
     </div>
   </section>
+</ng-container>
 
-  <!-- ========== BENEFITS ========== -->
-  <section class="benefits">
+  <!-- ========== BENEFITS (SHARED) ========== -->
+  <section class="benefits" id="features" [class.pricing-page-benefits]="currentPage === 'pricing'">
     <div class="benefits-container">
       <div class="benefits-badge">
         <span class="badge-dot"></span>
@@ -172,8 +177,10 @@
     </div>
   </section>
 
-  <!-- ========== CUSTOM CTA / CUSTOMIZATION ========== -->
-  <section class="custom-cta">
+  <!-- ========== HOME ONLY SECTIONS (MIDDLE) ========== -->
+  <ng-container *ngIf="currentPage === 'home'">
+    <!-- ========== CUSTOM CTA / CUSTOMIZATION ========== -->
+    <section class="custom-cta">
     <div class="cta-container">
       <h2 class="cta-title">
         Need a smart CRM tailored for your<br>
@@ -341,8 +348,10 @@
       </div>
     </div>
   </section>
-  <!-- ========== SECURITY SECTION ========== -->
-  <section class="security-section">
+</ng-container>
+
+  <!-- ========== SHARED SECTION: SECURITY ========== -->
+  <section class="security-section" id="security">
     <div class="security-container">
       <div class="benefits-badge">
         <span class="badge-dot"></span>
@@ -406,8 +415,9 @@
       </div>
     </div>
   </section>
-  <!-- ========== GET STARTED CTA ========== -->
-  <section class="get-started-cta">
+
+  <!-- ========== HOME ONLY SECTION: GET STARTED ========== -->
+  <section class="get-started-cta" *ngIf="currentPage === 'home'">
     <div class="cta-banner">
       <div class="banner-gradient-mesh green-mesh">
         <div class="mesh-orb g-orb-1"></div>
@@ -441,49 +451,8 @@
       </div>
     </div>
   </section>
-
-
-  
-
-  
-  <!-- ========== IMPACT / DIFFERENTIATORS ==========
-  <section class="impact" id="analytics">
-    <div class="impact-container">
-      <div class="impact-content">
-        <div class="impact-badge">
-          <span class="badge-dot pulse-dot"></span>
-          The DealVoice Advantage
-        </div>
-        <h2 class="impact-title">Why Leading Teams <span class="gradient-text">Choose DealVoice</span></h2>
-        <p class="impact-desc">While most platforms just log calls, DealVoice provides the real-time visibility and omnichannel control you need to lead your industry. We differ by delivering intelligence, not just data.</p>
-        
-        <div class="impact-stats">
-          <div class="stat-item">
-            <div class="stat-value">100%</div>
-            <div class="stat-desc">Zero-latency tracking. Watch your team's live pulse without the standard 30-second delay.</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">Native</div>
-            <div class="stat-desc">Official WhatsApp Business API integration built directly into your dashboard.</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">Automated</div>
-            <div class="stat-desc">AI-powered agent scoring evaluates every call so you don't have to listen to hours of audio.</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">Instant</div>
-            <div class="stat-desc">Go live in less than 5 minutes with our Frictionless Onboarding — no setup fees required.</div>
-          </div>
-        </div>
-      </div>
-      <div class="impact-visual">
-         <img src="assets/images/left-image.png" alt="How we differ - Competitive Advantage" class="impact-img">
-      </div>
-    </div>
-  </section> -->
-
-  <!-- ========== PRICING ========== -->
-  <section class="pricing" id="pricing">
+  <!-- ========== PRICING (PRICING PAGE ONLY) ========== -->
+  <section class="pricing" id="pricing" *ngIf="currentPage === 'pricing'">
     <div class="header-decoration-wrap">
       <div class="pricing-orb-1"></div>
       <div class="pricing-orb-2"></div>
@@ -653,7 +622,7 @@
   
   
   <!-- ========== FOOTER ========== -->
-  <footer class="site-footer">
+  <footer class="site-footer" id="about">
     <div class="footer-container">
       <div class="footer-main-grid">
         <!-- Logo & Contact -->
