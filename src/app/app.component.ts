@@ -273,6 +273,7 @@ export class AppComponent implements OnInit {
     this.closeModals();
     this.isLoginOpen = true;
     this.loginError = '';
+    this.updateScrollLock();
   }
 
   openSignup(): void {
@@ -280,6 +281,7 @@ export class AppComponent implements OnInit {
     this.isSignupOpen = true;
     this.signupError = '';
     this.signupSuccess = false;
+    this.updateScrollLock();
   }
 
   openForgotPwd(): void {
@@ -288,6 +290,7 @@ export class AppComponent implements OnInit {
     this.forgotError = '';
     this.forgotSuccess = '';
     this.forgotEmail = '';
+    this.updateScrollLock();
   }
 
   openForgotFromSettings(): void {
@@ -307,6 +310,16 @@ export class AppComponent implements OnInit {
     this.isEditEmployeeOpen = false;
     this.showAllCallsModal = false;
     this.isLogoutConfirmOpen = false;
+    this.updateScrollLock();
+  }
+
+  updateScrollLock(): void {
+    const isAnyModalOpen = this.isLoginOpen || this.isSignupOpen || this.isForgotPwdOpen || this.isResetPwdOpen || this.isAddEmployeeOpen || this.isEditEmployeeOpen || this.showAllCallsModal || this.isLogoutConfirmOpen;
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
   }
   private rmTimerInterval: any;
 
@@ -1854,6 +1867,7 @@ export class AppComponent implements OnInit {
 
   openLogoutConfirm(): void {
     this.isLogoutConfirmOpen = true;
+    this.updateScrollLock();
   }
 
   closeLogoutConfirm(): void {
@@ -1874,7 +1888,12 @@ export class AppComponent implements OnInit {
     window.scrollTo(0, 0);
   }
 
-  openAddEmployee(): void { this.isAddEmployeeOpen = true; this.addEmployeeError = ''; this.newEmployee = { name: '', mobile: '', countryCode: '+91' }; }
+  openAddEmployee(): void { 
+    this.isAddEmployeeOpen = true; 
+    this.addEmployeeError = ''; 
+    this.newEmployee = { name: '', mobile: '', countryCode: '+91' }; 
+    this.updateScrollLock();
+  }
   closeAddEmployee(): void { this.isAddEmployeeOpen = false; }
 
   onAddEmployeeSubmit(event: Event): void {
@@ -1908,20 +1927,16 @@ export class AppComponent implements OnInit {
 
   // Edit Employee
   openEditEmployee(emp: Employee): void {
-    this.editingEmployee = {
-      _id: emp._id,
-      name: emp.name,
-      mobile: emp.mobile,
-      countryCode: emp.countryCode || '+91',
-      tags: emp.tags ? [...emp.tags] : []
-    };
+    this.editingEmployee = { ...emp };
     this.isEditEmployeeOpen = true;
     this.editEmployeeError = '';
+    this.updateScrollLock();
   }
 
   closeEditEmployee(): void {
     this.isEditEmployeeOpen = false;
     this.editEmployeeError = '';
+    this.updateScrollLock();
   }
 
   onEditEmployeeSubmit(event: Event): void {
