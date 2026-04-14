@@ -1179,8 +1179,8 @@ export class AppComponent implements OnInit {
         datasets: [{
           data: [s.incoming || 0, s.outgoing || 0, s.missed || 0, s.rejected || 0],
           backgroundColor: ['#3b82f6', '#22c55e', '#f87171', '#f59e0b'],
-          borderWidth: 3,
-          borderColor: '#ffffff',
+          borderWidth: 2,
+          borderColor: '#111827',
           hoverOffset: 6
         }]
       },
@@ -1190,9 +1190,9 @@ export class AppComponent implements OnInit {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: 'rgba(255,255,255,0.95)',
-            titleColor: '#111', bodyColor: '#444',
-            borderColor: '#e5e7eb', borderWidth: 1,
+            backgroundColor: '#1f2937',
+            titleColor: '#fff', bodyColor: '#9ca3af',
+            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
             padding: 10, cornerRadius: 8
           }
         }
