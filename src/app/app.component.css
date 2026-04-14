@@ -1161,12 +1161,25 @@
   z-index: 100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
-  overflow-y: auto;
   scrollbar-width: none; /* Firefox */
+  overflow: visible !important; /* Fix clipping for the edge toggle */
 }
 
 .dash-sidebar::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
+}
+
+.sidebar-nav-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+  width: 100%;
+}
+
+.sidebar-nav-list::-webkit-scrollbar {
+  display: none;
 }
 
 .dash-sidebar.minimized {
@@ -1182,22 +1195,43 @@
 }
 
 .sidebar-toggle {
-  background: transparent;
-  border: none;
-  color: #9ca3af; /* Light color for dark theme */
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 0.5rem;
+  display: none; /* Hide the old toggle styles */
 }
 
-.sidebar-toggle:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
+.edge-sidebar-toggle {
+  position: absolute;
+  right: -12px;
+  top: 30px;
+  width: 24px;
+  height: 24px;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  border: 4px solid #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.edge-sidebar-toggle:hover {
+  transform: scale(1.1);
+  background: #059669;
+}
+
+.edge-sidebar-toggle svg {
+  transition: transform 0.3s ease;
+}
+
+.edge-sidebar-toggle.minimized {
+  transform: rotate(180deg);
+}
+
+.edge-sidebar-toggle.minimized:hover {
+  transform: rotate(180deg) scale(1.1);
 }
 
 .sidebar-footer {
