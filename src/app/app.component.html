@@ -1318,8 +1318,12 @@
                 <h3
                   style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">
                   Top Employees</h3>
-                <button class="pill-btn dark" (click)="dashTab='employees'">See All<span
-                    style="font-size:0.7rem;margin-left:4px;">-></span></button>
+                <button class="pill-btn dark" (click)="dashTab='employees'">See All
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </button>
               </div>
               <div class="top-list-table-container">
                 <table class="top-list-table">
@@ -2365,9 +2369,11 @@
           (click)="applyCustomRange()" [disabled]="!customFrom">Apply</button>
       </div>
       <div class="drilldown-tabs">
-        <button [class.active]="drilldownTab==='stats'" (click)="drilldownTab='stats'">Summary</button>
-        <button [class.active]="drilldownTab==='calls'" (click)="drilldownTab='calls'">Call History <span
+        <button [class.active]="drilldownTab==='stats'" (click)="switchDrilldownTab('stats')">Summary</button>
+        <button [class.active]="drilldownTab==='calls'" (click)="switchDrilldownTab('calls')">Call History <span
             class="badge-count" *ngIf="selectedEmpCalls.length">{{ selectedEmpCalls.length }}</span></button>
+        <button [class.active]="drilldownTab==='leads'" (click)="switchDrilldownTab('leads')">Leads <span
+            class="badge-count" *ngIf="empLeads.length">{{ empLeads.length }}</span></button>
       </div>
       <div *ngIf="drilldownTab==='stats'">
         <div *ngIf="selectedEmpLoading" class="dash-loading">Loading&hellip;</div>
@@ -2418,6 +2424,104 @@
           <button *ngIf="selectedEmpCalls.length > 5" class="cta-secondary"
             style="width: 100%; margin-top: 1rem; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem;"
             (click)="openAllCallsModal()">View All {{ selectedEmpCalls.length }} Calls</button>
+        </div>
+      </div>
+
+      <!-- LEAD MANAGEMENT TAB -->
+      <div *ngIf="drilldownTab==='leads'" class="leads-tab-content" style="padding: 1.25rem 0;">
+        
+        <!-- Tab Header with Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h4 style="margin:0; font-size: 1rem; font-weight: 700;">Assigned Leads</h4>
+          <div style="display: flex; gap: 8px;">
+            <!-- Manual Add Toggle/Section could go here, but we'll show both -->
+            <label class="cta-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Upload Excel
+              <input type="file" (change)="onLeadExcelUpload($event)" accept=".xlsx, .xls" style="display:none;">
+            </label>
+          </div>
+        </div>
+
+        <!-- Feedback Messages -->
+        <div *ngIf="addLeadError" class="form-error" style="margin-bottom: 1rem;">{{ addLeadError }}</div>
+        <div *ngIf="addLeadSuccess" style="color:var(--green); font-weight: 600; margin-bottom: 1rem; font-size: 0.85rem;">✓ {{ addLeadSuccess }}</div>
+
+        <!-- EXCEL MAPPING UI -->
+        <div *ngIf="leadUploadStep === 'mapping'" class="mapping-box" style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+          <h5 style="margin-top:0; margin-bottom: 1rem; font-size: 0.9rem; font-weight: 700; color: var(--accent);">Map Excel Columns</h5>
+          <p style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 1.25rem;">We found <strong>{{ parsedExcelData.length }}</strong> rows. Please match the attributes below:</p>
+          
+          <div style="display: grid; gap: 12px;">
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem;">Company Name Column <span style="color:red">*</span></label>
+              <select [(ngModel)]="leadColumnMapping.leadCompanyName" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="">-- Select Column --</option>
+                <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem;">Contact Number Column <span style="color:red">*</span></label>
+              <select [(ngModel)]="leadColumnMapping.contactNumber" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="">-- Select Column --</option>
+                <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem;">Contact Name Column (Optional)</label>
+              <select [(ngModel)]="leadColumnMapping.contactName" style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="">-- Select Column --</option>
+                <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+            <button class="cta-primary" (click)="confirmLeadMapping()" [disabled]="addLeadLoading" style="flex:1; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem;">
+              {{ addLeadLoading ? 'Importing...' : 'Start Import' }}
+            </button>
+            <button class="btn-login" (click)="cancelLeadMapping()" style="flex:1; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem;">Cancel</button>
+          </div>
+        </div>
+
+        <!-- MANUAL ADD UI -->
+        <div *ngIf="leadUploadStep === 'idle'" class="manual-add-box" style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+          <h5 style="margin-top:0; margin-bottom: 1rem; font-size: 0.85rem; font-weight: 700;">Add Single Lead</h5>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" [(ngModel)]="newSingleLead.leadCompanyName" placeholder="Company Name *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+            <input type="tel" [(ngModel)]="newSingleLead.contactNumber" placeholder="Contact Number *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+          </div>
+          <input type="text" [(ngModel)]="newSingleLead.contactName" placeholder="Contact Person Name (Optional)" style="width:100%; margin-top:10px; padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+          <button class="cta-primary" (click)="addManualLead()" [disabled]="addLeadLoading" style="width:100%; margin-top: 15px; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">
+            {{ addLeadLoading ? 'Adding...' : 'Add Lead' }}
+          </button>
+        </div>
+
+        <!-- LEADS LIST -->
+        <div *ngIf="empLeadsLoading" class="dash-loading">Fetching leads...</div>
+        <div *ngIf="!empLeadsLoading && empLeads.length === 0 && leadUploadStep === 'idle'" class="dash-empty" style="padding: 2rem;">
+          No leads assigned yet. Use the form above to add leads.
+        </div>
+
+        <div class="leads-scroll-list" *ngIf="!empLeadsLoading && empLeads.length > 0" style="max-height: 400px; overflow-y: auto; padding-right: 4px;">
+          <div *ngFor="let lead of empLeads" class="lead-item" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #f1f5f9;">
+            <div style="flex:1">
+              <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-1);">{{ lead.leadCompanyName }}</div>
+              <div style="font-size: 0.78rem; color: var(--text-2); margin-top: 2px;">{{ lead.contactName || 'No Name' }} &middot; <strong>{{ lead.contactNumber }}</strong></div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+              <span style="font-size: 0.65rem; font-weight: 800; background: #f1f5f9; color: var(--text-3); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">{{ lead.status }}</span>
+              <button (click)="deleteLead(lead._id)" style="background: none; border: none; color: #ef4444; padding: 4px; cursor: pointer;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="drilldown-analytics" *ngIf="selectedEmployee && selectedEmpCalls.length > 0">

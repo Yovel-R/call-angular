@@ -1146,7 +1146,7 @@
 .dash-sidebar {
   width: 240px;
   flex-shrink: 0;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
   padding: 0.75rem 0.75rem;
   display: flex;
   flex-direction: column;
@@ -1154,9 +1154,10 @@
   top: 4.5rem;
   left: 0;
   height: calc(100vh - 4.5rem);
-  background: var(--bg-card);
+  background: #111827; /* Dark theme background */
   z-index: 100;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
 }
 
 .dash-sidebar.minimized {
@@ -1174,7 +1175,7 @@
 .sidebar-toggle {
   background: transparent;
   border: none;
-  color: var(--text-2);
+  color: #9ca3af; /* Light color for dark theme */
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 10px;
@@ -1182,18 +1183,17 @@
   align-items: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  /* border-top: 1px solid var(--border); */
   margin-top: 0.5rem;
 }
 
 .sidebar-toggle:hover {
-  background: rgba(61, 125, 254, 0.05);
-  color: var(--accent);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
 .sidebar-footer {
   padding: 0.5rem 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   margin-top: auto;
 }
 
@@ -1214,7 +1214,7 @@
 .sidebar-header {
   font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-3);
+  color: #6b7280; /* Gray for headers on dark bg */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 1.25rem 1rem 0.5rem;
@@ -1223,7 +1223,7 @@
 
 .sidebar-separator {
   height: 1px;
-  background: var(--border);
+  background: rgba(255, 255, 255, 0.05);
   margin: 1rem 1rem;
   opacity: 0.5;
 }
@@ -1236,7 +1236,7 @@
   border-radius: 12px;
   border: none;
   background: transparent;
-  color: var(--text-2);
+  color: #9ca3af; /* Light color for dark theme */
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -1250,8 +1250,8 @@
 }
 
 .sidebar-item:hover {
-  background: rgba(61, 125, 254, 0.04);
-  color: var(--accent);
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
   transform: translateX(4px);
 }
 
@@ -1272,8 +1272,8 @@
 }
 
 .sidebar-item.active {
-  background: rgba(61, 125, 254, 0.08);
-  color: var(--accent);
+  background: rgba(61, 125, 254, 0.15);
+  color: #60a5fa; /* Brihter blue for active state on dark bg */
   font-weight: 600;
 }
 
@@ -1284,7 +1284,7 @@
   top: 25%;
   height: 50%;
   width: 3px;
-  background: var(--accent);
+  background: #60a5fa;
   border-radius: 0 4px 4px 0;
 }
 
@@ -2595,6 +2595,58 @@
 .lg-val {
   font-weight: 600;
   color: var(--text-1);
+}
+
+/* ── Leads Management Styles ── */
+.leads-tab-content {
+  animation: fadeIn 0.3s ease;
+}
+
+.mapping-box {
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.lead-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.lead-item:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  transform: translateX(4px);
+}
+
+.leads-scroll-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.leads-scroll-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.leads-scroll-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.leads-scroll-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* ── Employee Error Banners ─────────────────────── */

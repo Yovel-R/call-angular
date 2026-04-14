@@ -6,6 +6,7 @@ import { AuthService, RegisterPayload, LoginPayload } from './services/auth.serv
 import { EmployeeService, Employee } from './services/employee.service';
 import { CallLogService, CallStats } from './services/calllog.service';
 import { PaymentService } from './services/payment.service';
+import { LeadService, Lead } from './services/lead.service';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -404,7 +405,19 @@ export class AppComponent implements OnInit {
   selectedEmpLoading = false;
   selectedEmpCalls: any[] = [];
   selectedEmpCallsLoading = false;
-  drilldownTab: 'stats' | 'calls' = 'stats';
+  drilldownTab: 'stats' | 'calls' | 'leads' = 'stats';
+
+  // ── Leads Management (Drilldown) ───────────────────────────
+  empLeads: any[] = [];
+  empLeadsLoading = false;
+  leadUploadStep: 'idle' | 'mapping' | 'uploading' = 'idle';
+  parsedExcelData: any[] = [];
+  excelHeaders: string[] = [];
+  leadColumnMapping = { contactName: '', contactNumber: '', leadCompanyName: '' };
+  newSingleLead = { contactName: '', contactNumber: '', leadCompanyName: '' };
+  addLeadLoading = false;
+  addLeadError = '';
+  addLeadSuccess = '';
 
   // ── Chart state ────────────────────────────────────────────
   chartType: 'line' | 'pie' | 'bar' = 'pie';
@@ -486,6 +499,7 @@ export class AppComponent implements OnInit {
     private employeeService: EmployeeService,
     private callLogService: CallLogService,
     private paymentService: PaymentService,
+    private leadService: LeadService
   ) { }
 
   ngOnInit(): void {
@@ -1002,11 +1016,6 @@ export class AppComponent implements OnInit {
   }
 
   selectEmployee(emp: Employee) { this.openEmployee(emp); }
-
-  closeEmployee(): void {
-    this.selectedEmployee = null;
-    this.selectedEmpStats = null;
-  }
 
   setChartType(type: 'line' | 'pie' | 'bar'): void {
     this.chartType = type;
@@ -2412,5 +2421,205 @@ Thank You.`;
     this.customTo = new Date().toISOString().split('T')[0];
     this.selectedPeriod = 'custom';
     this.applyCustomRange();
+  }
+
+  closeEmployee(): void {
+    this.selectedEmployee = null;
+    this.selectedEmpStats = null;
+    this.selectedEmpCalls = [];
+    this.drilldownTab = 'stats';
+    this.empLeads = [];
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+  }
+
+  fetchEmpLeads(): void {
+    if (!this.selectedEmployee) return;
+    this.empLeadsLoading = true;
+    this.leadService.getEmployeeLeads(this.dashboardCode, this.selectedEmployee.mobile).subscribe({
+      next: (res: any) => {
+        this.empLeadsLoading = false;
+        if (res.success) {
+          this.empLeads = res.leads;
+        }
+      },
+      error: () => {
+        this.empLeadsLoading = false;
+      }
+    });
+  }
+
+  // ── Manual Lead Addition ─────────────────────────────────────────
+  addManualLead(): void {
+    if (!this.newSingleLead.contactNumber || !this.newSingleLead.leadCompanyName) {
+      this.addLeadError = 'Please enter Company Name and Contact Number.';
+      return;
+    }
+    this.addLeadLoading = true;
+    this.addLeadError = '';
+    this.addLeadSuccess = '';
+
+    const payload: Partial<Lead> = {
+      companyCode: this.dashboardCode,
+      assignedEmployeePhone: this.selectedEmployee!.mobile,
+      leadCompanyName: this.newSingleLead.leadCompanyName.trim(),
+      contactName: this.newSingleLead.contactName.trim(),
+      contactNumber: this.newSingleLead.contactNumber.trim(),
+    };
+
+    this.leadService.addSingleLead(payload).subscribe({
+      next: (res: any) => {
+        this.addLeadLoading = false;
+        if (res.success) {
+          this.addLeadSuccess = 'Lead added successfully!';
+          this.newSingleLead = { contactName: '', contactNumber: '', leadCompanyName: '' };
+          this.fetchEmpLeads();
+          setTimeout(() => this.addLeadSuccess = '', 3000);
+        } else {
+          this.addLeadError = res.message || 'Failed to add lead.';
+        }
+      },
+      error: () => {
+        this.addLeadLoading = false;
+        this.addLeadError = 'Server error maintaining lead. Please check connection.';
+      }
+    });
+  }
+
+  // ── Excel Upload & Mapping ───────────────────────────────────────
+  onLeadExcelUpload(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.addLeadError = '';
+    this.leadUploadStep = 'mapping';
+    this.parsedExcelData = [];
+    this.excelHeaders = [];
+    this.leadColumnMapping = { contactName: '', contactNumber: '', leadCompanyName: '' };
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Convert to JSON
+        const rawJson: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        if (rawJson.length < 2) {
+          this.addLeadError = 'Excel file seems empty or missing headers.';
+          this.leadUploadStep = 'idle';
+          return;
+        }
+
+        // Extract headers
+        this.excelHeaders = rawJson[0].map((h: any) => h ? h.toString().trim() : '');
+        
+        // Filter out empty rows and build objects based on headers
+        this.parsedExcelData = [];
+        for (let i = 1; i < rawJson.length; i++) {
+          const row = rawJson[i];
+          if (!row || row.length === 0) continue;
+          let rowData: any = {};
+          this.excelHeaders.forEach((header, index) => {
+            if (header) rowData[header] = row[index];
+          });
+          this.parsedExcelData.push(rowData);
+        }
+
+        // Auto-attempt mapping if headers match standard names
+        this.leadColumnMapping.contactName = this.excelHeaders.find(h => ['name', 'contact name', 'person'].includes(h.toLowerCase())) || this.excelHeaders[0];
+        this.leadColumnMapping.contactNumber = this.excelHeaders.find(h => ['number', 'phone', 'mobile', 'contact number'].includes(h.toLowerCase())) || this.excelHeaders[1] || '';
+        this.leadColumnMapping.leadCompanyName = this.excelHeaders.find(h => ['company', 'company name', 'business'].includes(h.toLowerCase())) || this.excelHeaders[2] || '';
+
+      } catch (err) {
+        this.addLeadError = 'Invalid Excel format.';
+        this.leadUploadStep = 'idle';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    // Reset input
+    event.target.value = null;
+  }
+
+  cancelLeadMapping(): void {
+    this.leadUploadStep = 'idle';
+    this.parsedExcelData = [];
+    this.excelHeaders = [];
+  }
+
+  confirmLeadMapping(): void {
+    if (!this.leadColumnMapping.contactNumber || !this.leadColumnMapping.leadCompanyName) {
+      this.addLeadError = 'Contact Number and Company Name columns must be mapped.';
+      return;
+    }
+
+    this.leadUploadStep = 'uploading';
+    this.addLeadLoading = true;
+    this.addLeadError = '';
+
+    const mappedLeads: Partial<Lead>[] = this.parsedExcelData
+      .map(row => {
+        const contactNumber = row[this.leadColumnMapping.contactNumber]?.toString().trim() || '';
+        const leadCompanyName = row[this.leadColumnMapping.leadCompanyName]?.toString().trim() || '';
+        const contactName = this.leadColumnMapping.contactName ? (row[this.leadColumnMapping.contactName]?.toString().trim() || '') : '';
+        
+        return {
+          companyCode: this.dashboardCode,
+          assignedEmployeePhone: this.selectedEmployee!.mobile,
+          contactNumber,
+          leadCompanyName,
+          contactName
+        };
+      })
+      .filter(l => l.contactNumber && l.leadCompanyName); // Drop rows missing required fields
+
+    if (mappedLeads.length === 0) {
+      this.addLeadError = 'No valid leads found in Excel after mapping. Ensure rows are not empty.';
+      this.leadUploadStep = 'mapping';
+      this.addLeadLoading = false;
+      return;
+    }
+
+    this.leadService.addBulkLeads(mappedLeads).subscribe({
+      next: (res: any) => {
+        this.addLeadLoading = false;
+        if (res.success) {
+          this.addLeadSuccess = `Successfully mapped and imported ${res.count} leads!`;
+          this.leadUploadStep = 'idle';
+          this.fetchEmpLeads();
+          setTimeout(() => this.addLeadSuccess = '', 4000);
+        } else {
+           this.addLeadError = res.message || 'Bulk upload failed.';
+           this.leadUploadStep = 'mapping';
+        }
+      },
+      error: () => {
+        this.addLeadLoading = false;
+        this.addLeadError = 'Server error during bulk upload. Connection issue.';
+        this.leadUploadStep = 'mapping';
+      }
+    });
+  }
+
+  deleteLead(id: string): void {
+    if (confirm('Are you sure you want to remove this lead?')) {
+      this.leadService.deleteLead(id).subscribe(res => {
+        if(res.success) this.fetchEmpLeads();
+      });
+    }
+  }
+
+  switchDrilldownTab(tab: 'stats' | 'calls' | 'leads'): void {
+    this.drilldownTab = tab;
+    if (tab === 'leads') {
+      this.fetchEmpLeads();
+    }
+    if (tab === 'stats' && this.selectedEmpStats) {
+       setTimeout(() => this.renderChart(), 100);
+    }
   }
 }
