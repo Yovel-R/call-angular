@@ -2457,7 +2457,18 @@
         <div *ngIf="leadUploadStep === 'mapping'" class="mapping-box" style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
           <h5 style="margin-top:0; margin-bottom: 1rem; font-size: 0.9rem; font-weight: 700; color: var(--accent);">Map Excel Columns</h5>
           <p style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 1.25rem;">We found <strong>{{ parsedExcelData.length }}</strong> rows. Please match the attributes below:</p>
-          
+
+          <!-- Set Label Input -->
+          <div style="margin-bottom: 1rem; padding: 0.85rem; background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.2); border-radius: 10px;">
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+              🏷 Set / Batch Label <span style="color: red;">*</span>
+            </label>
+            <input type="text" [(ngModel)]="newLeadSetLabel"
+              placeholder='e.g. "Jan 2026" or "1/1/2026-10/1/2026"'
+              style="width: 100%; padding: 0.55rem 0.75rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.82rem; box-sizing: border-box;">
+            <div style="font-size: 0.72rem; color: var(--text-3); margin-top: 5px;">This label groups all imported leads so you can filter and access them easily later.</div>
+          </div>
+
           <div style="display: grid; gap: 12px;">
             <div class="form-group" style="margin:0">
               <label style="font-size: 0.75rem;">Company Name Column <span style="color:red">*</span></label>
@@ -2483,16 +2494,20 @@
           </div>
 
           <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
-            <button class="cta-primary" (click)="confirmLeadMapping()" [disabled]="addLeadLoading" style="flex:1; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem;">
+            <button class="cta-primary" (click)="confirmLeadMapping()" [disabled]="addLeadLoading || !newLeadSetLabel.trim()" style="flex:1; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem;">
               {{ addLeadLoading ? 'Importing...' : 'Start Import' }}
             </button>
             <button class="btn-login" (click)="cancelLeadMapping()" style="flex:1; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem;">Cancel</button>
           </div>
+          <div *ngIf="!newLeadSetLabel.trim()" style="text-align:center; margin-top: 8px; font-size: 0.75rem; color: #f59e0b; font-weight: 600;">⚠ Please enter a Set Label before importing</div>
         </div>
 
         <!-- MANUAL ADD UI -->
         <div *ngIf="leadUploadStep === 'idle'" class="manual-add-box" style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
           <h5 style="margin-top:0; margin-bottom: 1rem; font-size: 0.85rem; font-weight: 700;">Add Single Lead</h5>
+          <input type="text" [(ngModel)]="newLeadSetLabel"
+            placeholder='Set Label (e.g. "Jan 2026" or "1/1/2026-10/1/2026")'
+            style="width:100%; margin-bottom:10px; padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(99,102,241,0.3); font-size: 0.82rem; background: rgba(99,102,241,0.03); box-sizing: border-box;">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <input type="text" [(ngModel)]="newSingleLead.leadCompanyName" placeholder="Company Name *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
             <input type="tel" [(ngModel)]="newSingleLead.contactNumber" placeholder="Contact Number *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
@@ -2503,10 +2518,36 @@
           </button>
         </div>
 
+        <!-- SET FILTER PILLS -->
+        <div *ngIf="leadSets.length > 0" style="margin-bottom: 1.25rem;">
+          <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px;">Filter by Set / Batch</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center;">
+            <button (click)="selectLeadSet('')"
+              [style.background]="selectedLeadSet === '' ? 'var(--accent)' : '#f1f5f9'"
+              [style.color]="selectedLeadSet === '' ? '#fff' : 'var(--text-2)'"
+              style="border: none; padding: 5px 14px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+              All
+            </button>
+            <div *ngFor="let set of leadSets" style="display: flex; align-items: center;">
+              <button (click)="selectLeadSet(set)"
+                [style.background]="selectedLeadSet === set ? 'var(--accent)' : '#f1f5f9'"
+                [style.color]="selectedLeadSet === set ? '#fff' : 'var(--text-2)'"
+                style="border: none; padding: 5px 14px; border-radius: 20px 0 0 20px; font-size: 0.75rem; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                🏷 {{ set }}
+              </button>
+              <button (click)="deleteLeadSet(set)" [disabled]="deleteSetLoading" title="Delete all leads in this set"
+                [style.background]="selectedLeadSet === set ? '#c7d2fe' : '#e2e8f0'"
+                style="border: none; padding: 5px 8px; border-radius: 0 20px 20px 0; font-size: 0.7rem; color: #ef4444; cursor: pointer; transition: all 0.2s; border-left: 1px solid rgba(0,0,0,0.06);">
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- LEADS LIST -->
         <div *ngIf="empLeadsLoading" class="dash-loading">Fetching leads...</div>
         <div *ngIf="!empLeadsLoading && empLeads.length === 0 && leadUploadStep === 'idle'" class="dash-empty" style="padding: 2rem;">
-          No leads assigned yet. Use the form above to add leads.
+          {{ selectedLeadSet ? 'No leads in this set.' : 'No leads assigned yet. Use the form above to add leads.' }}
         </div>
 
         <div class="leads-scroll-list" *ngIf="!empLeadsLoading && empLeads.length > 0" style="max-height: 400px; overflow-y: auto; padding-right: 4px;">
@@ -2514,6 +2555,9 @@
             <div style="flex:1">
               <div style="font-size: 0.88rem; font-weight: 700; color: var(--text-1);">{{ lead.leadCompanyName }}</div>
               <div style="font-size: 0.78rem; color: var(--text-2); margin-top: 2px;">{{ lead.contactName || 'No Name' }} &middot; <strong>{{ lead.contactNumber }}</strong></div>
+              <div *ngIf="lead.setLabel" style="margin-top: 4px;">
+                <span style="font-size: 0.62rem; font-weight: 700; background: rgba(99,102,241,0.1); color: var(--accent); padding: 2px 7px; border-radius: 10px; letter-spacing: 0.02em;">🏷 {{ lead.setLabel }}</span>
+              </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
               <span style="font-size: 0.65rem; font-weight: 800; background: #f1f5f9; color: var(--text-3); padding: 4px 8px; border-radius: 4px; text-transform: uppercase;">{{ lead.status }}</span>

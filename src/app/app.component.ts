@@ -418,6 +418,11 @@ export class AppComponent implements OnInit {
   addLeadLoading = false;
   addLeadError = '';
   addLeadSuccess = '';
+  // Set label (batch grouping)
+  leadSets: string[] = [];           // Available set labels for this employee
+  selectedLeadSet = '';              // Currently viewed set filter ('' = all)
+  newLeadSetLabel = '';              // User types a label before uploading
+  deleteSetLoading = false;
 
   // ── Chart state ────────────────────────────────────────────
   chartType: 'line' | 'pie' | 'bar' = 'pie';
@@ -2429,6 +2434,9 @@ Thank You.`;
     this.selectedEmpCalls = [];
     this.drilldownTab = 'stats';
     this.empLeads = [];
+    this.leadSets = [];
+    this.selectedLeadSet = '';
+    this.newLeadSetLabel = '';
     if (this.chart) {
       this.chart.destroy();
       this.chart = null;
@@ -2438,16 +2446,38 @@ Thank You.`;
   fetchEmpLeads(): void {
     if (!this.selectedEmployee) return;
     this.empLeadsLoading = true;
-    this.leadService.getEmployeeLeads(this.dashboardCode, this.selectedEmployee.mobile).subscribe({
+    const setFilter = this.selectedLeadSet || undefined;
+    this.leadService.getEmployeeLeads(this.dashboardCode, this.selectedEmployee.mobile, setFilter).subscribe({
       next: (res: any) => {
         this.empLeadsLoading = false;
         if (res.success) {
           this.empLeads = res.leads;
+          this.leadSets = res.sets || [];
         }
       },
       error: () => {
         this.empLeadsLoading = false;
       }
+    });
+  }
+
+  selectLeadSet(set: string): void {
+    this.selectedLeadSet = set;
+    this.fetchEmpLeads();
+  }
+
+  deleteLeadSet(setLabel: string): void {
+    if (!confirm(`Delete ALL leads in set "${setLabel}"? This cannot be undone.`)) return;
+    this.deleteSetLoading = true;
+    this.leadService.deleteLeadSet(this.dashboardCode, this.selectedEmployee!.mobile, setLabel).subscribe({
+      next: (res: any) => {
+        this.deleteSetLoading = false;
+        if (res.success) {
+          if (this.selectedLeadSet === setLabel) this.selectedLeadSet = '';
+          this.fetchEmpLeads();
+        }
+      },
+      error: () => { this.deleteSetLoading = false; }
     });
   }
 
@@ -2467,6 +2497,7 @@ Thank You.`;
       leadCompanyName: this.newSingleLead.leadCompanyName.trim(),
       contactName: this.newSingleLead.contactName.trim(),
       contactNumber: this.newSingleLead.contactNumber.trim(),
+      setLabel: this.newLeadSetLabel.trim() || '',
     };
 
     this.leadService.addSingleLead(payload).subscribe({
@@ -2561,6 +2592,7 @@ Thank You.`;
     this.addLeadLoading = true;
     this.addLeadError = '';
 
+    const setLabel = this.newLeadSetLabel.trim();
     const mappedLeads: Partial<Lead>[] = this.parsedExcelData
       .map(row => {
         const contactNumber = row[this.leadColumnMapping.contactNumber]?.toString().trim() || '';
@@ -2572,7 +2604,8 @@ Thank You.`;
           assignedEmployeePhone: this.selectedEmployee!.mobile,
           contactNumber,
           leadCompanyName,
-          contactName
+          contactName,
+          setLabel,
         };
       })
       .filter(l => l.contactNumber && l.leadCompanyName); // Drop rows missing required fields
