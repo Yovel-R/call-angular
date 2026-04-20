@@ -1088,6 +1088,14 @@
           <span>Dashboard</span>
         </button>
 
+
+
+        <button class="sidebar-item" [class.active]="dashTab==='leads'"
+          (click)="switchTab('leads')" [title]="sidebarMinimized ? 'Leads' : ''">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-contact-2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Leads Management</span>
+        </button>
+
         <button class="sidebar-item" [class.active]="dashTab==='employees'"
           (click)="switchTab('employees')" [title]="sidebarMinimized ? 'Employees' : ''">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-users-2"><path d="M14 19a6 6 0 0 0-12 0"/><circle cx="8" cy="9" r="4"/><path d="M22 19a6 6 0 0 0-6-6 4 4 0 1 0 0-8"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -1266,18 +1274,18 @@
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
                 <div>
                   <h3
-                    style="font-size:1.15rem;color:#ffffff;margin:0 0 0.6rem 0;font-family:var(--font-head);font-weight:700;">
+                    style="font-size:1.15rem;color:var(--text-1);margin:0 0 0.6rem 0;font-family:var(--font-head);font-weight:700;">
                     Statistics</h3>
                   <div style="display:flex;gap:2rem;">
                     <div>
                       <div
-                        style="font-size:1.4rem;font-weight:700;color:#ffffff;font-family:var(--font-head);line-height:1.2;">
+                        style="font-size:1.4rem;font-weight:700;color:var(--text-1);font-family:var(--font-head);line-height:1.2;">
                         {{ summaryStats.total }}</div>
                       <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Total Calls</div>
                     </div>
                     <div>
                       <div
-                        style="font-size:1.4rem;font-weight:700;color:#ffffff;font-family:var(--font-head);line-height:1.2;">
+                        style="font-size:1.4rem;font-weight:700;color:var(--text-1);font-family:var(--font-head);line-height:1.2;">
                         {{ fmtAvgDur(summaryStats.totalDuration, summaryStats.connected) }}</div>
                       <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Avg Duration</div>
                     </div>
@@ -1653,6 +1661,189 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+
+
+
+      <!-- ══ LEADS MANAGEMENT TAB ══ -->
+      <div *ngIf="dashTab==='leads'" class="animate-fade-in">
+        
+        <!-- Bookmarks / Follow-up Section at the top -->
+        <div *ngIf="allBookmarks.length > 0" style="margin-bottom: 3rem; background: #f8fafc; padding: 2rem; border-radius: 24px; border: 1px solid var(--border);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="background: #fff; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+              </div>
+              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-1);">Active Follow-ups</h3>
+            </div>
+            <span style="background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ allBookmarks.length }} PENDING</span>
+          </div>
+
+          <div class="bookmarks-scroll-container" style="display: flex; gap: 1.25rem; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory;">
+            <div *ngFor="let b of allBookmarks" class="bookmark-card-compact" 
+                 style="flex: 0 0 320px; scroll-snap-align: start; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="overflow: hidden;">
+                  <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-1); white-space: nowrap; text-overflow: ellipsis;">{{ b.contactName || 'Unnamed' }}</h4>
+                  <div style="font-size: 0.8rem; color: var(--text-3);">{{ b.contactNumber }}</div>
+                </div>
+                <div *ngIf="b.reminderDate" style="color: #c2410c; background: #fff7ed; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; border: 1px solid #ffedd5;">
+                  {{ b.reminderDate | date:'MMM d' }}
+                </div>
+              </div>
+              <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #f1f5f9;">
+                <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px; font-weight: 600;">Remarks / Timeline</div>
+                <div *ngFor="let r of b.remarks; let isLast = last" 
+                     [style.border-bottom]="isLast ? 'none' : '1px dashed #e2e8f0'"
+                     [style.padding-bottom]="isLast ? '0' : '6px'"
+                     [style.margin-bottom]="isLast ? '0' : '6px'"
+                     style="font-size: 0.85rem; color: var(--text-2); line-height: 1.4;">
+                  • {{ r }}
+                </div>
+                <div *ngIf="!b.remarks || b.remarks.length === 0" style="font-size: 0.85rem; color: var(--text-3); font-style: italic;">No remarks provided.</div>
+              </div>
+
+              <!-- Checkbox Badges -->
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem;">
+                <span *ngIf="b.brochuresSent" style="background: #eef2ff; color: #4338ca; border: 1px solid #e0e7ff; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Brochures</span>
+                <span *ngIf="b.techMeet" style="background: #fdf2f8; color: #be185d; border: 1px solid #fce7f3; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Tech Meet</span>
+                <span *ngIf="b.meetingRemarks" style="background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Meeting Done</span>
+                <span *ngIf="b.quotationSent" style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Quotation</span>
+                <span *ngIf="b.proposalSent" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ede9fe; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Proposal</span>
+                <span *ngIf="b.whatsappGrp" style="background: #ecfdf5; color: #047857; border: 1px solid #d1fae5; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">WA Group</span>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 0.7rem; color: var(--text-3);">By <span style="font-weight: 600; color: var(--text-2);">{{ getEmployeeName(b.employeePhone) }}</span></span>
+                <button (click)="deleteBookmark(b._id!)" style="background: #f0fdf4; color: #166534; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">
+                  Done
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-header-row" style="margin-bottom: 1.5rem;">
+          <h2 class="dash-title">Leads Management</h2>
+          <div style="display:flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <!-- Search Input -->
+            <div class="search-wrapper">
+              <input type="text" class="lead-filter-input" style="width: 100%; padding-left: 2.5rem;" 
+                     placeholder="Search leads..." [(ngModel)]="leadSearchQuery">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+
+            <!-- Employee Filter -->
+            <select class="lead-filter-select" [(ngModel)]="leadEmployeeFilter">
+              <option value="">All Employees</option>
+              <option *ngFor="let emp of employees" [value]="emp.mobile">{{ emp.name }}</option>
+            </select>
+
+            <!-- Set Filter -->
+            <select class="lead-filter-select" [(ngModel)]="selectedAdminLeadSet" (change)="fetchAdminLeads()">
+              <option value="">All Lead Sets</option>
+              <option *ngFor="let set of adminLeadSets" [value]="set">{{ set }}</option>
+            </select>
+            
+            <button class="cta-primary" style="padding: 0.65rem 1.4rem; font-size: 0.85rem; height: 40px; display: flex; align-items: center; gap: 8px; border-radius: 12px;" (click)="fetchAdminLeads()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+              REFRESH
+            </button>
+          </div>
+        </div>
+
+        <div class="leads-container">
+          <!-- Left Sidebar: Lead List -->
+          <div class="leads-sidebar">
+            <div class="leads-sidebar-header">
+              <div style="font-weight: 700; color: var(--text-1); font-size: 0.95rem;">Leads List</div>
+              <div style="font-size: 0.75rem; color: var(--text-3); margin-top: 4px;">{{ filteredLeads.length }} leads found</div>
+            </div>
+            <div class="leads-list">
+              <div *ngFor="let company of uniqueLeadCompanies" class="lead-item" 
+                   [class.active]="selectedLeadCompany === company"
+                   (click)="selectLeadCompany(company)">
+                <div class="lead-item-name">{{ company || 'Unnamed Company' }}</div>
+                <div class="lead-item-meta">
+                  {{ getLeadsByCompany(company).length }} contacts
+                </div>
+              </div>
+              <div *ngIf="uniqueLeadCompanies.length === 0 && !allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
+                No companies found.
+              </div>
+              <div *ngIf="allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
+                Loading companies...
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Content: Professional Card Detail -->
+          <div class="lead-detail-view">
+            <div *ngIf="selectedLeadCompany">
+              <div class="customer-detail-header">
+                <div class="cd-header-icon" style="background: #eef2ff; color: #4f46e5;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                    <path d="M9 22v-4h6v4"></path>
+                    <path d="M8 6h.01"></path>
+                    <path d="M16 6h.01"></path>
+                    <path d="M8 10h.01"></path>
+                    <path d="M16 10h.01"></path>
+                    <path d="M8 14h.01"></path>
+                    <path d="M16 14h.01"></path>
+                  </svg>
+                </div>
+                <h3 class="cd-header-title">{{ selectedLeadCompany }}</h3>
+              </div>
+
+              <div class="leads-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+                <div *ngFor="let lead of leadsInSelectedCompany" class="contact-card" 
+                     style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; position: relative;">
+                  <div class="customer-identity">
+                    <h4 style="margin: 0 0 0.75rem 0; font-size: 1.1rem; color: var(--text-1);">{{ lead.contactName }}</h4>
+                    
+                    <div class="info-row" style="margin-bottom: 8px;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                      <span style="font-size: 0.9rem;">{{ lead.contactNumber }}</span>
+                    </div>
+
+                    <div class="info-row" style="margin-bottom: 1rem;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      <span style="font-size: 0.9rem;">{{ lead.email || 'No email provided' }}</span>
+                    </div>
+
+                    <div class="meta-row" style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.5rem;">
+                      <span class="meta-label" style="font-size: 0.85rem; width: 80px;">Address</span>
+                      <span class="meta-value" style="font-size: 0.85rem;">{{ lead.address || 'No address found' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; gap: 1rem;">
+                <button class="pill-btn" style="background: var(--bg-hover); color: var(--text-1); border: 1px solid var(--border);">Company Notes</button>
+                <button class="pill-btn" style="background: var(--primary); color: white; border: none;">Export Company Data</button>
+              </div>
+            </div>
+
+            <div *ngIf="!selectedLeadCompany" class="leads-empty-state">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2; margin-bottom: 1rem;">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              <h3>No Company Selected</h3>
+              <p>Select a company from the list to view all lead details</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2058,14 +2249,14 @@
                 </div>
     
                 <!-- Renew section -->
-                <div style="padding:1.5rem;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.08);margin-bottom:1rem;">
-                  <div style="font-weight:700;color:#ffffff;margin-bottom:1rem;font-size:0.95rem;">Renew / Extend Subscription</div>
+                <div style="padding:1.5rem;background:var(--bg-card-2);border-radius:12px;border:1px solid var(--border);margin-bottom:1rem;">
+                  <div style="font-weight:700;color:var(--text-1);margin-bottom:1rem;font-size:0.95rem;">Renew / Extend Subscription</div>
                   <div style="display:flex;gap:1.5rem;align-items:flex-end;flex-wrap:wrap;">
                     <div style="flex:1;min-width:200px;">
-                      <label style="font-size:0.75rem;color:#9ca3af;display:block;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">New End Date</label>
+                      <label style="font-size:0.75rem;color:var(--text-2);display:block;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;">New End Date</label>
                       <input type="date" [(ngModel)]="renewToDate" name="renewToDate" [min]="minToDate"
                         (change)="onRenewToDateChange()"
-                        style="width:100%;padding:0.65rem 1rem;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:rgba(255,255,255,0.05);color:#ffffff;font-size:0.9rem;outline:none;color-scheme:dark;">
+                        style="width:100%;padding:0.65rem 1rem;border:1px solid var(--border);border-radius:10px;background:#ffffff;color:var(--text-1);font-size:0.9rem;outline:none;color-scheme:light;">
                     </div>
                     <button class="cta-primary" style="padding:0.65rem 1.5rem;font-size:0.85rem;white-space:nowrap;border-radius:10px;display:inline-flex;align-items:center;height:42px;"
                       (click)="renewSubscription()" [disabled]="!renewToDate || renewLoading">
@@ -2080,8 +2271,8 @@
                       {{ renewLoading ? 'Processing...' : 'Renew Now' }}
                     </button>
                   </div>
-                  <div *ngIf="renewCostPreview" style="margin-top:1rem;font-size:0.85rem;color:#9ca3af;padding:0.75rem 1rem;background:rgba(16, 185, 129, 0.05);border-radius:8px;border:1px solid rgba(16, 185, 129, 0.1);">
-                    Total (Incl. 18% GST): <strong style="color:#10b981;font-size:1.1rem;margin-left:4px;">₹{{ renewCostPreview.amountRupees | number:'1.2-2' }}</strong>
+                  <div *ngIf="renewCostPreview" style="margin-top:1rem;font-size:0.85rem;color:var(--text-2);padding:0.75rem 1rem;background:rgba(16, 185, 129, 0.05);border-radius:8px;border:1px solid rgba(16, 185, 129, 0.1);">
+                    Total (Incl. 18% GST): <strong style="color:var(--green);font-size:1.1rem;margin-left:4px;">₹{{ renewCostPreview.amountRupees | number:'1.2-2' }}</strong>
                     <div style="font-size:0.75rem;opacity:0.8;margin-top:4px;">
                       ({{ renewCostPreview.teamSizeMax }} users × ₹10 × {{ renewCostPreview.days }} days + 18% GST)
                     </div>
@@ -2090,8 +2281,8 @@
     
                 <!-- Payment History -->
                 <div style="margin-top: 1.5rem;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.05);">
-                    <div style="font-weight:700;color:#ffffff;font-size:0.95rem;">Payment History</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+                    <div style="font-weight:700;color:var(--text-1);font-size:0.95rem;">Payment History</div>
                     <button class="btn-login" style="display:flex;align-items:center;gap:6px;padding:.4rem 1rem;font-size:.8rem;border-radius:8px;" (click)="fetchPaymentHistory()" [disabled]="paymentHistoryLoading">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" [class.spin-anim]="paymentHistoryLoading">
                         <path d="M21 2v6h-6M3 12a9 9 0 0115-6.7L21 8M3 22v-6h6M21 12a9 9 0 01-15 6.7L3 16" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2099,25 +2290,25 @@
                       {{ paymentHistoryLoading ? '' : 'Refresh' }}
                     </button>
                   </div>
-                  <div *ngIf="!paymentHistory.length && !paymentHistoryLoading" style="color:#9ca3af;font-size:0.85rem;font-style:italic;padding:2rem;text-align:center;background:rgba(255,255,255,0.02);border-radius:12px;border:1px dashed rgba(255,255,255,0.08);">No payment records yet.</div>
-                  <div class="top-list-table-container" *ngIf="paymentHistory.length" style="border:1px solid rgba(255,255,255,0.05);border-radius:12px;overflow:hidden;background:transparent;">
+                  <div *ngIf="!paymentHistory.length && !paymentHistoryLoading" style="color:var(--text-3);font-size:0.85rem;font-style:italic;padding:2rem;text-align:center;background:var(--bg-card-2);border-radius:12px;border:1px dashed var(--border);">No payment records yet.</div>
+                  <div class="top-list-table-container" *ngIf="paymentHistory.length" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:transparent;">
                     <table class="emp-table payment-history-table" style="background:transparent;">
                       <thead>
-                        <tr style="background:rgba(255,255,255,0.03) !important;border-bottom:1px solid rgba(255,255,255,0.1) !important;">
-                          <th style="color:rgba(255,255,255,0.4) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">DATE</th>
-                          <th style="color:rgba(255,255,255,0.4) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">PERIOD</th>
-                          <th style="color:rgba(255,255,255,0.4) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">EMP</th>
-                          <th style="color:rgba(255,255,255,0.4) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;text-align:right">AMOUNT</th>
-                          <th style="color:rgba(255,255,255,0.4) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">STATUS</th>
-                          <th style="color:rgba(255,255,255,0.4) ;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;text-align:right">ACTIONS</th>
+                        <tr style="background:var(--bg-card-2) !important;border-bottom:1px solid var(--border) !important;">
+                          <th style="color:var(--text-2) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">DATE</th>
+                          <th style="color:var(--text-2) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">PERIOD</th>
+                          <th style="color:var(--text-2) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">EMP</th>
+                          <th style="color:var(--text-2) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;text-align:right">AMOUNT</th>
+                          <th style="color:var(--text-2) !important;font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;">STATUS</th>
+                          <th style="color:var(--text-2);font-size:0.7rem;font-weight:700;letter-spacing:0.05em;padding:1rem 0.75rem;text-align:right">ACTIONS</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr *ngFor="let p of paymentHistory" style="border-bottom: 1px solid rgba(255,255,255,0.05) !important;">
-                          <td style="color:#ffffff;padding:1.1rem 0.75rem;font-size:0.85rem;">{{ p.createdAt | date:'dd MMM yyyy' }}</td>
-                          <td style="color:rgba(255,255,255,0.6);font-size:0.8rem;padding:1.1rem 0.75rem;">{{ p.fromDate | date:'dd MMM' }} → {{ p.toDate | date:'dd MMM yyyy' }} ({{ p.days }}d)</td>
-                          <td style="color:#ffffff;padding:1.1rem 0.75rem;font-size:0.85rem;">{{ p.teamSizeMax }}</td>
-                          <td style="text-align:right;font-weight:700;color:#ffffff;padding:1.1rem 0.75rem;font-size:0.85rem;">₹{{ (p.amount / 100) | number:'1.2-2' }}</td>
+                        <tr *ngFor="let p of paymentHistory" style="border-bottom: 1px solid var(--border) !important;">
+                          <td style="color:var(--text-1);padding:1.1rem 0.75rem;font-size:0.85rem;">{{ p.createdAt | date:'dd MMM yyyy' }}</td>
+                          <td style="color:var(--text-2);font-size:0.8rem;padding:1.1rem 0.75rem;">{{ p.fromDate | date:'dd MMM' }} → {{ p.toDate | date:'dd MMM yyyy' }} ({{ p.days }}d)</td>
+                          <td style="color:var(--text-1);padding:1.1rem 0.75rem;font-size:0.85rem;">{{ p.teamSizeMax }}</td>
+                          <td style="text-align:right;font-weight:700;color:var(--text-1);padding:1.1rem 0.75rem;font-size:0.85rem;">₹{{ (p.amount / 100) | number:'1.2-2' }}</td>
                           <td style="padding:1.1rem 0.75rem;">
                             <span [style.color]="p.status === 'paid' ? '#10b981' : p.status === 'failed' ? '#ef4444' : '#f59e0b'" style="font-weight:600;font-size:0.8rem;">
                               {{ p.status | titlecase }}

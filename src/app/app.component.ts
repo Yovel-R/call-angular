@@ -7,6 +7,7 @@ import { EmployeeService, Employee } from './services/employee.service';
 import { CallLogService, CallStats } from './services/calllog.service';
 import { PaymentService } from './services/payment.service';
 import { LeadService, Lead } from './services/lead.service';
+import { BookmarkService, Bookmark } from './services/bookmark.service';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -251,7 +252,7 @@ export class AppComponent implements OnInit {
   resetPwdChecks = { length: false, upper: false, number: false, symbol: false };
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
+  dashTab: 'overview' | 'leads' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
@@ -418,6 +419,20 @@ export class AppComponent implements OnInit {
   addLeadLoading = false;
   addLeadError = '';
   addLeadSuccess = '';
+
+  // Admin Leads Tab
+  allLeads: any[] = [];
+  allLeadsLoading = false;
+  selectedAdminLead: any = null;
+  selectedLeadCompany: string = '';
+  adminLeadSets: string[] = [];
+  selectedAdminLeadSet: string = '';
+  leadSearchQuery: string = '';
+  leadEmployeeFilter: string = '';
+
+  // Bookmarks (Follow-up)
+  allBookmarks: Bookmark[] = [];
+  allBookmarksLoading = false;
   // Set label (batch grouping)
   leadSets: string[] = [];           // Available set labels for this employee
   selectedLeadSet = '';              // Currently viewed set filter ('' = all)
@@ -504,7 +519,8 @@ export class AppComponent implements OnInit {
     private employeeService: EmployeeService,
     private callLogService: CallLogService,
     private paymentService: PaymentService,
-    private leadService: LeadService
+    private leadService: LeadService,
+    private bookmarkService: BookmarkService
   ) { }
 
   ngOnInit(): void {
@@ -558,6 +574,11 @@ export class AppComponent implements OnInit {
         if (this.timelineData.length) this.renderTimelineChart();
       }, 100);
     }
+
+    if (tab === 'leads') {
+      this.fetchAdminLeads();
+      this.fetchCompanyBookmarks();
+    }
   }
 
   // ── Helpers ───────────────────────────────────────────────
@@ -589,6 +610,11 @@ export class AppComponent implements OnInit {
     const s = avg % 60;
     if (m > 0) return `${m}m ${s}s`;
     return `${s}s`;
+  }
+
+  getEmployeeName(phone: string): string {
+    const emp = this.employees.find(e => e.mobile === phone);
+    return emp ? emp.name : phone;
   }
 
   fmtDate(d: string | undefined | null): string {
@@ -1185,7 +1211,7 @@ export class AppComponent implements OnInit {
           data: [s.incoming || 0, s.outgoing || 0, s.missed || 0, s.rejected || 0],
           backgroundColor: ['#3b82f6', '#22c55e', '#f87171', '#f59e0b'],
           borderWidth: 2,
-          borderColor: '#111827',
+          borderColor: '#ffffff',
           hoverOffset: 6
         }]
       },
@@ -2457,6 +2483,88 @@ Thank You.`;
       },
       error: () => {
         this.empLeadsLoading = false;
+      }
+    });
+  }
+
+  fetchAdminLeads(): void {
+    if (!this.dashboardCode) return;
+    this.allLeadsLoading = true;
+    this.leadService.getAdminLeads(this.dashboardCode, this.selectedAdminLeadSet || undefined).subscribe({
+      next: (res: any) => {
+        this.allLeadsLoading = false;
+        if (res.success) {
+          this.allLeads = res.leads;
+          this.adminLeadSets = res.sets || [];
+          if (!this.selectedLeadCompany && this.allLeads.length > 0) {
+            this.selectedLeadCompany = this.allLeads[0].leadCompanyName;
+          }
+        }
+      },
+      error: () => {
+        this.allLeadsLoading = false;
+      }
+    });
+  }
+
+  get filteredLeads(): any[] {
+    return this.allLeads.filter(lead => {
+      const matchesSearch = !this.leadSearchQuery || 
+        (lead.contactName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase())) ||
+        (lead.contactNumber?.includes(this.leadSearchQuery)) ||
+        (lead.leadCompanyName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase()));
+      
+      const matchesEmployee = !this.leadEmployeeFilter || 
+        lead.assignedEmployeePhone === this.leadEmployeeFilter;
+
+      return matchesSearch && matchesEmployee;
+    });
+  }
+
+  get uniqueLeadCompanies(): string[] {
+    const companies = this.filteredLeads.map(l => l.leadCompanyName);
+    return [...new Set(companies)].sort();
+  }
+
+  get leadsInSelectedCompany(): any[] {
+    if (!this.selectedLeadCompany) return [];
+    return this.allLeads.filter(l => l.leadCompanyName === this.selectedLeadCompany);
+  }
+
+  getLeadsByCompany(company: string): any[] {
+    return this.allLeads.filter(l => l.leadCompanyName === company);
+  }
+
+  selectLeadCompany(company: string): void {
+    this.selectedLeadCompany = company;
+  }
+
+  // ── Bookmarks (Follow-up) ──────────────────────────────────
+  fetchCompanyBookmarks(): void {
+    if (!this.dashboardCode) return;
+    this.allBookmarksLoading = true;
+    this.bookmarkService.getAllCompanyBookmarks(this.dashboardCode).subscribe({
+      next: (res: any) => {
+        this.allBookmarksLoading = false;
+        if (res.success) {
+          this.allBookmarks = res.bookmarks;
+        }
+      },
+      error: () => {
+        this.allBookmarksLoading = false;
+      }
+    });
+  }
+
+  deleteBookmark(id: string): void {
+    if (!id) return;
+    if (!confirm('Are you sure you want to remove this follow-up?')) return;
+
+    this.bookmarkService.deleteBookmark(id).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          this.allBookmarks = this.allBookmarks.filter(b => b._id !== id);
+        }
       }
     });
   }
