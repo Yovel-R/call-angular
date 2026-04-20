@@ -1562,6 +1562,7 @@
                 <th>App Ver.</th>
                 <th>Last Call</th>
                 <th>Last Sync</th>
+                <th style="text-align: center;">Interactions</th>
                 <th style="min-width: 140px; text-align: center;">Action</th>
               </tr>
             </thead>
@@ -1638,6 +1639,11 @@
                   [style.color]="emp.lastSyncTime ? 'var(--green)' : 'var(--text-3)'">{{ fmtDate(emp.lastSyncTime) }}
                 </td>
                 <td style="text-align: center;">
+                  <span style="background: #f1f5f9; color: #475569; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">
+                    {{ getEmployeeInteractionCount(emp.mobile) }}
+                  </span>
+                </td>
+                <td style="text-align: center;">
                   <button class="action-btn" (click)="$event.stopPropagation(); openEditEmployee(emp)"
                     title="Edit employee" style="margin-right: 4px; color: var(--purple);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1683,42 +1689,68 @@
 
           <div class="bookmarks-scroll-container" style="display: flex; gap: 1.25rem; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory;">
             <div *ngFor="let b of allBookmarks" class="bookmark-card-compact" 
-                 style="flex: 0 0 320px; scroll-snap-align: start; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                <div style="overflow: hidden;">
-                  <h4 style="margin: 0; font-size: 0.95rem; color: var(--text-1); white-space: nowrap; text-overflow: ellipsis;">{{ b.contactName || 'Unnamed' }}</h4>
-                  <div style="font-size: 0.8rem; color: var(--text-3);">{{ b.contactNumber }}</div>
+                 style="flex: 0 0 340px; scroll-snap-align: start; background: #ffffff; border: 1px solid #edf2f7; border-radius: 20px; padding: 1.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04); position: relative; transition: all 0.3s ease;">
+              
+              <!-- Refined Header -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                <div style="overflow: hidden; flex: 1; padding-right: 1rem;">
+                  <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #1a202c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.contactName || 'Unknown Lead' }}</h4>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                    <span style="font-size: 0.8rem; color: #718096; font-weight: 500;">{{ b.contactNumber }}</span>
+                    <span *ngIf="b.companyName" style="color: #cbd5e0;">•</span>
+                    <span *ngIf="b.companyName" style="font-size: 0.75rem; color: #a0aec0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.companyName }}</span>
+                  </div>
                 </div>
-                <div *ngIf="b.reminderDate" style="color: #c2410c; background: #fff7ed; padding: 2px 8px; border-radius: 4px; font-size: 0.65rem; font-weight: 800; border: 1px solid #ffedd5;">
-                  {{ b.reminderDate | date:'MMM d' }}
+                <!-- Call Counter -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 6px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  {{ getLeadInteractionCount(b.contactNumber) }}
                 </div>
               </div>
-              <div style="background: #f8fafc; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #f1f5f9;">
-                <div style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px; font-weight: 600;">Remarks / Timeline</div>
-                <div *ngFor="let r of b.remarks; let isLast = last" 
-                     [style.border-bottom]="isLast ? 'none' : '1px dashed #e2e8f0'"
-                     [style.padding-bottom]="isLast ? '0' : '6px'"
-                     [style.margin-bottom]="isLast ? '0' : '6px'"
-                     style="font-size: 0.85rem; color: var(--text-2); line-height: 1.4;">
-                  • {{ r }}
+
+              <!-- Timeline Section -->
+              <div style="background: #fdfdfd; border: 1px solid #f7fafc; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+                <!-- Client Requirement -->
+                <div *ngIf="b.description" style="margin-bottom: 1rem;">
+                  <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6366f1; margin-bottom: 4px; font-weight: 700;">Requirement</div>
+                  <div style="font-size: 0.95rem; color: #1e293b; line-height: 1.4; font-weight: 600;">{{ b.description }}</div>
                 </div>
-                <div *ngIf="!b.remarks || b.remarks.length === 0" style="font-size: 0.85rem; color: var(--text-3); font-style: italic;">No remarks provided.</div>
+
+                <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 10px; font-weight: 700;">Latest Interaction</div>
+                <div *ngFor="let r of (b.remarks || []).slice(-2); let isLast = last" 
+                     [style.margin-bottom]="isLast ? '0' : '8px'"
+                     style="font-size: 0.8rem; color: #4a5568; line-height: 1.5; display: flex; gap: 8px;">
+                  <span style="color: #cbd5e0; flex-shrink: 0;">•</span>
+                  <span>{{ r }}</span>
+                </div>
+                <div *ngIf="!b.remarks || b.remarks.length === 0" style="font-size: 0.8rem; color: #a0aec0; font-style: italic;">No interaction history yet.</div>
               </div>
 
               <!-- Checkbox Badges -->
-              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem;">
-                <span *ngIf="b.brochuresSent" style="background: #eef2ff; color: #4338ca; border: 1px solid #e0e7ff; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Brochures</span>
-                <span *ngIf="b.techMeet" style="background: #fdf2f8; color: #be185d; border: 1px solid #fce7f3; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Tech Meet</span>
-                <span *ngIf="b.meetingRemarks" style="background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Meeting Done</span>
-                <span *ngIf="b.quotationSent" style="background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Quotation</span>
-                <span *ngIf="b.proposalSent" style="background: #f5f3ff; color: #6d28d9; border: 1px solid #ede9fe; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">Proposal</span>
-                <span *ngIf="b.whatsappGrp" style="background: #ecfdf5; color: #047857; border: 1px solid #d1fae5; padding: 2px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 600;">WA Group</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem;">
+                <span *ngIf="b.brochuresSent" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Brochures</span>
+                <span *ngIf="b.techMeet" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Tech Meet</span>
+                <span *ngIf="b.meetingRemarks" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Meeting Done</span>
+                <span *ngIf="b.quotationSent" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Quotation</span>
+                <span *ngIf="b.proposalSent" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Proposal</span>
+                <span *ngIf="b.whatsappGrp" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">WA Group</span>
               </div>
 
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <span style="font-size: 0.7rem; color: var(--text-3);">By <span style="font-weight: 600; color: var(--text-2);">{{ getEmployeeName(b.employeePhone) }}</span></span>
-                <button (click)="deleteBookmark(b._id!)" style="background: #f0fdf4; color: #166534; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer;">
-                  Done
+              <!-- Footer with Action -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1.25rem;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 20px; height: 20px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: #475569;">{{ getEmployeeName(b.employeePhone).charAt(0) }}</div>
+                    <span style="font-size: 0.75rem; color: #718096; font-weight: 500;">{{ getEmployeeName(b.employeePhone) }}</span>
+                  </div>
+                  <div *ngIf="b.reminderDate" style="background: #fff5f5; color: #c53030; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid #fed7d7; width: fit-content; display: flex; align-items: center; gap: 5px;">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    FOLLOW-UP: {{ b.reminderDate | date:'MMM d' }}
+                  </div>
+                </div>
+                <button (click)="deleteBookmark(b._id!)" 
+                        style="background: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(49, 130, 206, 0.2); transition: all 0.2s ease;">
+                  Mark Done
                 </button>
               </div>
             </div>
@@ -1768,8 +1800,11 @@
                    [class.active]="selectedLeadCompany === company"
                    (click)="selectLeadCompany(company)">
                 <div class="lead-item-name">{{ company || 'Unnamed Company' }}</div>
-                <div class="lead-item-meta">
-                  {{ getLeadsByCompany(company).length }} contacts
+                <div class="lead-item-meta" style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: 0.75rem;">{{ getLeadsByCompany(company).length }} contacts</span>
+                  <span *ngIf="getCompanyInteractionCount(company) > 0" style="color: #4f46e5; font-weight: 600; font-size: 0.7rem;">
+                    {{ getCompanyInteractionCount(company) }} Interactions
+                  </span>
                 </div>
               </div>
               <div *ngIf="uniqueLeadCompanies.length === 0 && !allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
@@ -1802,7 +1837,13 @@
 
               <div class="leads-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
                 <div *ngFor="let lead of leadsInSelectedCompany" class="contact-card" 
-                     style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; position: relative;">
+                     style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; position: relative; overflow: hidden;">
+                  
+                  <!-- Interaction Badge for Leads -->
+                  <div *ngIf="getLeadInteractionCount(lead.contactNumber) > 0" 
+                       style="position: absolute; top: 0; right: 0; background: #e2e8f0; color: #475569; padding: 4px 10px; font-size: 0.65rem; font-weight: 800; border-bottom-left-radius: 12px;">
+                    {{ getLeadInteractionCount(lead.contactNumber) }} CALLS
+                  </div>
                   <div class="customer-identity">
                     <h4 style="margin: 0 0 0.75rem 0; font-size: 1.1rem; color: var(--text-1);">{{ lead.contactName }}</h4>
                     
@@ -1833,7 +1874,7 @@
                 <button class="pill-btn" style="background: var(--bg-hover); color: var(--text-1); border: 1px solid var(--border);">Company Notes</button>
                 <button class="pill-btn" style="background: var(--primary); color: white; border: none;">Export Company Data</button>
               </div>
-            </div>
+              </div>
 
             <div *ngIf="!selectedLeadCompany" class="leads-empty-state">
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2; margin-bottom: 1rem;">
@@ -1843,9 +1884,9 @@
               <h3>No Company Selected</h3>
               <p>Select a company from the list to view all lead details</p>
             </div>
+            </div>
           </div>
         </div>
-      </div>
 
       <!-- ══ PERIODIC REPORTS TAB ══ -->
       <div *ngIf="dashTab==='reports'">

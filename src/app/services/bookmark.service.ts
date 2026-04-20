@@ -9,6 +9,7 @@ export interface Bookmark {
   employeePhone: string;
   contactNumber: string;
   contactName: string;
+  description?: string;
   remarks: string[];
   brochuresSent?: boolean;
   techMeet?: boolean;
@@ -18,6 +19,7 @@ export interface Bookmark {
   whatsappGrp?: boolean;
   callTimestamp?: number;
   reminderDate: string | null;
+  companyName?: string;
   createdAt?: string;
 }
 

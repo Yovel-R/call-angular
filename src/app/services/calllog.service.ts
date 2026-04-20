@@ -71,4 +71,8 @@ export class CallLogService {
     const r = this.rangeParams(period, from, to);
     return this.api.get(`/api/calllogs/timeline?companyCode=${encodeURIComponent(companyCode)}&${r}`);
   }
+
+  getLeadCallCounts(companyCode: string): Observable<any> {
+    return this.api.get(`/api/calllogs/lead-counts?companyCode=${encodeURIComponent(companyCode)}`);
+  }
 }

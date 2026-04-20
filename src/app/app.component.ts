@@ -433,6 +433,7 @@ export class AppComponent implements OnInit {
   // Bookmarks (Follow-up)
   allBookmarks: Bookmark[] = [];
   allBookmarksLoading = false;
+  leadCallCounts: { [number: string]: number } = {};
   // Set label (batch grouping)
   leadSets: string[] = [];           // Available set labels for this employee
   selectedLeadSet = '';              // Currently viewed set filter ('' = all)
@@ -2496,6 +2497,7 @@ Thank You.`;
         if (res.success) {
           this.allLeads = res.leads;
           this.adminLeadSets = res.sets || [];
+          this.fetchLeadCallCounts();
           if (!this.selectedLeadCompany && this.allLeads.length > 0) {
             this.selectedLeadCompany = this.allLeads[0].leadCompanyName;
           }
@@ -2548,10 +2550,20 @@ Thank You.`;
         this.allBookmarksLoading = false;
         if (res.success) {
           this.allBookmarks = res.bookmarks;
+          this.fetchLeadCallCounts();
         }
       },
       error: () => {
         this.allBookmarksLoading = false;
+      }
+    });
+  }
+
+  fetchLeadCallCounts(): void {
+    if (!this.dashboardCode) return;
+    this.callLogService.getLeadCallCounts(this.dashboardCode).subscribe({
+      next: (res: any) => {
+        if (res.success) this.leadCallCounts = res.counts;
       }
     });
   }
@@ -2567,6 +2579,46 @@ Thank You.`;
         }
       }
     });
+  }
+
+  getLeadInteractionCount(contactNumber: string): number {
+    if (!contactNumber) return 0;
+    const cleanNum = contactNumber.replace(/\D/g, '').slice(-10);
+    
+    // Find bookmark by normalized number
+    const b = this.allBookmarks.find(bm => {
+      const bmNum = (bm.contactNumber || '').replace(/\D/g, '').slice(-10);
+      return bmNum === cleanNum;
+    });
+    const loggedCount = b?.remarks?.length || 0;
+    
+    // Find call count by normalized number
+    let rawCount = 0;
+    Object.keys(this.leadCallCounts).forEach(key => {
+      const kNum = key.replace(/\D/g, '').slice(-10);
+      if (kNum === cleanNum) {
+        rawCount += this.leadCallCounts[key];
+      }
+    });
+    
+    return loggedCount + rawCount;
+  }
+
+  getEmployeeInteractionCount(mobile: string): number {
+    // For employees, we'll still show the manually logged interactions for now
+    // as their call stats are already shown in other columns.
+    return this.allBookmarks
+      .filter(bm => bm.employeePhone === mobile)
+      .reduce((sum, bm) => sum + (bm.remarks?.length || 0), 0);
+  }
+
+  getCompanyInteractionCount(company: string): number {
+    const companyContacts = this.allLeads.filter(l => l.leadCompanyName === company);
+    let total = 0;
+    companyContacts.forEach(contact => {
+      total += this.getLeadInteractionCount(contact.contactNumber);
+    });
+    return total;
   }
 
   selectLeadSet(set: string): void {
