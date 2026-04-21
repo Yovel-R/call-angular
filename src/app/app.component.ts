@@ -252,7 +252,7 @@ export class AppComponent implements OnInit {
   resetPwdChecks = { length: false, upper: false, number: false, symbol: false };
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
+  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' | 'emp_dashboard' = 'overview';
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
@@ -490,6 +490,7 @@ export class AppComponent implements OnInit {
   allLeadsLoading = false;
   selectedAdminLead: any = null;
   selectedLeadCompany: string = '';
+  selectedEmpLeadCompany: string = '';
   adminLeadSets: string[] = [];
   selectedAdminLeadSet: string = '';
   leadSearchQuery: string = '';
@@ -508,7 +509,7 @@ export class AppComponent implements OnInit {
   deleteSetLoading = false;
 
   // ── Chart state ────────────────────────────────────────────
-  chartType: 'line' | 'pie' | 'bar' = 'pie';
+  chartType: 'line' | 'pie' | 'bar' = 'line';
   chart: Chart | null = null;
 
   overviewChartType: 'pie' | 'bar' = 'pie';
@@ -625,6 +626,14 @@ export class AppComponent implements OnInit {
 
   switchTab(tab: any): void {
     const prevTab = this.dashTab;
+    
+    // If switching away from employee dashboard, clear selected employee state 
+    // so legacy side-drilldown doesn't show up.
+    if (prevTab === 'emp_dashboard' && tab !== 'emp_dashboard') {
+      this.selectedEmployee = null;
+      this.selectedEmpStats = null;
+    }
+
     this.dashTab = tab;
     this.sidebarOpen = false;
 
@@ -949,8 +958,11 @@ export class AppComponent implements OnInit {
       }
 
       setTimeout(() => {
-        if (this.summaryStats) this.renderDonutChart();
-        if (this.timelineData && this.timelineData.length) this.renderTimelineChart();
+        // Only render overview charts when actually on the overview tab
+        if (this.dashTab !== 'emp_dashboard') {
+          if (this.summaryStats) this.renderDonutChart();
+          if (this.timelineData && this.timelineData.length) this.renderTimelineChart();
+        }
       }, 50);
 
       this.summaryLoading = false;
@@ -1085,6 +1097,10 @@ export class AppComponent implements OnInit {
     this.selectedEmpLoading = true;
     this.selectedEmpCallsLoading = true;
     this.drilldownTab = 'stats';
+    this.dashTab = 'emp_dashboard';
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'instant' });
 
     this.callLogService.getEmployeeStat(
       this.dashboardCode, emp.mobile, this.selectedPeriod,
@@ -1107,10 +1123,60 @@ export class AppComponent implements OnInit {
         this.selectedEmpCallsLoading = false;
         if (res.success) {
           this.selectedEmpCalls = res.calls;
-          setTimeout(() => this.renderChart(), 100);
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              this.renderChart();
+              this.renderEmpDonutChart();
+            });
+          });
         }
       },
       error: () => { this.selectedEmpCallsLoading = false; }
+    });
+
+    // Fetch leads and followups
+    this.fetchEmpLeads();
+    this.fetchCompanyBookmarks();
+  }
+
+  get selectedEmpBookmarks(): Bookmark[] {
+    if (!this.selectedEmployee) return [];
+    return this.allBookmarks.filter(b => b.employeePhone === this.selectedEmployee!.mobile);
+  }
+
+  empDonutChart: Chart | null = null;
+  renderEmpDonutChart(): void {
+    if (this.empDonutChart) { this.empDonutChart.destroy(); this.empDonutChart = null; }
+    const canvas = document.getElementById('empDonutChart') as HTMLCanvasElement;
+    if (!canvas || !this.selectedEmpStats) return;
+
+    const s = this.selectedEmpStats;
+    this.empDonutChart = new Chart(canvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['Incoming', 'Outgoing', 'Missed', 'Rejected'],
+        datasets: [{
+          data: [s.incoming || 0, s.outgoing || 0, s.missed || 0, s.rejected || 0],
+          backgroundColor: ['#3b82f6', '#22c55e', '#f87171', '#f59e0b'],
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '72%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1f2937',
+            titleColor: '#fff', bodyColor: '#9ca3af',
+            borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+            padding: 10, cornerRadius: 8
+          }
+        }
+      }
     });
   }
 
@@ -1118,7 +1184,15 @@ export class AppComponent implements OnInit {
 
   setChartType(type: 'line' | 'pie' | 'bar'): void {
     this.chartType = type;
-    this.renderChart();
+    requestAnimationFrame(() => this.renderChart());
+  }
+
+  trackByCallId(index: number, call: any): any {
+    return call._id || call.timestamp || index;
+  }
+
+  trackByEmpId(index: number, emp: Employee): any {
+    return emp.mobile || emp._id || index;
   }
 
   setOverviewChartType(type: 'pie' | 'bar'): void {
@@ -1301,46 +1375,102 @@ export class AppComponent implements OnInit {
 
   renderChart(): void {
     if (this.chart) { this.chart.destroy(); this.chart = null; }
-    const canvas = document.getElementById('empChart') as HTMLCanvasElement;
-    if (!canvas || !this.selectedEmpCalls.length) return;
+    // Also destroy timelineChart if it previously owned the same canvas
+    if (this.timelineChart) { this.timelineChart.destroy(); this.timelineChart = null; }
+    const canvas = (document.getElementById('empChart') || document.getElementById('timelineChart')) as HTMLCanvasElement;
+    if (!canvas) return;
 
     const textColor = 'rgba(59,59,59,0.7)';
-    const gridColor = 'rgba(255,255,255,0.05)';
-    let data: any, options: any;
+    const gridColor = 'rgba(0,0,0,0.04)';
+    let data: any, options: any, chartType: any;
 
-    if (this.chartType === 'pie' || this.chartType === 'bar') {
+    if (this.chartType === 'pie') {
+      // Thick doughnut matching reference image
       const counts = { incoming: 0, outgoing: 0, missed: 0, rejected: 0 };
       this.selectedEmpCalls.forEach(c => {
         if (c.callType in counts) (counts as any)[c.callType]++;
       });
+      const total = counts.incoming + counts.outgoing + counts.missed + counts.rejected;
+
+      chartType = 'doughnut';
+      data = {
+        labels: ['Outgoing', 'Incoming', 'Missed', 'Rejected'],
+        datasets: [{
+          data: [counts.outgoing, counts.incoming, counts.missed, counts.rejected],
+          backgroundColor: ['#22c55e', '#3b82f6', '#ef4444', '#f97316'],
+          borderWidth: 3,
+          borderColor: '#ffffff',
+          hoverOffset: 4
+        }]
+      };
+      options = {
+        responsive: true, maintainAspectRatio: false,
+        cutout: '78%',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            titleColor: '#fff', bodyColor: '#94a3b8',
+            padding: 10, cornerRadius: 8
+          }
+        },
+        // Center text via plugin
+        centerText: { total }
+      };
+
+      // Register center-text plugin inline
+      const centerPlugin = {
+        id: 'centerTextPlugin_' + Date.now(),
+        beforeDraw: (chart: any) => {
+          const { width, height, ctx } = chart;
+          ctx.save();
+          const centerX = width / 2;
+          const centerY = height / 2;
+          ctx.fillStyle = '#1e293b';
+          ctx.font = `800 ${Math.round(height / 5.5)}px Inter, sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(total.toString(), centerX, centerY - 10);
+          ctx.fillStyle = '#64748b';
+          ctx.font = `600 ${Math.round(height / 12)}px Inter, sans-serif`;
+          ctx.fillText('Total', centerX, centerY + Math.round(height / 9));
+          ctx.restore();
+        }
+      };
+      this.chart = new Chart(canvas, { type: chartType, data, options, plugins: [centerPlugin] });
+      return;
+
+    } else if (this.chartType === 'bar') {
+      const counts = { incoming: 0, outgoing: 0, missed: 0, rejected: 0 };
+      this.selectedEmpCalls.forEach(c => {
+        if (c.callType in counts) (counts as any)[c.callType]++;
+      });
+      chartType = 'bar';
       data = {
         labels: ['Incoming', 'Outgoing', 'Missed', 'Rejected'],
         datasets: [{
           label: 'Call Count',
           data: [counts.incoming, counts.outgoing, counts.missed, counts.rejected],
-          backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#ec4899'],
-          borderWidth: this.chartType === 'pie' ? 2 : 0,
-          borderColor: '#ffffff',
-          borderRadius: this.chartType === 'bar' ? 6 : 0,
-          barPercentage: 0.6
+          backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#f97316'],
+          borderWidth: 0,
+          borderRadius: 8,
+          barPercentage: 0.55
         }]
       };
       options = {
         responsive: true, maintainAspectRatio: false,
         plugins: {
-          legend: {
-            display: this.chartType === 'pie', position: 'right',
-            labels: { color: textColor, font: { size: 12 }, padding: 15 }
-          },
-          tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, cornerRadius: 8 }
+          legend: { display: false },
+          tooltip: { backgroundColor: '#1e293b', padding: 10, cornerRadius: 8 }
         },
-        scales: this.chartType === 'bar' ? {
-          y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1, padding: 8 } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, stepSize: 1, padding: 8 }, border: { display: false } },
           x: { grid: { display: false }, ticks: { color: textColor, padding: 8 } }
-        } : undefined
+        }
       };
     } else {
       // Line chart
+      if (!this.selectedEmpCalls.length) return;
       const map = new Map<string, number>();
       const calls = [...this.selectedEmpCalls].reverse();
       calls.forEach(c => {
@@ -1351,11 +1481,12 @@ export class AppComponent implements OnInit {
         map.set(k, (map.get(k) || 0) + 1);
       });
 
+      chartType = 'line';
       const ctx = canvas.getContext('2d');
       let gradient: any = 'rgba(99,102,241,0.2)';
       if (ctx) {
-        gradient = ctx.createLinearGradient(0, 0, 0, 220);
-        gradient.addColorStop(0, 'rgba(99,102,241,0.4)');
+        gradient = ctx.createLinearGradient(0, 0, 0, 260);
+        gradient.addColorStop(0, 'rgba(99,102,241,0.35)');
         gradient.addColorStop(1, 'rgba(99,102,241,0.0)');
       }
 
@@ -1386,7 +1517,7 @@ export class AppComponent implements OnInit {
       };
     }
 
-    this.chart = new Chart(canvas, { type: this.chartType, data, options });
+    this.chart = new Chart(canvas, { type: chartType, data, options });
   }
 
   // ── Auth flows ────────────────────────────────────────────
@@ -2527,6 +2658,7 @@ Thank You.`;
     this.selectedEmpStats = null;
     this.selectedEmpCalls = [];
     this.drilldownTab = 'stats';
+    this.dashTab = 'employees';
     this.empLeads = [];
     this.leadSets = [];
     this.selectedLeadSet = '';
@@ -2547,6 +2679,9 @@ Thank You.`;
         if (res.success) {
           this.empLeads = res.leads;
           this.leadSets = res.sets || [];
+          if (this.empLeads.length > 0 && !this.selectedEmpLeadCompany) {
+            this.selectedEmpLeadCompany = this.empLeads[0].leadCompanyName || 'Unnamed Company';
+          }
         }
       },
       error: () => {
@@ -2606,6 +2741,26 @@ Thank You.`;
 
   selectLeadCompany(company: string): void {
     this.selectedLeadCompany = company;
+  }
+
+  // Employee Dashboard Lead Sidebar logic
+  get empUniqueCompanies(): string[] {
+    if (!this.empLeads) return [];
+    const companies = this.empLeads.map(l => l.leadCompanyName || 'Unnamed Company');
+    return [...new Set(companies)].sort();
+  }
+
+  get leadsInSelectedEmpCompany(): any[] {
+    if (!this.selectedEmpLeadCompany) return [];
+    return this.empLeads.filter(l => (l.leadCompanyName || 'Unnamed Company') === this.selectedEmpLeadCompany);
+  }
+
+  getEmpLeadsByCompany(company: string): any[] {
+    return this.empLeads.filter(l => (l.leadCompanyName || 'Unnamed Company') === company);
+  }
+
+  selectEmpLeadCompany(company: string): void {
+    this.selectedEmpLeadCompany = company;
   }
 
   // ── Bookmarks (Follow-up) ──────────────────────────────────
