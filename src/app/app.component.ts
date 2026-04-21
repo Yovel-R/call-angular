@@ -192,7 +192,7 @@ export class AppComponent implements OnInit {
   }
 
   handleSwipeGesture(): void {
-    const swipeThreshold = 50; 
+    const swipeThreshold = 50;
     if (this.touchEndX < this.touchStartX - swipeThreshold) {
       this.nextTestimonial();
     } else if (this.touchEndX > this.touchStartX + swipeThreshold) {
@@ -252,10 +252,75 @@ export class AppComponent implements OnInit {
   resetPwdChecks = { length: false, upper: false, number: false, symbol: false };
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'leads' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
+  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' = 'overview';
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
+
+  // ── Follow-ups Filters ─────────────────────────────────────
+  followupSelectedEmps: string[] = [];
+  followupSelectedCompanyTags: string[] = [];
+  followupSearchQuery: string = '';
+  followupEmpLocalSearch: string = '';
+  followupTagLocalSearch: string = '';
+
+  getFilteredEmployeesLocal() {
+    if (!this.followupEmpLocalSearch) return this.employees;
+    const q = this.followupEmpLocalSearch.toLowerCase();
+    return this.employees.filter(e => e.name.toLowerCase().includes(q));
+  }
+
+  getFilteredTagsLocal() {
+    if (!this.followupTagLocalSearch) return this.tagOptions;
+    const q = this.followupTagLocalSearch.toLowerCase();
+    return this.tagOptions.filter(t => t.toLowerCase().includes(q));
+  }
+
+  toggleFollowupCompanyTag(tag: string) {
+    const idx = this.followupSelectedCompanyTags.indexOf(tag);
+    if (idx > -1) this.followupSelectedCompanyTags.splice(idx, 1);
+    else this.followupSelectedCompanyTags.push(tag);
+  }
+
+  isFollowupCompanyTagSelected(tag: string): boolean {
+    return this.followupSelectedCompanyTags.includes(tag);
+  }
+
+  toggleFollowupEmp(phone: string) {
+    const idx = this.followupSelectedEmps.indexOf(phone);
+    if (idx > -1) this.followupSelectedEmps.splice(idx, 1);
+    else this.followupSelectedEmps.push(phone);
+  }
+
+  isFollowupEmpSelected(phone: string): boolean {
+    return this.followupSelectedEmps.includes(phone);
+  }
+
+  get filteredBookmarks(): Bookmark[] {
+    return this.allBookmarks.filter(b => {
+      const emp = this.employees.find(e => e.mobile === b.employeePhone);
+
+      // Company Tag filter (matches employee tags)
+      if (this.followupSelectedCompanyTags.length > 0) {
+        if (!emp || !emp.tags) return false;
+        const eTags = emp.tags;
+        const matchesCompanyTag = this.followupSelectedCompanyTags.every(tag => eTags.includes(tag));
+        if (!matchesCompanyTag) return false;
+      }
+
+      if (this.followupSelectedEmps.length > 0 && !this.followupSelectedEmps.includes(b.employeePhone)) {
+        return false;
+      }
+      if (this.followupSearchQuery) {
+        const q = this.followupSearchQuery.toLowerCase();
+        return (b.contactName?.toLowerCase().includes(q) ||
+          b.contactNumber?.toLowerCase().includes(q) ||
+          b.companyName?.toLowerCase().includes(q) ||
+          b.description?.toLowerCase().includes(q));
+      }
+      return true;
+    });
+  }
 
   // ── Support & RM ───────────────────────────────────────────
   rmRequestLoading = false;
@@ -434,6 +499,8 @@ export class AppComponent implements OnInit {
   allBookmarks: Bookmark[] = [];
   allBookmarksLoading = false;
   leadCallCounts: { [number: string]: number } = {};
+  showAllRemarksModal: boolean = false;
+  selectedBookmarkForRemarks: any = null;
   // Set label (batch grouping)
   leadSets: string[] = [];           // Available set labels for this employee
   selectedLeadSet = '';              // Currently viewed set filter ('' = all)
@@ -526,7 +593,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     window.scrollTo({ top: 0 });
-    
+
     // Hide splash screen after 2.2s
     setTimeout(() => {
       this.showSplash = false;
@@ -576,8 +643,8 @@ export class AppComponent implements OnInit {
       }, 100);
     }
 
-    if (tab === 'leads') {
-      this.fetchAdminLeads();
+    if (tab === 'leads' || tab === 'followups') {
+      if (tab === 'leads') this.fetchAdminLeads();
       this.fetchCompanyBookmarks();
     }
   }
@@ -1929,10 +1996,10 @@ export class AppComponent implements OnInit {
     window.scrollTo(0, 0);
   }
 
-  openAddEmployee(): void { 
-    this.isAddEmployeeOpen = true; 
-    this.addEmployeeError = ''; 
-    this.newEmployee = { name: '', mobile: '', countryCode: '+91' }; 
+  openAddEmployee(): void {
+    this.isAddEmployeeOpen = true;
+    this.addEmployeeError = '';
+    this.newEmployee = { name: '', mobile: '', countryCode: '+91' };
     this.updateScrollLock();
   }
   closeAddEmployee(): void { this.isAddEmployeeOpen = false; }
@@ -2511,12 +2578,12 @@ Thank You.`;
 
   get filteredLeads(): any[] {
     return this.allLeads.filter(lead => {
-      const matchesSearch = !this.leadSearchQuery || 
+      const matchesSearch = !this.leadSearchQuery ||
         (lead.contactName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase())) ||
         (lead.contactNumber?.includes(this.leadSearchQuery)) ||
         (lead.leadCompanyName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase()));
-      
-      const matchesEmployee = !this.leadEmployeeFilter || 
+
+      const matchesEmployee = !this.leadEmployeeFilter ||
         lead.assignedEmployeePhone === this.leadEmployeeFilter;
 
       return matchesSearch && matchesEmployee;
@@ -2568,6 +2635,16 @@ Thank You.`;
     });
   }
 
+  viewAllRemarks(bookmark: any): void {
+    this.selectedBookmarkForRemarks = bookmark;
+    this.showAllRemarksModal = true;
+  }
+
+  closeAllRemarksModal(): void {
+    this.showAllRemarksModal = false;
+    this.selectedBookmarkForRemarks = null;
+  }
+
   deleteBookmark(id: string): void {
     if (!id) return;
     if (!confirm('Are you sure you want to remove this follow-up?')) return;
@@ -2584,14 +2661,14 @@ Thank You.`;
   getLeadInteractionCount(contactNumber: string): number {
     if (!contactNumber) return 0;
     const cleanNum = contactNumber.replace(/\D/g, '').slice(-10);
-    
+
     // Find bookmark by normalized number
     const b = this.allBookmarks.find(bm => {
       const bmNum = (bm.contactNumber || '').replace(/\D/g, '').slice(-10);
       return bmNum === cleanNum;
     });
     const loggedCount = b?.remarks?.length || 0;
-    
+
     // Find call count by normalized number
     let rawCount = 0;
     Object.keys(this.leadCallCounts).forEach(key => {
@@ -2600,7 +2677,7 @@ Thank You.`;
         rawCount += this.leadCallCounts[key];
       }
     });
-    
+
     return loggedCount + rawCount;
   }
 
@@ -2697,7 +2774,7 @@ Thank You.`;
         const workbook = XLSX.read(data, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        
+
         // Convert to JSON
         const rawJson: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
         if (rawJson.length < 2) {
@@ -2708,7 +2785,7 @@ Thank You.`;
 
         // Extract headers
         this.excelHeaders = rawJson[0].map((h: any) => h ? h.toString().trim() : '');
-        
+
         // Filter out empty rows and build objects based on headers
         this.parsedExcelData = [];
         for (let i = 1; i < rawJson.length; i++) {
@@ -2758,7 +2835,7 @@ Thank You.`;
         const contactNumber = row[this.leadColumnMapping.contactNumber]?.toString().trim() || '';
         const leadCompanyName = row[this.leadColumnMapping.leadCompanyName]?.toString().trim() || '';
         const contactName = this.leadColumnMapping.contactName ? (row[this.leadColumnMapping.contactName]?.toString().trim() || '') : '';
-        
+
         return {
           companyCode: this.dashboardCode,
           assignedEmployeePhone: this.selectedEmployee!.mobile,
@@ -2786,8 +2863,8 @@ Thank You.`;
           this.fetchEmpLeads();
           setTimeout(() => this.addLeadSuccess = '', 4000);
         } else {
-           this.addLeadError = res.message || 'Bulk upload failed.';
-           this.leadUploadStep = 'mapping';
+          this.addLeadError = res.message || 'Bulk upload failed.';
+          this.leadUploadStep = 'mapping';
         }
       },
       error: () => {
@@ -2801,7 +2878,7 @@ Thank You.`;
   deleteLead(id: string): void {
     if (confirm('Are you sure you want to remove this lead?')) {
       this.leadService.deleteLead(id).subscribe(res => {
-        if(res.success) this.fetchEmpLeads();
+        if (res.success) this.fetchEmpLeads();
       });
     }
   }
@@ -2812,7 +2889,7 @@ Thank You.`;
       this.fetchEmpLeads();
     }
     if (tab === 'stats' && this.selectedEmpStats) {
-       setTimeout(() => this.renderChart(), 100);
+      setTimeout(() => this.renderChart(), 100);
     }
   }
 }

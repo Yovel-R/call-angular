@@ -1092,8 +1092,14 @@
 
         <button class="sidebar-item" [class.active]="dashTab==='leads'"
           (click)="switchTab('leads')" [title]="sidebarMinimized ? 'Leads' : ''">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-contact-2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span>Leads Management</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+          <span>Leads</span>
+        </button>
+        
+        <button class="sidebar-item" [class.active]="dashTab==='followups'"
+          (click)="switchTab('followups')" [title]="sidebarMinimized ? 'Follow-ups' : ''">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bookmark"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+          <span>Follow-ups</span>
         </button>
 
         <button class="sidebar-item" [class.active]="dashTab==='employees'"
@@ -1675,88 +1681,6 @@
       <!-- ══ LEADS MANAGEMENT TAB ══ -->
       <div *ngIf="dashTab==='leads'" class="animate-fade-in">
         
-        <!-- Bookmarks / Follow-up Section at the top -->
-        <div *ngIf="allBookmarks.length > 0" style="margin-bottom: 3rem; background: #f8fafc; padding: 2rem; border-radius: 24px; border: 1px solid var(--border);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <div style="background: #fff; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
-              </div>
-              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-1);">Active Follow-ups</h3>
-            </div>
-            <span style="background: var(--primary); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700;">{{ allBookmarks.length }} PENDING</span>
-          </div>
-
-          <div class="bookmarks-scroll-container" style="display: flex; gap: 1.25rem; overflow-x: auto; padding-bottom: 1rem; scroll-snap-type: x mandatory;">
-            <div *ngFor="let b of allBookmarks" class="bookmark-card-compact" 
-                 style="flex: 0 0 340px; scroll-snap-align: start; background: #ffffff; border: 1px solid #edf2f7; border-radius: 20px; padding: 1.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04); position: relative; transition: all 0.3s ease;">
-              
-              <!-- Refined Header -->
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
-                <div style="overflow: hidden; flex: 1; padding-right: 1rem;">
-                  <h4 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #1a202c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.contactName || 'Unknown Lead' }}</h4>
-                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                    <span style="font-size: 0.8rem; color: #718096; font-weight: 500;">{{ b.contactNumber }}</span>
-                    <span *ngIf="b.companyName" style="color: #cbd5e0;">•</span>
-                    <span *ngIf="b.companyName" style="font-size: 0.75rem; color: #a0aec0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.companyName }}</span>
-                  </div>
-                </div>
-                <!-- Call Counter -->
-                <div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 6px 12px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                  {{ getLeadInteractionCount(b.contactNumber) }}
-                </div>
-              </div>
-
-              <!-- Timeline Section -->
-              <div style="background: #fdfdfd; border: 1px solid #f7fafc; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
-                <!-- Client Requirement -->
-                <div *ngIf="b.description" style="margin-bottom: 1rem;">
-                  <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6366f1; margin-bottom: 4px; font-weight: 700;">Requirement</div>
-                  <div style="font-size: 0.95rem; color: #1e293b; line-height: 1.4; font-weight: 600;">{{ b.description }}</div>
-                </div>
-
-                <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 10px; font-weight: 700;">Latest Interaction</div>
-                <div *ngFor="let r of (b.remarks || []).slice(-2); let isLast = last" 
-                     [style.margin-bottom]="isLast ? '0' : '8px'"
-                     style="font-size: 0.8rem; color: #4a5568; line-height: 1.5; display: flex; gap: 8px;">
-                  <span style="color: #cbd5e0; flex-shrink: 0;">•</span>
-                  <span>{{ r }}</span>
-                </div>
-                <div *ngIf="!b.remarks || b.remarks.length === 0" style="font-size: 0.8rem; color: #a0aec0; font-style: italic;">No interaction history yet.</div>
-              </div>
-
-              <!-- Checkbox Badges -->
-              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.5rem;">
-                <span *ngIf="b.brochuresSent" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Brochures</span>
-                <span *ngIf="b.techMeet" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Tech Meet</span>
-                <span *ngIf="b.meetingRemarks" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Meeting Done</span>
-                <span *ngIf="b.quotationSent" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Quotation</span>
-                <span *ngIf="b.proposalSent" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Proposal</span>
-                <span *ngIf="b.whatsappGrp" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">WA Group</span>
-              </div>
-
-              <!-- Footer with Action -->
-              <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1.25rem;">
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <div style="width: 20px; height: 20px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; color: #475569;">{{ getEmployeeName(b.employeePhone).charAt(0) }}</div>
-                    <span style="font-size: 0.75rem; color: #718096; font-weight: 500;">{{ getEmployeeName(b.employeePhone) }}</span>
-                  </div>
-                  <div *ngIf="b.reminderDate" style="background: #fff5f5; color: #c53030; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid #fed7d7; width: fit-content; display: flex; align-items: center; gap: 5px;">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                    FOLLOW-UP: {{ b.reminderDate | date:'MMM d' }}
-                  </div>
-                </div>
-                <button (click)="deleteBookmark(b._id!)" 
-                        style="background: #3182ce; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(49, 130, 206, 0.2); transition: all 0.2s ease;">
-                  Mark Done
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <div class="dash-header-row" style="margin-bottom: 1.5rem;">
           <h2 class="dash-title">Leads Management</h2>
           <div style="display:flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
@@ -1777,7 +1701,7 @@
 
             <!-- Set Filter -->
             <select class="lead-filter-select" [(ngModel)]="selectedAdminLeadSet" (change)="fetchAdminLeads()">
-              <option value="">All Lead Sets</option>
+              <option value="">-- Select Lead Set --</option>
               <option *ngFor="let set of adminLeadSets" [value]="set">{{ set }}</option>
             </select>
             
@@ -1808,7 +1732,12 @@
                 </div>
               </div>
               <div *ngIf="uniqueLeadCompanies.length === 0 && !allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
-                No companies found.
+                <ng-container *ngIf="!selectedAdminLeadSet">
+                  Please select a Lead Set from the filter above to view Leads.
+                </ng-container>
+                <ng-container *ngIf="selectedAdminLeadSet">
+                  No companies found in this set.
+                </ng-container>
               </div>
               <div *ngIf="allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
                 Loading companies...
@@ -1845,7 +1774,15 @@
                     {{ getLeadInteractionCount(lead.contactNumber) }} CALLS
                   </div>
                   <div class="customer-identity">
-                    <h4 style="margin: 0 0 0.75rem 0; font-size: 1.1rem; color: var(--text-1);">{{ lead.contactName }}</h4>
+                    <!-- <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                      <h4 style="margin: 0; font-size: 1.1rem; color: var(--text-1);">{{ lead.contactName }}</h4>
+                      <span class="status-badge" 
+                            [style.background]="(lead.status === 'New' || !lead.status) ? '#ecfdf5' : '#fff7ed'"
+                            [style.color]="(lead.status === 'New' || !lead.status) ? '#10b981' : '#f59e0b'"
+                            style="font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">
+                        {{ lead.status || 'New' }}
+                      </span>
+                    </div> -->
                     
                     <div class="info-row" style="margin-bottom: 8px;">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1872,14 +1809,20 @@
 
               <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; gap: 1rem;">
                 <button class="pill-btn" style="background: var(--bg-hover); color: var(--text-1); border: 1px solid var(--border);">Company Notes</button>
-                <button class="pill-btn" style="background: var(--primary); color: white; border: none;">Export Company Data</button>
+                <button class="pill-btn" style="background: var(--purple); color: white; border: none;">Export Company Data</button>
               </div>
               </div>
 
             <div *ngIf="!selectedLeadCompany" class="leads-empty-state">
               <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2; margin-bottom: 1rem;">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                <path d="M9 22v-4h6v4"></path>
+                <path d="M8 6h.01"></path>
+                <path d="M16 6h.01"></path>
+                <path d="M8 10h.01"></path>
+                <path d="M16 10h.01"></path>
+                <path d="M8 14h.01"></path>
+                <path d="M16 14h.01"></path>
               </svg>
               <h3>No Company Selected</h3>
               <p>Select a company from the list to view all lead details</p>
@@ -1887,6 +1830,181 @@
             </div>
           </div>
         </div>
+
+
+      <!-- ══ FOLLOW-UPS TAB ══ -->
+      <!-- ══ FOLLOW-UPS TAB ══ -->
+      <div *ngIf="dashTab==='followups'" class="animate-fade-in">
+        <div class="dash-header-row" style="margin-bottom: 2rem;">
+          <div>
+            <h2 class="dash-title">Active Follow-ups</h2>
+            <p class="dash-subtitle">Manage all scheduled lead follow-ups and interaction history</p>
+          </div>
+          <div style="background: #111827; color: white; padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+            {{ allBookmarks.length }} Ongoing
+          </div>
+        </div>
+
+        <!-- Filter Row -->
+        <div style="margin-bottom: 2.5rem; background: #fff; padding: 1.75rem; border-radius: 24px; border: 1px solid #edf2f7; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.03);">
+          
+          <!-- Search -->
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Global Search</span>
+            <div style="position: relative; width: 100%; display: flex; align-items: center;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" 
+                   style="position: absolute; left: 14px; opacity: 0.6; pointer-events: none; z-index: 5;">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" 
+                     style="width: 100%; padding: 10px 10px 10px 40px !important; border-radius: 12px; height: 44px; border: 1px solid #e2e8f0; outline: none; background: #fff; font-size: 0.85rem;" 
+                     placeholder="Name, phone or requirement..." [(ngModel)]="followupSearchQuery">
+            </div>
+            <p style="margin: 0; font-size: 0.65rem; color: #94a3b8; font-style: italic;">Filters all follow-ups across the entire company</p>
+          </div>
+
+          <!-- Employee Filter -->
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; overflow: hidden; border-left: 1px solid #f1f5f9; padding-left: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Filter by Employee</span>
+              <button *ngIf="followupSelectedEmps.length" (click)="followupSelectedEmps = []" 
+                      style="background: none; border: none; font-size: 0.65rem; color: #ef4444; cursor: pointer; font-weight: 800; padding: 0; text-transform: uppercase;">Clear All</button>
+            </div>
+            <div style="position: relative; margin-bottom: 6px; display: flex; align-items: center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" 
+                   style="position: absolute; left: 10px; opacity: 0.5; pointer-events: none; z-index: 5;">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" [(ngModel)]="followupEmpLocalSearch" placeholder="Find employee..." 
+                     style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px 8px 30px !important; font-size: 0.75rem; outline: none; background: #f8fafc;">
+            </div>
+            <div class="no-scrollbar" style="display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 120px; overflow-y: auto; padding-right: 4px;">
+                <button *ngFor="let emp of getFilteredEmployeesLocal()" 
+                        (click)="toggleFollowupEmp(emp.mobile)"
+                        class="filter-tag-btn"
+                        style="white-space: nowrap; flex-shrink: 0;"
+                        [class.filter-tag-active]="isFollowupEmpSelected(emp.mobile)">
+                  {{ emp.name }}
+                </button>
+                <div *ngIf="getFilteredEmployeesLocal().length === 0" style="font-size: 0.7rem; color: #94a3b8; font-style: italic; padding: 10px 0;">No employees found.</div>
+            </div>
+          </div>
+
+          <!-- Company Tag Filter -->
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; overflow: hidden; border-left: 1px solid #f1f5f9; padding-left: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em;">Filter by Company Tag</span>
+              <button *ngIf="followupSelectedCompanyTags.length" (click)="followupSelectedCompanyTags = []" 
+                      style="background: none; border: none; font-size: 0.65rem; color: #ef4444; cursor: pointer; font-weight: 800; padding: 0; text-transform: uppercase;">Clear All</button>
+            </div>
+            <div style="position: relative; margin-bottom: 6px; display: flex; align-items: center;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" 
+                   style="position: absolute; left: 10px; opacity: 0.5; pointer-events: none; z-index: 5;">
+                <circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" [(ngModel)]="followupTagLocalSearch" placeholder="Find tag..." 
+                     style="width: 100%; border: 1px solid #e2e8f0; border-radius: 10px; padding: 8px 10px 8px 30px !important; font-size: 0.75rem; outline: none; background: #f8fafc;">
+            </div>
+            <div class="no-scrollbar" style="display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 120px; overflow-y: auto; padding-right: 4px;">
+                <button *ngFor="let tag of getFilteredTagsLocal()" 
+                        (click)="toggleFollowupCompanyTag(tag)" 
+                        class="filter-tag-btn"
+                        style="white-space: nowrap; flex-shrink: 0;"
+                        [class.filter-tag-active]="isFollowupCompanyTagSelected(tag)">
+                  {{ tag }}
+                </button>
+                <div *ngIf="getFilteredTagsLocal().length === 0" style="font-size: 0.7rem; color: #94a3b8; font-style: italic; padding: 10px 0;">No tags found.</div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="filteredBookmarks.length === 0" class="leads-empty-state" style="margin-top: 4rem;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2; margin-bottom: 1rem;">
+                <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path>
+            </svg>
+            <h3>No matching follow-ups</h3>
+            <p>Try adjusting your filters to see more results.</p>
+        </div>
+
+        <div class="leads-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+            <div *ngFor="let b of filteredBookmarks" class="bookmark-card-compact" 
+                 style="background: #ffffff; border: 1px solid #edf2f7; border-radius: 18px; padding: 1.25rem; box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.04); position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; min-height: 340px; height: 100%;">
+              
+              <!-- Refined Header -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                <div style="overflow: hidden; flex: 1; padding-right: 0.75rem;">
+                  <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #1a202c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px;">
+                    {{ b.contactName || 'Unknown Lead' }}
+                  </h4>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+                    <span style="font-size: 0.8rem; color: #718096; font-weight: 500;">{{ b.contactNumber }}</span>
+                    <span *ngIf="b.companyName" style="color: #cbd5e0;">•</span>
+                    <span *ngIf="b.companyName" style="font-size: 0.75rem; color: #a0aec0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.companyName }}</span>
+                  </div>
+                </div>
+                <!-- Call Counter -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  {{ getLeadInteractionCount(b.contactNumber) }}
+                </div>
+              </div>
+
+              <!-- Timeline Section -->
+              <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
+                <!-- Client Requirement -->
+                <div *ngIf="b.description" style="margin-bottom: 1rem;">
+                  <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6366f1; margin-bottom: 4px; font-weight: 700;">Requirement</div>
+                  <div style="font-size: 0.9rem; color: #1e293b; line-height: 1.4; font-weight: 600;">{{ b.description }}</div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 700;">Latest Interaction</div>
+                  <button *ngIf="b.remarks && b.remarks.length > 2" (click)="viewAllRemarks(b)" 
+                          style="background: transparent; border: none; color: #6366f1; font-size: 0.75rem; font-weight: 700; cursor: pointer; text-transform: uppercase; padding: 4px 0; display: flex; align-items: center; gap: 4px;">
+                    See All
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  </button>
+                </div>
+                <div *ngFor="let r of (b.remarks || []).slice(-2); let isLast = last" 
+                     [style.margin-bottom]="isLast ? '0' : '10px'"
+                     style="font-size: 0.85rem; color: #4a5568; line-height: 1.6; display: flex; gap: 10px;">
+                  <span style="color: #cbd5e0; flex-shrink: 0; margin-top: 2px;">•</span>
+                  <span>{{ r }}</span>
+                </div>
+                <div *ngIf="!b.remarks || b.remarks.length === 0" style="font-size: 0.85rem; color: #a0aec0; font-style: italic;">No interaction history yet.</div>
+              </div>
+
+              <!-- Checkbox Badges -->
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem;">
+                <span *ngIf="b.brochuresSent" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Brochures</span>
+                <span *ngIf="b.techMeet" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Tech Meet</span>
+                <span *ngIf="b.meetingRemarks" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Meeting Done</span>
+                <span *ngIf="b.quotationSent" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Quotation</span>
+                <span *ngIf="b.proposalSent" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Proposal</span>
+                <span *ngIf="b.whatsappGrp" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">WA Group</span>
+              </div>
+
+              <!-- Footer with Action -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1rem; margin-top: auto;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="width: 20px; height: 20px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #475569;">{{ getEmployeeName(b.employeePhone).charAt(0) }}</div>
+                    <span style="font-size: 0.75rem; color: #718096; font-weight: 500;">{{ getEmployeeName(b.employeePhone) }}</span>
+                  </div>
+                  <div *ngIf="b.reminderDate" style="background: #fff5f5; color: #c53030; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid #fed7d7; width: fit-content; display: flex; align-items: center; gap: 5px;">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    FOLLOW-UP: {{ b.reminderDate | date:'MMM d' }}
+                  </div>
+                </div>
+                <button (click)="deleteBookmark(b._id!)" 
+                        style="background: #111827; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
+                  Mark Done
+                </button>
+              </div>
+            </div>
+        </div>
+      </div>
 
       <!-- ══ PERIODIC REPORTS TAB ══ -->
       <div *ngIf="dashTab==='reports'">
@@ -3034,6 +3152,38 @@
     <div class="modal-actions" style="display: flex; gap: 1rem; margin-top: 2rem; width: 100%;">
       <button type="button" class="cta-secondary" style="flex: 1; padding: 0.75rem; border-radius: 10px; justify-content: center;" (click)="closeLogoutConfirm()">Cancel</button>
       <button type="button" class="btn-login" style="flex: 1; padding: 0.75rem; background: #ef4444; border-color: #ef4444; color: white; border-radius: 10px; display: flex; align-items: center; justify-content: center;" (click)="logout()">Log Out</button>
+    </div>
+  </div>
+</div>
+<!-- ========== ALL REMARKS MODAL ========== -->
+<div class="modal-overlay" [class.open]="showAllRemarksModal" (click)="closeAllRemarksModal()">
+  <div class="modal" (click)="$event.stopPropagation()" style="max-width: 500px; width: 90%;">
+    <button class="modal-close" (click)="closeAllRemarksModal()">&#x2715;</button>
+    <div class="modal-brand" style="justify-content: flex-start; margin-bottom: 1.5rem;">
+      <div style="background: #eef2ff; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      </div>
+      <div>
+        <h2 class="modal-title" style="margin: 0; font-size: 1.25rem;">Interaction History</h2>
+        <p style="margin: 4px 0 0; font-size: 0.85rem; color: var(--text-3);">{{ selectedBookmarkForRemarks?.contactName }}</p>
+      </div>
+    </div>
+
+    <div style="max-height: 400px; overflow-y: auto; padding-right: 8px;" class="custom-scroll">
+      <div *ngFor="let r of selectedBookmarkForRemarks?.remarks; let i = index" 
+           style="padding: 1rem; background: #f8fafc; border-radius: 12px; margin-bottom: 12px; border: 1px solid #edf2f7;">
+        <div style="display: flex; gap: 12px;">
+          <div style="color: #6366f1; font-weight: 700; font-size: 0.85rem;">#{{ i + 1 }}</div>
+          <div style="font-size: 0.9rem; color: #1e293b; line-height: 1.5;">{{ r }}</div>
+        </div>
+      </div>
+      <div *ngIf="!selectedBookmarkForRemarks?.remarks?.length" style="text-align: center; padding: 2rem; color: var(--text-3);">
+        No interaction history found.
+      </div>
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <button class="cta-primary" (click)="closeAllRemarksModal()" style="width: 100%; border-radius: 12px; padding: 0.8rem;">Close History</button>
     </div>
   </div>
 </div>
