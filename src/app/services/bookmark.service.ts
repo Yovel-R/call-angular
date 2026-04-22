@@ -49,4 +49,8 @@ export class BookmarkService {
   updateBookmark(id: string, payload: { description?: string, reminderDate?: string | null }): Observable<any> {
     return this.http.patch(`${this.baseUrl}/${id}`, payload);
   }
+
+  addBulkBookmarks(bookmarks: Partial<Bookmark>[]): Observable<any> {
+    return this.http.post(`${this.baseUrl}/bulk`, { bookmarks });
+  }
 }

@@ -476,14 +476,32 @@ export class AppComponent implements OnInit {
   // ── Leads Management (Drilldown) ───────────────────────────
   empLeads: any[] = [];
   empLeadsLoading = false;
+  empLeadSearchQuery = '';
+  empLeadSetFilter = '';
+
+  // Lead addition in dashboard
+  showAddLeadForm = false;
   leadUploadStep: 'idle' | 'mapping' | 'uploading' = 'idle';
   parsedExcelData: any[] = [];
   excelHeaders: string[] = [];
-  leadColumnMapping = { contactName: '', contactNumber: '', leadCompanyName: '' };
-  newSingleLead = { contactName: '', contactNumber: '', leadCompanyName: '' };
+  leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
+  newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
   addLeadLoading = false;
   addLeadError = '';
   addLeadSuccess = '';
+
+  // Follow-up addition (Interested Clients)
+  followupUploadStep: 'idle' | 'mapping' | 'uploading' = 'idle';
+  followupColumnMapping = { 
+    contactName: '', 
+    contactNumber: '', 
+    companyName: '', 
+    description: '',
+    remarks: '',
+    reminderDate: '',
+    proposalSent: '',
+    meetingRemarks: ''
+  };
 
   // Admin Leads Tab
   allLeads: any[] = [];
@@ -2663,6 +2681,11 @@ Thank You.`;
     this.leadSets = [];
     this.selectedLeadSet = '';
     this.newLeadSetLabel = '';
+    this.showAddLeadForm = false;
+    this.leadUploadStep = 'idle';
+    this.empLeadSearchQuery = '';
+    this.empLeadSetFilter = '';
+    this.followupUploadStep = 'idle';
     if (this.chart) {
       this.chart.destroy();
       this.chart = null;
@@ -2756,7 +2779,7 @@ Thank You.`;
   }
 
   getEmpLeadsByCompany(company: string): any[] {
-    return this.empLeads.filter(l => (l.leadCompanyName || 'Unnamed Company') === company);
+    return this.filteredEmpLeads.filter(l => (l.leadCompanyName || 'Unnamed Company') === company);
   }
 
   selectEmpLeadCompany(company: string): void {
@@ -2883,11 +2906,13 @@ Thank You.`;
     this.addLeadError = '';
     this.addLeadSuccess = '';
 
+    const contactName = (this.newSingleLead.firstName.trim() + ' ' + this.newSingleLead.lastName.trim()).trim();
+
     const payload: Partial<Lead> = {
       companyCode: this.dashboardCode,
       assignedEmployeePhone: this.selectedEmployee!.mobile,
       leadCompanyName: this.newSingleLead.leadCompanyName.trim(),
-      contactName: this.newSingleLead.contactName.trim(),
+      contactName: contactName,
       contactNumber: this.newSingleLead.contactNumber.trim(),
       setLabel: this.newLeadSetLabel.trim() || '',
     };
@@ -2897,7 +2922,7 @@ Thank You.`;
         this.addLeadLoading = false;
         if (res.success) {
           this.addLeadSuccess = 'Lead added successfully!';
-          this.newSingleLead = { contactName: '', contactNumber: '', leadCompanyName: '' };
+          this.newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
           this.fetchEmpLeads();
           setTimeout(() => this.addLeadSuccess = '', 3000);
         } else {
@@ -2920,7 +2945,7 @@ Thank You.`;
     this.leadUploadStep = 'mapping';
     this.parsedExcelData = [];
     this.excelHeaders = [];
-    this.leadColumnMapping = { contactName: '', contactNumber: '', leadCompanyName: '' };
+    this.leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -2954,7 +2979,8 @@ Thank You.`;
         }
 
         // Auto-attempt mapping if headers match standard names
-        this.leadColumnMapping.contactName = this.excelHeaders.find(h => ['name', 'contact name', 'person'].includes(h.toLowerCase())) || this.excelHeaders[0];
+        this.leadColumnMapping.firstName = this.excelHeaders.find(h => ['first name', 'firstname', 'name', 'contact name'].includes(h.toLowerCase())) || this.excelHeaders[0];
+        this.leadColumnMapping.lastName = this.excelHeaders.find(h => ['last name', 'lastname', 'surname'].includes(h.toLowerCase())) || '';
         this.leadColumnMapping.contactNumber = this.excelHeaders.find(h => ['number', 'phone', 'mobile', 'contact number'].includes(h.toLowerCase())) || this.excelHeaders[1] || '';
         this.leadColumnMapping.leadCompanyName = this.excelHeaders.find(h => ['company', 'company name', 'business'].includes(h.toLowerCase())) || this.excelHeaders[2] || '';
 
@@ -2972,6 +2998,7 @@ Thank You.`;
     this.leadUploadStep = 'idle';
     this.parsedExcelData = [];
     this.excelHeaders = [];
+    this.leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
   }
 
   confirmLeadMapping(): void {
@@ -2989,7 +3016,10 @@ Thank You.`;
       .map(row => {
         const contactNumber = row[this.leadColumnMapping.contactNumber]?.toString().trim() || '';
         const leadCompanyName = row[this.leadColumnMapping.leadCompanyName]?.toString().trim() || '';
-        const contactName = this.leadColumnMapping.contactName ? (row[this.leadColumnMapping.contactName]?.toString().trim() || '') : '';
+        
+        const fName = this.leadColumnMapping.firstName ? (row[this.leadColumnMapping.firstName]?.toString().trim() || '') : '';
+        const lName = this.leadColumnMapping.lastName ? (row[this.leadColumnMapping.lastName]?.toString().trim() || '') : '';
+        const contactName = (fName + ' ' + lName).trim();
 
         return {
           companyCode: this.dashboardCode,
@@ -3038,13 +3068,149 @@ Thank You.`;
     }
   }
 
+  get filteredEmpLeads(): any[] {
+    return this.empLeads.filter(l => {
+      // Search filter
+      if (this.empLeadSearchQuery) {
+        const q = this.empLeadSearchQuery.toLowerCase();
+        const match = (l.contactName?.toLowerCase().includes(q) ||
+          l.contactNumber?.toLowerCase().includes(q) ||
+          l.leadCompanyName?.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      // Set filter
+      if (this.empLeadSetFilter && l.setLabel !== this.empLeadSetFilter) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  get empUniqueCompaniesFiltered(): string[] {
+    const cos = this.filteredEmpLeads.map(l => l.leadCompanyName || 'Unknown');
+    return Array.from(new Set(cos)).sort();
+  }
+
+  get leadsInSelectedEmpCompanyFiltered(): any[] {
+    if (!this.selectedEmpLeadCompany) return [];
+    return this.filteredEmpLeads.filter(l => (l.leadCompanyName || 'Unknown') === this.selectedEmpLeadCompany);
+  }
+
   switchDrilldownTab(tab: 'stats' | 'calls' | 'leads'): void {
     this.drilldownTab = tab;
     if (tab === 'leads') {
       this.fetchEmpLeads();
     }
     if (tab === 'stats' && this.selectedEmpStats) {
-      setTimeout(() => this.renderChart(), 100);
+      setTimeout(() => {
+        this.renderChart();
+        this.renderEmpDonutChart();
+      }, 100);
     }
+  }
+
+  // ── Follow-up Bulk Import ──────────────────────────────────────
+  onFollowupExcelUpload(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.followupUploadStep = 'mapping';
+    this.parsedExcelData = [];
+    this.excelHeaders = [];
+
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const rawJson: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+        if (rawJson.length < 2) {
+          alert('Excel file is empty.');
+          this.followupUploadStep = 'idle';
+          return;
+        }
+
+        this.excelHeaders = rawJson[0].map((h: any) => h ? h.toString().trim() : '');
+        this.parsedExcelData = [];
+        for (let i = 1; i < rawJson.length; i++) {
+          const row = rawJson[i];
+          if (!row || row.length === 0) continue;
+          let rowData: any = {};
+          this.excelHeaders.forEach((header, index) => {
+            if (header) rowData[header] = row[index];
+          });
+          this.parsedExcelData.push(rowData);
+        }
+
+        // Auto mapping logic
+        this.followupColumnMapping.contactName = this.excelHeaders.find(h => h.toLowerCase().includes('name')) || '';
+        this.followupColumnMapping.contactNumber = this.excelHeaders.find(h => h.toLowerCase().includes('number') || h.toLowerCase().includes('phone')) || '';
+        this.followupColumnMapping.companyName = this.excelHeaders.find(h => h.toLowerCase().includes('company')) || '';
+        this.followupColumnMapping.description = this.excelHeaders.find(h => h.toLowerCase().includes('requirement') || h.toLowerCase().includes('desc')) || '';
+        this.followupColumnMapping.remarks = this.excelHeaders.find(h => h.toLowerCase().includes('remark') || h.toLowerCase().includes('history')) || '';
+        this.followupColumnMapping.reminderDate = this.excelHeaders.find(h => h.toLowerCase().includes('reminder') || h.toLowerCase().includes('date')) || '';
+
+      } catch (err) {
+        alert('Error parsing Excel.');
+        this.followupUploadStep = 'idle';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = null;
+  }
+
+  confirmFollowupMapping(): void {
+    if (!this.followupColumnMapping.contactNumber || !this.selectedEmployee) {
+      alert('Contact Number is required.');
+      return;
+    }
+
+    this.followupUploadStep = 'uploading';
+    const mappedFollowups: any[] = this.parsedExcelData.map(row => {
+      const contactNumber = row[this.followupColumnMapping.contactNumber]?.toString().trim() || '';
+      const contactName = row[this.followupColumnMapping.contactName]?.toString().trim() || '';
+      const companyName = row[this.followupColumnMapping.companyName]?.toString().trim() || '';
+      const description = row[this.followupColumnMapping.description]?.toString().trim() || '';
+      const remark = row[this.followupColumnMapping.remarks]?.toString().trim() || '';
+      const reminderRaw = row[this.followupColumnMapping.reminderDate];
+      
+      let reminderDate = null;
+      if (reminderRaw) {
+        // Simple date parsing or check if it's an excel date
+        reminderDate = reminderRaw; 
+      }
+
+      const proposalSent = this.followupColumnMapping.proposalSent ? (row[this.followupColumnMapping.proposalSent]?.toString().toLowerCase().includes('sent')) : false;
+      const meetingDone = this.followupColumnMapping.meetingRemarks ? (row[this.followupColumnMapping.meetingRemarks]?.toString().toLowerCase().includes('done')) : false;
+
+      return {
+        companyCode: this.dashboardCode,
+        employeePhone: this.selectedEmployee!.mobile,
+        contactNumber,
+        contactName,
+        companyName,
+        description,
+        remarks: remark ? [remark] : [],
+        reminderDate,
+        proposalSent,
+        meetingRemarks: meetingDone
+      };
+    }).filter(f => f.contactNumber);
+
+    this.bookmarkService.addBulkBookmarks(mappedFollowups).subscribe({
+      next: (res: any) => {
+        this.followupUploadStep = 'idle';
+        if (res.success) {
+          alert(`Imported ${res.count} interested clients!`);
+          this.fetchCompanyBookmarks(); // refresh bookmarks
+        }
+      },
+      error: () => {
+        this.followupUploadStep = 'idle';
+        alert('Error importing data.');
+      }
+    });
   }
 }

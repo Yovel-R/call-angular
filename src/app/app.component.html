@@ -1793,13 +1793,89 @@
         <div *ngIf="!selectedEmpLoading && selectedEmpStats" class="dash-grid-layout"
           style="contain: layout style; will-change: auto;">
 
-          <!-- ══ Follow-ups (Top Priority) ══ -->
-          <div *ngIf="selectedEmpBookmarks.length > 0" style="margin-bottom: 2rem;">
+          <!-- ══ Follow-ups (Interested Clients) ══ -->
+          <div *ngIf="selectedEmpStats" style="margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0;">Follow-ups</h3>
-              <span style="font-size: 0.7rem; font-weight: 700; color: #ef4444; background: #fee2e2; padding: 3px 10px; border-radius: 20px;">{{ selectedEmpBookmarks.length }} ACTIVE</span>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <label class="cta-secondary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; transition: all 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  Import Interested
+                  <input type="file" (change)="onFollowupExcelUpload($event)" accept=".xlsx, .xls" style="display:none;">
+                </label>
+                <span style="font-size: 0.7rem; font-weight: 700; color: #ef4444; background: #fee2e2; padding: 3px 10px; border-radius: 20px;">{{ selectedEmpBookmarks.length }} ACTIVE</span>
+              </div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
+
+            <!-- FOLLOW-UP MAPPING UI -->
+            <div *ngIf="followupUploadStep === 'mapping' || followupUploadStep === 'uploading'" class="animate-fade-in" style="background: #ffffff; border: 1px solid #4f46e5; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1);">
+              <div style="margin-bottom: 1.25rem;">
+                <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #4f46e5;">Map Interested Clients</h4>
+                <p style="margin: 4px 0 0; font-size: 0.8rem; color: #64748b;">Mapping <strong>{{ parsedExcelData.length }}</strong> rows for {{ selectedEmployee.name }}</p>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Contact Number *</label>
+                  <select [(ngModel)]="followupColumnMapping.contactNumber" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Contact Name</label>
+                  <select [(ngModel)]="followupColumnMapping.contactName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Company Name</label>
+                  <select [(ngModel)]="followupColumnMapping.companyName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Requirement / Desc</label>
+                  <select [(ngModel)]="followupColumnMapping.description" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">History / Remarks</label>
+                  <select [(ngModel)]="followupColumnMapping.remarks" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Follow-up Date</label>
+                  <select [(ngModel)]="followupColumnMapping.reminderDate" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="cta-primary" (click)="confirmFollowupMapping()" [disabled]="followupUploadStep === 'uploading'" style="width: 180px; padding: 0.7rem; border-radius: 10px; font-weight: 700;">
+                  {{ followupUploadStep === 'uploading' ? 'Importing...' : 'Complete Import' }}
+                </button>
+                <button class="btn-login" (click)="followupUploadStep = 'idle'" style="width: 120px; padding: 0.7rem; border-radius: 10px;">Cancel</button>
+              </div>
+            </div>
+            <div *ngIf="selectedEmpBookmarks.length === 0 && followupUploadStep === 'idle'" 
+              style="text-align: center; padding: 3rem; background: #ffffff; border: 1px dashed #e2e8f0; border-radius: 18px; color: #64748b;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; opacity: 0.5;">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <h4 style="margin: 0; font-size: 0.9rem; font-weight: 600;">No interested clients yet</h4>
+              <p style="margin: 4px 0 0; font-size: 0.8rem;">Click "Import Interested" above to upload your client list.</p>
+            </div>
+
+            <div *ngIf="selectedEmpBookmarks.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
               <div *ngFor="let b of selectedEmpBookmarks" class="bookmark-card-compact"
                 style="background: #ffffff; border: 1px solid #edf2f7; border-radius: 18px; padding: 1.25rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.04); position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; min-height: 340px; height: 100%;">
 
@@ -2136,31 +2212,149 @@
           <div style="margin-bottom: 2rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h3 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0;">Assigned Leads</h3>
-              <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">{{ empLeads.length }} LEADS</div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <!-- Search Input -->
+                <div class="search-wrapper" style="width: 200px;">
+                  <input type="text" class="lead-filter-input" style="width: 100%; padding: 6px 12px 6px 32px; font-size: 0.8rem; height: 34px; border-radius: 10px;"
+                    placeholder="Search name/company..." [(ngModel)]="empLeadSearchQuery">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); opacity: 0.4;">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
+                </div>
+
+                <!-- Set Filter -->
+                <select class="lead-filter-select" [(ngModel)]="selectedLeadSet" (change)="fetchEmpLeads()" style="height: 34px; font-size: 0.8rem; border-radius: 10px; padding: 0 10px;">
+                  <option value="">All Sets</option>
+                  <option *ngFor="let set of leadSets" [value]="set">{{ set }}</option>
+                </select>
+
+                <button class="btn-login" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 10px; height: 34px; display: flex; align-items: center; gap: 6px;" (click)="showAddLeadForm = !showAddLeadForm">
+                  <svg *ngIf="!showAddLeadForm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <svg *ngIf="showAddLeadForm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  {{ showAddLeadForm ? 'Cancel' : 'Add Leads' }}
+                </button>
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; background: #f1f5f9; padding: 4px 10px; border-radius: 20px;">{{ filteredEmpLeads.length }} LEADS</div>
+              </div>
+            </div>
+
+            <!-- ADD LEAD FORM (Same logic as legacy but styled for new dashboard) -->
+            <div *ngIf="showAddLeadForm" class="animate-fade-in" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+              
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                <div>
+                  <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b;">Assign New Leads</h4>
+                  <p style="margin: 4px 0 0; font-size: 0.8rem; color: #64748b;">Add leads manually or upload an Excel file for {{ selectedEmployee.name }}</p>
+                </div>
+                <label class="cta-secondary" style="padding: 0.5rem 1rem; font-size: 0.8rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  Upload Excel
+                  <input type="file" (change)="onLeadExcelUpload($event)" accept=".xlsx, .xls" style="display:none;">
+                </label>
+              </div>
+
+              <!-- Feedback Messages -->
+              <div *ngIf="addLeadError" style="background: #fef2f2; color: #dc2626; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; border: 1px solid #fee2e2;">{{ addLeadError }}</div>
+              <div *ngIf="addLeadSuccess" style="background: #f0fdf4; color: #16a34a; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; border: 1px solid #dcfce7;">✓ {{ addLeadSuccess }}</div>
+
+              <!-- EXCEL MAPPING UI -->
+              <div *ngIf="leadUploadStep === 'mapping'" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
+                <h5 style="margin: 0 0 1rem; font-size: 0.85rem; font-weight: 700; color: #4f46e5;">Map Excel Columns</h5>
+                <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1.25rem;">Found <strong>{{ parsedExcelData.length }}</strong> rows. Map the columns to import.</p>
+
+                <div style="margin-bottom: 1.25rem; padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;">
+                  <label style="font-size: 0.7rem; font-weight: 800; color: #4f46e5; text-transform: uppercase; display: block; margin-bottom: 6px;">🏷 Set / Batch Label *</label>
+                  <input type="text" [(ngModel)]="newLeadSetLabel" placeholder='e.g. "Real Estate Leads" or "Jan 2026"' style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem;">
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Company Name *</label>
+                    <select [(ngModel)]="leadColumnMapping.leadCompanyName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Contact Number *</label>
+                    <select [(ngModel)]="leadColumnMapping.contactNumber" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">First Name *</label>
+                    <select [(ngModel)]="leadColumnMapping.firstName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Last Name</label>
+                    <select [(ngModel)]="leadColumnMapping.lastName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                  <button class="cta-primary" (click)="confirmLeadMapping()" [disabled]="addLeadLoading || !newLeadSetLabel.trim()" style="width: 160px; padding: 0.65rem; border-radius: 10px; font-weight: 700;">
+                    {{ addLeadLoading ? 'Importing...' : 'Start Import' }}
+                  </button>
+                  <button class="btn-login" (click)="cancelLeadMapping()" style="width: 120px; padding: 0.65rem; border-radius: 10px;">Cancel</button>
+                </div>
+              </div>
+
+              <!-- MANUAL ADD UI -->
+              <div *ngIf="leadUploadStep === 'idle'" style="display: grid; grid-template-columns: 280px 1fr; gap: 1.5rem;">
+                <div style="border-right: 1px solid #f1f5f9; padding-right: 1.5rem;">
+                  <label style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 6px;">Batch Label</label>
+                  <input type="text" [(ngModel)]="newLeadSetLabel" placeholder='e.g. "Direct Sales"' style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; background: #f8fafc;">
+                  <p style="font-size: 0.65rem; color: #94a3b8; margin-top: 8px;">Used to group these leads for easy filtering.</p>
+                </div>
+                <div style="display: grid; gap: 12px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="text" [(ngModel)]="newSingleLead.leadCompanyName" placeholder="Company Name *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                    <input type="tel" [(ngModel)]="newSingleLead.contactNumber" placeholder="Contact Number *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="text" [(ngModel)]="newSingleLead.firstName" placeholder="First Name *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                    <input type="text" [(ngModel)]="newSingleLead.lastName" placeholder="Last Name (Optional)" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                  </div>
+                  <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+                    <button class="cta-primary" (click)="addManualLead()" [disabled]="addLeadLoading" style="width: 160px; padding: 0.7rem; border-radius: 10px; font-weight: 700;">
+                      {{ addLeadLoading ? 'Adding...' : 'Assign Lead' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             <!-- Empty state -->
-            <div *ngIf="empLeads.length === 0" class="leads-empty-state" style="margin-top: 2rem;">
+            <div *ngIf="filteredEmpLeads.length === 0" class="leads-empty-state" style="margin-top: 2rem;">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2; margin-bottom: 1rem;">
                 <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
                 <path d="M9 22v-4h6v4"></path>
                 <path d="M8 6h.01"></path><path d="M16 6h.01"></path>
                 <path d="M8 10h.01"></path><path d="M16 10h.01"></path>
               </svg>
-              <h3>No leads assigned</h3>
-              <p>This employee has no leads assigned for the selected period.</p>
+              <h3>No leads found</h3>
+              <p>Try adjusting your search or filters.</p>
             </div>
 
             <!-- Sidebar Layout -->
-            <div *ngIf="empLeads.length > 0" class="leads-container" style="height: 600px;">
+            <div *ngIf="filteredEmpLeads.length > 0" class="leads-container" style="height: 600px;">
               <!-- Left Sidebar -->
               <div class="leads-sidebar" style="width: 280px; flex-shrink: 0;">
                 <div class="leads-sidebar-header">
                   <div style="font-weight: 700; color: var(--text-1); font-size: 0.9rem;">Companies</div>
-                  <div style="font-size: 0.7rem; color: var(--text-3); margin-top: 2px;">{{ empUniqueCompanies.length }} groups</div>
+                  <div style="font-size: 0.7rem; color: var(--text-3); margin-top: 2px;">{{ empUniqueCompaniesFiltered.length }} groups</div>
                 </div>
                 <div class="leads-list">
-                  <div *ngFor="let company of empUniqueCompanies" class="lead-item"
+                  <div *ngFor="let company of empUniqueCompaniesFiltered" class="lead-item"
                     [class.active]="selectedEmpLeadCompany === company" (click)="selectEmpLeadCompany(company)">
                     <div class="lead-item-name" style="font-size: 0.85rem;">{{ company }}</div>
                     <div class="lead-item-meta">
@@ -2180,11 +2374,14 @@
                         <path d="M9 22v-4h6v4"></path>
                       </svg>
                     </div>
-                    <h3 class="cd-header-title" style="font-size: 1.1rem;">{{ selectedEmpLeadCompany }}</h3>
+                    <div style="flex:1">
+                      <h3 class="cd-header-title" style="font-size: 1.1rem; margin:0">{{ selectedEmpLeadCompany }}</h3>
+                      <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-top: 2px;">{{ leadsInSelectedEmpCompanyFiltered.length }} contacts in this view</div>
+                    </div>
                   </div>
 
                   <div class="leads-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
-                    <div *ngFor="let lead of leadsInSelectedEmpCompany" class="contact-card"
+                    <div *ngFor="let lead of leadsInSelectedEmpCompanyFiltered" class="contact-card"
                       style="background: #ffffff; border: 1px solid #edf2f7; border-radius: 12px; padding: 1.25rem; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                       
                       <!-- Interaction Badge -->
@@ -3709,8 +3906,16 @@
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="font-size: 0.75rem;">Contact Name Column (Optional)</label>
-              <select [(ngModel)]="leadColumnMapping.contactName"
+              <label style="font-size: 0.75rem;">First Name Column <span style="color:red">*</span></label>
+              <select [(ngModel)]="leadColumnMapping.firstName"
+                style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="">-- Select Column --</option>
+                <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem;">Last Name Column (Optional)</label>
+              <select [(ngModel)]="leadColumnMapping.lastName"
                 style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
                 <option value="">-- Select Column --</option>
                 <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
@@ -3745,8 +3950,12 @@
             <input type="tel" [(ngModel)]="newSingleLead.contactNumber" placeholder="Contact Number *"
               style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
           </div>
-          <input type="text" [(ngModel)]="newSingleLead.contactName" placeholder="Contact Person Name (Optional)"
-            style="width:100%; margin-top:10px; padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <input type="text" [(ngModel)]="newSingleLead.firstName" placeholder="First Name *"
+              style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+            <input type="text" [(ngModel)]="newSingleLead.lastName" placeholder="Last Name (Optional)"
+              style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+          </div>
           <button class="cta-primary" (click)="addManualLead()" [disabled]="addLeadLoading"
             style="width:100%; margin-top: 15px; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">
             {{ addLeadLoading ? 'Adding...' : 'Add Lead' }}
