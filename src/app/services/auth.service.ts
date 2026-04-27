@@ -83,4 +83,16 @@ export class AuthService {
   updateTeamSize(companyCode: string, teamSize: string): Observable<any> {
     return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/team-size`, { teamSize });
   }
+
+  getCompanySettings(companyCode: string): Observable<any> {
+    return this.api.get(`/api/auth/company/${encodeURIComponent(companyCode)}/settings`);
+  }
+
+  updateCompanySettings(companyCode: string, settings: { breakHourLimit?: number; connectedCallDuration?: number; leadStatuses?: string[] }): Observable<any> {
+    return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/settings`, settings);
+  }
+
+  getBreaklogToday(companyCode: string): Observable<any> {
+    return this.api.get(`/api/breaklog/today?companyCode=${encodeURIComponent(companyCode)}`);
+  }
 }

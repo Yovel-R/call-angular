@@ -252,7 +252,7 @@ export class AppComponent implements OnInit {
   resetPwdChecks = { length: false, upper: false, number: false, symbol: false };
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' | 'emp_dashboard' = 'overview';
+  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' | 'emp_dashboard' | 'settings' = 'overview';
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
@@ -434,6 +434,21 @@ export class AppComponent implements OnInit {
   tagManagementLoading = false;
   tagManagementError = '';
   tagManagementSuccess = '';
+
+  // ── App Settings (new Settings page) ─────────────────────────
+  settingsBreakHourLimit: number = 60;
+  settingsConnectedCallDuration: number = 0;
+  settingsLeadStatuses: string[] = ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up'];
+  newLeadStatusInput: string = '';
+  settingsLoading = false;
+  settingsSaveError = '';
+  settingsSaveSuccess = '';
+
+  // ── Break Notifications (admin) ───────────────────────────────
+  breakOverLimitEmps: { employeePhone: string; employeeName: string; totalSeconds: number; limitSeconds: number }[] = [];
+  breakNotifCount = 0;
+  showBreakNotifPanel = false;
+  private breakPollInterval: any;
 
   // ── Employee list ──────────────────────────────────────────
   employees: Employee[] = [];
@@ -674,6 +689,11 @@ export class AppComponent implements OnInit {
       if (tab === 'leads') this.fetchAdminLeads();
       this.fetchCompanyBookmarks();
     }
+
+    // Load settings when navigating to settings tab
+    if (tab === 'settings') {
+      this.fetchSettings();
+    }
   }
 
   // ── Helpers ───────────────────────────────────────────────
@@ -739,6 +759,10 @@ export class AppComponent implements OnInit {
     this.fetchPaymentHistory();
     // Preload past 7 days data on load to avoid spinners when toggling periods
     this.preloadDashboardData();
+    // Start break notification polling (every 60s)
+    this.startBreakNotifPolling();
+    // Load Settings data
+    this.fetchSettings();
   }
 
   preloadDashboardData(): void {
@@ -2450,6 +2474,100 @@ export class AppComponent implements OnInit {
         this.tagManagementError = err?.error?.message || 'Error updating tags.';
       }
     });
+  }
+
+  // ── Settings page methods ─────────────────────────────────────
+  fetchSettings(): void {
+    if (!this.dashboardCode) return;
+    this.settingsLoading = true;
+    this.authService.getCompanySettings(this.dashboardCode).subscribe({
+      next: (res: any) => {
+        this.settingsLoading = false;
+        if (res.success) {
+          this.settingsBreakHourLimit = res.settings.breakHourLimit ?? 60;
+          this.settingsConnectedCallDuration = res.settings.connectedCallDuration ?? 0;
+          this.settingsLeadStatuses = res.settings.leadStatuses?.length
+            ? res.settings.leadStatuses
+            : ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up'];
+        }
+      },
+      error: () => { this.settingsLoading = false; }
+    });
+  }
+
+  saveSettings(): void {
+    if (!this.dashboardCode) return;
+    this.settingsLoading = true;
+    this.settingsSaveError = '';
+    this.settingsSaveSuccess = '';
+
+    this.authService.updateCompanySettings(this.dashboardCode, {
+      breakHourLimit: this.settingsBreakHourLimit,
+      connectedCallDuration: this.settingsConnectedCallDuration,
+      leadStatuses: this.settingsLeadStatuses,
+    }).subscribe({
+      next: (res: any) => {
+        this.settingsLoading = false;
+        if (res.success) {
+          this.settingsSaveSuccess = 'Settings saved successfully!';
+          setTimeout(() => this.settingsSaveSuccess = '', 3000);
+        } else {
+          this.settingsSaveError = res.message || 'Failed to save settings.';
+        }
+      },
+      error: (err: any) => {
+        this.settingsLoading = false;
+        this.settingsSaveError = err?.error?.message || 'Server error saving settings.';
+      }
+    });
+  }
+
+  addLeadStatus(): void {
+    const s = this.newLeadStatusInput.trim();
+    if (!s) return;
+    if (this.settingsLeadStatuses.includes(s)) {
+      this.settingsSaveError = 'Status already exists.';
+      setTimeout(() => this.settingsSaveError = '', 3000);
+      return;
+    }
+    this.settingsLeadStatuses.push(s);
+    this.newLeadStatusInput = '';
+  }
+
+  removeLeadStatus(status: string): void {
+    this.settingsLeadStatuses = this.settingsLeadStatuses.filter(s => s !== status);
+  }
+
+  // ── Break Notifications ───────────────────────────────────────
+  startBreakNotifPolling(): void {
+    this.fetchBreakOverLimit();
+    this.breakPollInterval = setInterval(() => this.fetchBreakOverLimit(), 60000); // poll every 60s
+  }
+
+  fetchBreakOverLimit(): void {
+    if (!this.dashboardCode) return;
+    this.authService.getBreaklogToday(this.dashboardCode).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          this.breakOverLimitEmps = res.overLimit || [];
+          this.breakNotifCount = this.breakOverLimitEmps.length;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  toggleBreakNotifPanel(): void {
+    this.showBreakNotifPanel = !this.showBreakNotifPanel;
+  }
+
+  fmtSecs(totalSecs: number): string {
+    const h = Math.floor(totalSecs / 3600);
+    const m = Math.floor((totalSecs % 3600) / 60);
+    const s = totalSecs % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
   }
 
   openShareModal(): void {
