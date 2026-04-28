@@ -88,7 +88,13 @@ export class AuthService {
     return this.api.get(`/api/auth/company/${encodeURIComponent(companyCode)}/settings`);
   }
 
-  updateCompanySettings(companyCode: string, settings: { breakHourLimit?: number; connectedCallDuration?: number; leadStatuses?: string[] }): Observable<any> {
+  updateCompanySettings(companyCode: string, settings: { 
+    breakHourLimit?: number; 
+    connectedCallDuration?: number; 
+    leadStatuses?: string[];
+    interestedPageStatuses?: string[];
+    dnpPageStatuses?: string[];
+  }): Observable<any> {
     return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/settings`, settings);
   }
 

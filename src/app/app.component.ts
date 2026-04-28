@@ -439,6 +439,8 @@ export class AppComponent implements OnInit {
   settingsBreakHourLimit: number = 60;
   settingsConnectedCallDuration: number = 0;
   settingsLeadStatuses: string[] = ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up'];
+  settingsInterestedPageStatuses: string[] = ['Interested', 'Follow Up'];
+  settingsDnpPageStatuses: string[] = ['Not Interested'];
   newLeadStatusInput: string = '';
   settingsLoading = false;
   settingsSaveError = '';
@@ -499,8 +501,9 @@ export class AppComponent implements OnInit {
   leadUploadStep: 'idle' | 'mapping' | 'uploading' = 'idle';
   parsedExcelData: any[] = [];
   excelHeaders: string[] = [];
-  leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
-  newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
+  leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', companyDescription: '' };
+  batchDefaultStatus = 'New';
+  newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', status: 'New', companyDescription: '' };
   addLeadLoading = false;
   addLeadError = '';
   addLeadSuccess = '';
@@ -1296,7 +1299,15 @@ export class AppComponent implements OnInit {
 
     const isHourly = this.timelineData.length > 0 && this.timelineData[0]._isHourly;
     const labels = this.timelineData.map(d => {
-      const dt = new Date(d.date);
+      let dt: Date;
+      if (d.date.includes('T')) {
+        // Hourly data from backend is UTC; append 'Z' for correct local conversion
+        dt = new Date(d.date + 'Z');
+      } else {
+        // Daily data: use slashes for local parsing
+        dt = new Date(d.date.replace(/-/g, '/'));
+      }
+
       if (isHourly) {
         // Show hours: 08 AM, 02 PM, etc.
         const h = dt.getHours();
@@ -2489,6 +2500,8 @@ export class AppComponent implements OnInit {
           this.settingsLeadStatuses = res.settings.leadStatuses?.length
             ? res.settings.leadStatuses
             : ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up'];
+          this.settingsInterestedPageStatuses = res.settings.interestedPageStatuses || ['Interested', 'Follow Up'];
+          this.settingsDnpPageStatuses = res.settings.dnpPageStatuses || ['Not Interested'];
         }
       },
       error: () => { this.settingsLoading = false; }
@@ -2505,6 +2518,8 @@ export class AppComponent implements OnInit {
       breakHourLimit: this.settingsBreakHourLimit,
       connectedCallDuration: this.settingsConnectedCallDuration,
       leadStatuses: this.settingsLeadStatuses,
+      interestedPageStatuses: this.settingsInterestedPageStatuses,
+      dnpPageStatuses: this.settingsDnpPageStatuses,
     }).subscribe({
       next: (res: any) => {
         this.settingsLoading = false;
@@ -2532,6 +2547,16 @@ export class AppComponent implements OnInit {
     }
     this.settingsLeadStatuses.push(s);
     this.newLeadStatusInput = '';
+  }
+
+  toggleStatusForPage(status: string, page: 'interested' | 'dnp'): void {
+    const list = page === 'interested' ? this.settingsInterestedPageStatuses : this.settingsDnpPageStatuses;
+    const idx = list.indexOf(status);
+    if (idx > -1) {
+      list.splice(idx, 1);
+    } else {
+      list.push(status);
+    }
   }
 
   removeLeadStatus(status: string): void {
@@ -3033,6 +3058,11 @@ Thank You.`;
       contactName: contactName,
       contactNumber: this.newSingleLead.contactNumber.trim(),
       setLabel: this.newLeadSetLabel.trim() || '',
+      mainDivisionDescription: this.newSingleLead.mainDivisionDescription.trim(),
+      directorEmailAddress: this.newSingleLead.directorEmailAddress.trim(),
+      remarks: this.newSingleLead.remarks ? [this.newSingleLead.remarks.trim()] : [],
+      status: this.newSingleLead.status,
+      companyDescription: this.newSingleLead.companyDescription.trim(),
     };
 
     this.leadService.addSingleLead(payload).subscribe({
@@ -3040,7 +3070,7 @@ Thank You.`;
         this.addLeadLoading = false;
         if (res.success) {
           this.addLeadSuccess = 'Lead added successfully!';
-          this.newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
+          this.newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', status: 'New', companyDescription: '' };
           this.fetchEmpLeads();
           setTimeout(() => this.addLeadSuccess = '', 3000);
         } else {
@@ -3063,7 +3093,8 @@ Thank You.`;
     this.leadUploadStep = 'mapping';
     this.parsedExcelData = [];
     this.excelHeaders = [];
-    this.leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
+    this.leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', companyDescription: '' };
+    this.batchDefaultStatus = 'New';
 
     const reader = new FileReader();
     reader.onload = (e: any) => {
@@ -3097,10 +3128,14 @@ Thank You.`;
         }
 
         // Auto-attempt mapping if headers match standard names
-        this.leadColumnMapping.firstName = this.excelHeaders.find(h => ['first name', 'firstname', 'name', 'contact name'].includes(h.toLowerCase())) || this.excelHeaders[0];
-        this.leadColumnMapping.lastName = this.excelHeaders.find(h => ['last name', 'lastname', 'surname'].includes(h.toLowerCase())) || '';
-        this.leadColumnMapping.contactNumber = this.excelHeaders.find(h => ['number', 'phone', 'mobile', 'contact number'].includes(h.toLowerCase())) || this.excelHeaders[1] || '';
+        this.leadColumnMapping.firstName = this.excelHeaders.find(h => ['first name', 'firstname', 'name', 'contact name', 'directorfirstname'].includes(h.toLowerCase())) || this.excelHeaders[0];
+        this.leadColumnMapping.lastName = this.excelHeaders.find(h => ['last name', 'lastname', 'surname', 'second name'].includes(h.toLowerCase())) || '';
+        this.leadColumnMapping.contactNumber = this.excelHeaders.find(h => ['number', 'phone', 'mobile', 'contact number', 'directormobilenumber'].includes(h.toLowerCase())) || this.excelHeaders[1] || '';
         this.leadColumnMapping.leadCompanyName = this.excelHeaders.find(h => ['company', 'company name', 'business'].includes(h.toLowerCase())) || this.excelHeaders[2] || '';
+        this.leadColumnMapping.mainDivisionDescription = this.excelHeaders.find(h => ['maindivisiondescription', 'division'].includes(h.toLowerCase())) || '';
+        this.leadColumnMapping.directorEmailAddress = this.excelHeaders.find(h => ['directoremailaddress', 'email'].includes(h.toLowerCase())) || '';
+        this.leadColumnMapping.remarks = this.excelHeaders.find(h => ['remarks', 'notes'].includes(h.toLowerCase())) || '';
+        this.leadColumnMapping.companyDescription = this.excelHeaders.find(h => ['company description', 'description'].includes(h.toLowerCase())) || '';
 
       } catch (err) {
         this.addLeadError = 'Invalid Excel format.';
@@ -3116,7 +3151,8 @@ Thank You.`;
     this.leadUploadStep = 'idle';
     this.parsedExcelData = [];
     this.excelHeaders = [];
-    this.leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '' };
+    this.leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', companyDescription: '' };
+    this.batchDefaultStatus = 'New';
   }
 
   confirmLeadMapping(): void {
@@ -3139,6 +3175,12 @@ Thank You.`;
         const lName = this.leadColumnMapping.lastName ? (row[this.leadColumnMapping.lastName]?.toString().trim() || '') : '';
         const contactName = (fName + ' ' + lName).trim();
 
+        const mainDivisionDescription = this.leadColumnMapping.mainDivisionDescription ? (row[this.leadColumnMapping.mainDivisionDescription]?.toString().trim() || '') : '';
+        const directorEmailAddress = this.leadColumnMapping.directorEmailAddress ? (row[this.leadColumnMapping.directorEmailAddress]?.toString().trim() || '') : '';
+        const remarks = this.leadColumnMapping.remarks ? (row[this.leadColumnMapping.remarks]?.toString().trim() || '') : '';
+        const status = this.batchDefaultStatus;
+        const companyDescription = this.leadColumnMapping.companyDescription ? (row[this.leadColumnMapping.companyDescription]?.toString().trim() || '') : '';
+
         return {
           companyCode: this.dashboardCode,
           assignedEmployeePhone: this.selectedEmployee!.mobile,
@@ -3146,6 +3188,11 @@ Thank You.`;
           leadCompanyName,
           contactName,
           setLabel,
+          mainDivisionDescription,
+          directorEmailAddress,
+          remarks: remarks ? [remarks] : [],
+          status,
+          companyDescription
         };
       })
       .filter(l => l.contactNumber && l.leadCompanyName); // Drop rows missing required fields
@@ -3182,6 +3229,38 @@ Thank You.`;
     if (confirm('Are you sure you want to remove this lead?')) {
       this.leadService.deleteLead(id).subscribe(res => {
         if (res.success) this.fetchEmpLeads();
+      });
+    }
+  }
+
+  deleteCurrentLeadSet(): void {
+    if (!this.selectedLeadSet) return;
+    if (confirm(`Are you sure you want to delete ALL leads in the set "${this.selectedLeadSet}" for this employee?`)) {
+      this.leadService.deleteLeadSet(this.dashboardCode, this.selectedEmployee!.mobile, this.selectedLeadSet).subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this.selectedLeadSet = '';
+            this.fetchEmpLeads();
+            alert(`Deleted ${res.deleted} leads from this set.`);
+          }
+        },
+        error: () => alert('Failed to delete set.')
+      });
+    }
+  }
+
+  deleteGlobalLeadSet(): void {
+    if (!this.selectedAdminLeadSet) return;
+    if (confirm(`Are you sure you want to delete ALL leads in the set "${this.selectedAdminLeadSet}" for the entire company? This will remove these leads from all assigned employees.`)) {
+      this.leadService.deleteAdminLeadSet(this.dashboardCode, this.selectedAdminLeadSet).subscribe({
+        next: (res: any) => {
+          if (res.success) {
+            this.selectedAdminLeadSet = '';
+            this.fetchAdminLeads();
+            alert(`Deleted ${res.deleted} leads from this global set.`);
+          }
+        },
+        error: () => alert('Failed to delete global set.')
       });
     }
   }

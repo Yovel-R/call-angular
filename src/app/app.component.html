@@ -2269,10 +2269,16 @@
                 </div>
 
                 <!-- Set Filter -->
-                <select class="lead-filter-select" [(ngModel)]="selectedLeadSet" (change)="fetchEmpLeads()" style="height: 34px; font-size: 0.8rem; border-radius: 10px; padding: 0 10px;">
-                  <option value="">All Sets</option>
-                  <option *ngFor="let set of leadSets" [value]="set">{{ set }}</option>
-                </select>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <select class="lead-filter-select" [(ngModel)]="selectedLeadSet" (change)="fetchEmpLeads()" style="height: 34px; font-size: 0.8rem; border-radius: 10px; padding: 0 10px;">
+                    <option value="">All Sets</option>
+                    <option *ngFor="let set of leadSets" [value]="set">{{ set }}</option>
+                  </select>
+                  <button *ngIf="selectedLeadSet" class="btn-login" style="background: #fee2e2; color: #dc2626; border-color: #fecaca; padding: 0; height: 34px; width: 34px; display: flex; align-items: center; justify-content: center; border-radius: 10px;" 
+                    (click)="deleteCurrentLeadSet()" title="Delete this set">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  </button>
+                </div>
 
                 <button class="btn-login" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 10px; height: 34px; display: flex; align-items: center; gap: 6px;" (click)="showAddLeadForm = !showAddLeadForm">
                   <svg *ngIf="!showAddLeadForm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -2302,17 +2308,20 @@
               <div *ngIf="addLeadError" style="background: #fef2f2; color: #dc2626; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; border: 1px solid #fee2e2;">{{ addLeadError }}</div>
               <div *ngIf="addLeadSuccess" style="background: #f0fdf4; color: #16a34a; padding: 0.75rem; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; border: 1px solid #dcfce7;">✓ {{ addLeadSuccess }}</div>
 
-              <!-- EXCEL MAPPING UI -->
-              <div *ngIf="leadUploadStep === 'mapping'" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
+            <!-- EXCEL MAPPING UI -->
+              <div *ngIf="leadUploadStep === 'mapping' || leadUploadStep === 'uploading'" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
                 <h5 style="margin: 0 0 1rem; font-size: 0.85rem; font-weight: 700; color: #4f46e5;">Map Excel Columns</h5>
                 <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1.25rem;">Found <strong>{{ parsedExcelData.length }}</strong> rows. Map the columns to import.</p>
 
                 <div style="margin-bottom: 1.25rem; padding: 1rem; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;">
                   <label style="font-size: 0.7rem; font-weight: 800; color: #4f46e5; text-transform: uppercase; display: block; margin-bottom: 6px;">🏷 Set / Batch Label *</label>
-                  <input type="text" [(ngModel)]="newLeadSetLabel" placeholder='e.g. "Real Estate Leads" or "Jan 2026"' style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem;">
+                  <input type="text" [(ngModel)]="newLeadSetLabel" list="existingLeadSets" placeholder='e.g. "Real Estate Leads" or "Jan 2026"' style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.85rem;">
+                  <datalist id="existingLeadSets">
+                    <option *ngFor="let set of leadSets" [value]="set">{{ set }}</option>
+                  </datalist>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem;">
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1rem;">
                   <div>
                     <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Company Name *</label>
                     <select [(ngModel)]="leadColumnMapping.leadCompanyName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
@@ -2343,6 +2352,43 @@
                   </div>
                 </div>
 
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem;">
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Main Division</label>
+                    <select [(ngModel)]="leadColumnMapping.mainDivisionDescription" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Director Email</label>
+                    <select [(ngModel)]="leadColumnMapping.directorEmailAddress" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Remarks</label>
+                    <select [(ngModel)]="leadColumnMapping.remarks" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #4f46e5; display: block; margin-bottom: 4px;">Lead Status *</label>
+                    <select [(ngModel)]="batchDefaultStatus" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #4f46e5; font-size: 0.8rem; background: #fef2f2;">
+                      <option *ngFor="let s of settingsLeadStatuses" [value]="s">{{ s }}</option>
+                    </select>
+                  </div>
+                  <div style="grid-column: span 2;">
+                    <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Company Description</label>
+                    <select [(ngModel)]="leadColumnMapping.companyDescription" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                      <option value="">-- Select --</option>
+                      <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                   <button class="cta-primary" (click)="confirmLeadMapping()" [disabled]="addLeadLoading || !newLeadSetLabel.trim()" style="width: 160px; padding: 0.65rem; border-radius: 10px; font-weight: 700;">
                     {{ addLeadLoading ? 'Importing...' : 'Start Import' }}
@@ -2366,6 +2412,19 @@
                   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                     <input type="text" [(ngModel)]="newSingleLead.firstName" placeholder="First Name *" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
                     <input type="text" [(ngModel)]="newSingleLead.lastName" placeholder="Last Name (Optional)" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="text" [(ngModel)]="newSingleLead.mainDivisionDescription" placeholder="Main Division (Optional)" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                    <input type="email" [(ngModel)]="newSingleLead.directorEmailAddress" placeholder="Director Email (Optional)" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <input type="text" [(ngModel)]="newSingleLead.remarks" placeholder="Remarks (Optional)" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem;">
+                    <select [(ngModel)]="newSingleLead.status" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; background: #fff;">
+                      <option *ngFor="let s of settingsLeadStatuses" [value]="s">{{s}}</option>
+                    </select>
+                  </div>
+                  <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                    <textarea [(ngModel)]="newSingleLead.companyDescription" placeholder="Company Description (Optional)" style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.85rem; min-height: 60px; font-family: inherit;"></textarea>
                   </div>
                   <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
                     <button class="cta-primary" (click)="addManualLead()" [disabled]="addLeadLoading" style="width: 160px; padding: 0.7rem; border-radius: 10px; font-weight: 700;">
@@ -2444,7 +2503,23 @@
 
                         <div class="info-row" style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px; color: #64748b;">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                          <span style="font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ lead.email || 'No email provided' }}</span>
+                          <span style="font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ lead.directorEmailAddress || lead.email || 'No email provided' }}</span>
+                        </div>
+
+                        <!-- New Fields Display -->
+                        <div *ngIf="lead.mainDivisionDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #4338ca; background: #eef2ff; padding: 4px 10px; border-radius: 6px; font-weight: 600;">
+                          Div: {{ lead.mainDivisionDescription }}
+                        </div>
+
+                        <div *ngIf="lead.companyDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #475569; background: #f1f5f9; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #cbd5e1;">
+                          <strong>Desc:</strong> {{ lead.companyDescription }}
+                        </div>
+
+                        <div *ngIf="lead.remarks && lead.remarks.length > 0" style="margin-top: 10px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                          <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; margin-bottom: 4px; text-transform: uppercase;">Remarks Log</div>
+                          <div *ngFor="let r of lead.remarks" style="font-size: 0.72rem; color: #b45309; background: #fffbeb; padding: 5px 8px; border-radius: 6px; border: 1px solid #fde68a; margin-bottom: 4px; line-height: 1.3;">
+                            {{ r }}
+                          </div>
                         </div>
 
                         <div style="border-top: 1px solid #f1f5f9; padding-top: 0.75rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 4px;">
@@ -2661,10 +2736,16 @@
             </select>
 
             <!-- Set Filter -->
-            <select class="lead-filter-select" [(ngModel)]="selectedAdminLeadSet" (change)="fetchAdminLeads()">
-              <option value="">-- Select Lead Set --</option>
-              <option *ngFor="let set of adminLeadSets" [value]="set">{{ set }}</option>
-            </select>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <select class="lead-filter-select" [(ngModel)]="selectedAdminLeadSet" (change)="fetchAdminLeads()">
+                <option value="">-- Select Lead Set --</option>
+                <option *ngFor="let set of adminLeadSets" [value]="set">{{ set }}</option>
+              </select>
+              <button *ngIf="selectedAdminLeadSet" class="cta-secondary" style="background: #fee2e2; color: #dc2626; border-color: #fecaca; padding: 0; height: 38px; width: 38px; display: flex; align-items: center; justify-content: center; border-radius: 12px;" 
+                (click)="deleteGlobalLeadSet()" title="Delete this set globally">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
 
             <button class="cta-primary"
               style="padding: 0.65rem 1.4rem; font-size: 0.85rem; height: 40px; display: flex; align-items: center; gap: 8px; border-radius: 12px;"
@@ -2771,14 +2852,28 @@
                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
                         <polyline points="22,6 12,13 2,6"></polyline>
                       </svg>
-                      <span style="font-size: 0.9rem;">{{ lead.email || 'No email provided' }}</span>
+                      <span style="font-size: 0.9rem;">{{ lead.directorEmailAddress || lead.email || 'No email provided' }}</span>
                     </div>
 
-                    <div class="meta-row"
+                    <div *ngIf="lead.mainDivisionDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #4338ca; background: #eef2ff; padding: 4px 10px; border-radius: 6px; font-weight: 600;">
+                      Div: {{ lead.mainDivisionDescription }}
+                    </div>
+
+                    <div *ngIf="lead.companyDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #475569; background: #f1f5f9; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #cbd5e1;">
+                      <strong>Desc:</strong> {{ lead.companyDescription }}
+                    </div>
+
+                    <div *ngIf="lead.remarks && lead.remarks.length > 0" style="margin-top: 12px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                      <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; margin-bottom: 4px; text-transform: uppercase;">Remarks Log</div>
+                      <div *ngFor="let r of lead.remarks" style="font-size: 0.72rem; color: #b45309; background: #fffbeb; padding: 5px 8px; border-radius: 6px; border: 1px solid #fde68a; margin-bottom: 4px; line-height: 1.3;">
+                        {{ r }}
+                      </div>
+                    </div>
+
+                    <div class="meta-row" *ngIf="lead.address"
                       style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.5rem;">
                       <span class="meta-label" style="font-size: 0.85rem; width: 80px;">Address</span>
-                      <span class="meta-value" style="font-size: 0.85rem;">{{ lead.address || 'No address found'
-                        }}</span>
+                      <span class="meta-value" style="font-size: 0.85rem;">{{ lead.address }}</span>
                     </div>
                   </div>
                 </div>
@@ -3656,6 +3751,37 @@
                 </button>
               </div>
             </div>
+
+            <!-- Page-specific status filters -->
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+              <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--text-1);">Page-specific Status Filters</h4>
+              <p style="font-size: 0.8rem; color: var(--text-3); margin-bottom: 1.25rem;">Select which statuses should be displayed as filters in the Employee Portal tabs.</p>
+              
+              <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                  <thead>
+                    <tr style="text-align: left; border-bottom: 2px solid var(--border);">
+                      <th style="padding: 10px; color: var(--text-2);">Lead Status</th>
+                      <th style="padding: 10px; color: var(--text-2); text-align: center;">Interested Page</th>
+                      <th style="padding: 10px; color: var(--text-2); text-align: center;">Not Connected Page</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let st of settingsLeadStatuses" style="border-bottom: 1px solid var(--border);">
+                      <td style="padding: 10px; font-weight: 600; color: var(--text-1);">{{ st }}</td>
+                      <td style="padding: 10px; text-align: center;">
+                        <input type="checkbox" [checked]="settingsInterestedPageStatuses.includes(st)" (change)="toggleStatusForPage(st, 'interested')"
+                          style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);">
+                      </td>
+                      <td style="padding: 10px; text-align: center;">
+                        <input type="checkbox" [checked]="settingsDnpPageStatuses.includes(st)" (change)="toggleStatusForPage(st, 'dnp')"
+                          style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent);">
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
             <div *ngIf="settingsSaveError" class="form-error" style="margin-bottom:0.75rem;">{{ settingsSaveError }}</div>
             <div *ngIf="settingsSaveSuccess" style="color:var(--green);font-weight:600;margin-bottom:0.75rem;font-size:0.85rem;">✓ {{ settingsSaveSuccess }}</div>
             <button class="cta-primary" (click)="saveSettings()" [disabled]="settingsLoading"
@@ -3960,7 +4086,7 @@
         </div>
 
         <!-- EXCEL MAPPING UI -->
-        <div *ngIf="leadUploadStep === 'mapping'" class="mapping-box"
+        <div *ngIf="leadUploadStep === 'mapping' || leadUploadStep === 'uploading'" class="mapping-box"
           style="background: #f8fafc; border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
           <h5 style="margin-top:0; margin-bottom: 1rem; font-size: 0.9rem; font-weight: 700; color: var(--accent);">Map
             Excel Columns</h5>
@@ -4006,8 +4132,39 @@
               </select>
             </div>
             <div class="form-group" style="margin:0">
-              <label style="font-size: 0.75rem;">Last Name Column (Optional)</label>
-              <select [(ngModel)]="leadColumnMapping.lastName"
+              <label style="font-size: 0.75rem;">Main Division Column</label>
+              <select [(ngModel)]="leadColumnMapping.mainDivisionDescription"
+                style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="">-- Select Column --</option>
+                <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem;">Director Email Column</label>
+              <select [(ngModel)]="leadColumnMapping.directorEmailAddress"
+                style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="">-- Select Column --</option>
+                <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem;">Remarks Column</label>
+              <select [(ngModel)]="leadColumnMapping.remarks"
+                style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="">-- Select Column --</option>
+                <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem; color: #4f46e5; font-weight: 700;">Batch Lead Status *</label>
+              <select [(ngModel)]="batchDefaultStatus"
+                style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #4f46e5; background: #fef2f2;">
+                <option *ngFor="let s of settingsLeadStatuses" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label style="font-size: 0.75rem;">Company Description Column</label>
+              <select [(ngModel)]="leadColumnMapping.companyDescription"
                 style="width:100%; padding:0.5rem; border-radius:8px; border:1px solid #cbd5e1;">
                 <option value="">-- Select Column --</option>
                 <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
@@ -4047,6 +4204,24 @@
               style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
             <input type="text" [(ngModel)]="newSingleLead.lastName" placeholder="Last Name (Optional)"
               style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <input type="text" [(ngModel)]="newSingleLead.mainDivisionDescription" placeholder="Main Division (Optional)"
+              style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+            <input type="email" [(ngModel)]="newSingleLead.directorEmailAddress" placeholder="Director Email (Optional)"
+              style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <input type="text" [(ngModel)]="newSingleLead.remarks" placeholder="Remarks (Optional)"
+              style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
+            <select [(ngModel)]="newSingleLead.status"
+              style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem; background: #fff;">
+              <option *ngFor="let s of settingsLeadStatuses" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div style="margin-top: 10px;">
+            <textarea [(ngModel)]="newSingleLead.companyDescription" placeholder="Company Description (Optional)"
+              style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem; min-height: 60px; font-family: inherit; box-sizing: border-box;"></textarea>
           </div>
           <button class="cta-primary" (click)="addManualLead()" [disabled]="addLeadLoading"
             style="width:100%; margin-top: 15px; padding: 0.6rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600;">

@@ -11,6 +11,10 @@ export interface Lead {
   contactNumber: string;
   status: string;
   setLabel?: string;
+  companyDescription?: string;
+  mainDivisionDescription?: string;
+  directorEmailAddress?: string;
+  remarks?: string[];
   createdAt?: string;
 }
 
@@ -46,5 +50,9 @@ export class LeadService {
 
   deleteLeadSet(companyCode: string, phone: string, setLabel: string): Observable<any> {
     return this.api.post('/api/leads/set/delete', { companyCode, phone, setLabel });
+  }
+
+  deleteAdminLeadSet(companyCode: string, setLabel: string): Observable<any> {
+    return this.api.post('/api/leads/admin/delete-set', { companyCode, setLabel });
   }
 }
