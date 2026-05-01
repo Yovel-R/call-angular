@@ -15,6 +15,8 @@ export interface Lead {
   mainDivisionDescription?: string;
   directorEmailAddress?: string;
   remarks?: string[];
+  isStarred?: boolean;
+  isFavourite?: boolean;
   createdAt?: string;
 }
 
@@ -54,5 +56,9 @@ export class LeadService {
 
   deleteAdminLeadSet(companyCode: string, setLabel: string): Observable<any> {
     return this.api.post('/api/leads/admin/delete-set', { companyCode, setLabel });
+  }
+
+  updateLeadFlags(id: string, flags: { isStarred?: boolean; isFavourite?: boolean }): Observable<any> {
+    return this.api.patch(`/api/leads/${id}/flags`, flags);
   }
 }

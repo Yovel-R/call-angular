@@ -94,6 +94,27 @@ export class AuthService {
     leadStatuses?: string[];
     interestedPageStatuses?: string[];
     dnpPageStatuses?: string[];
+    convertedPageStatuses?: string[];
+    invoiceLogo?: string;
+    showCompanyNameOnInvoice?: boolean;
+    gstNumber?: string;
+    gstPercentage?: number;
+    bankDetails?: {
+      bankName?: string;
+      accountNumber?: string;
+      ifscCode?: string;
+      branchName?: string;
+    };
+    contactDetails?: {
+      website?: string;
+      email?: string;
+      phone?: string;
+    };
+    products?: Array<{
+      name: string;
+      minPrice: number;
+      maxPrice: number;
+    }>;
   }): Observable<any> {
     return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/settings`, settings);
   }

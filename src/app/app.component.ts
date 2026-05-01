@@ -3,6 +3,7 @@ import { NgIf, NgFor, NgClass, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe }
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartType, registerables } from 'chart.js';
 import { AuthService, RegisterPayload, LoginPayload } from './services/auth.service';
+import { ApiService } from './services/api.service';
 import { EmployeeService, Employee } from './services/employee.service';
 import { CallLogService, CallStats } from './services/calllog.service';
 import { PaymentService } from './services/payment.service';
@@ -252,7 +253,7 @@ export class AppComponent implements OnInit {
   resetPwdChecks = { length: false, upper: false, number: false, symbol: false };
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' | 'emp_dashboard' | 'settings' = 'overview';
+  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' | 'emp_dashboard' | 'settings' | 'invoice' = 'overview';
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
@@ -438,13 +439,32 @@ export class AppComponent implements OnInit {
   // ── App Settings (new Settings page) ─────────────────────────
   settingsBreakHourLimit: number = 60;
   settingsConnectedCallDuration: number = 0;
-  settingsLeadStatuses: string[] = ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up'];
-  settingsInterestedPageStatuses: string[] = ['Interested', 'Follow Up'];
-  settingsDnpPageStatuses: string[] = ['Not Interested'];
+  settingsLeadStatuses: string[] = [];
+  settingsInterestedPageStatuses: string[] = [];
+  settingsDnpPageStatuses: string[] = [];
+  settingsConvertedPageStatuses: string[] = [];
   newLeadStatusInput: string = '';
   settingsLoading = false;
   settingsSaveError = '';
   settingsSaveSuccess = '';
+  settingsCompanyName: string = '';
+  settingsInvoiceLogo: string = '';
+  settingsShowCompanyNameOnInvoice: boolean = true;
+  settingsGstNumber: string = '';
+  settingsGstPercentage: number = 18;
+  settingsBankDetails = {
+    bankName: '',
+    accountNumber: '',
+    ifscCode: '',
+    branchName: '',
+  };
+  settingsContactDetails = {
+    website: '',
+    email: '',
+    phone: '',
+  };
+  settingsProducts: Array<{ name: string, minPrice: number, maxPrice: number }> = [];
+  newProductInput = { name: '', minPrice: 0, maxPrice: 0 };
 
   // ── Break Notifications (admin) ───────────────────────────────
   breakOverLimitEmps: { employeePhone: string; employeeName: string; totalSeconds: number; limitSeconds: number }[] = [];
@@ -511,7 +531,8 @@ export class AppComponent implements OnInit {
   // Follow-up addition (Interested Clients)
   followupUploadStep: 'idle' | 'mapping' | 'uploading' = 'idle';
   followupColumnMapping = { 
-    contactName: '', 
+    firstName: '',
+    lastName: '',
     contactNumber: '', 
     companyName: '', 
     description: '',
@@ -625,7 +646,8 @@ export class AppComponent implements OnInit {
     private callLogService: CallLogService,
     private paymentService: PaymentService,
     private leadService: LeadService,
-    private bookmarkService: BookmarkService
+    private bookmarkService: BookmarkService,
+    private api: ApiService
   ) { }
 
   ngOnInit(): void {
@@ -2497,15 +2519,49 @@ export class AppComponent implements OnInit {
         if (res.success) {
           this.settingsBreakHourLimit = res.settings.breakHourLimit ?? 60;
           this.settingsConnectedCallDuration = res.settings.connectedCallDuration ?? 0;
-          this.settingsLeadStatuses = res.settings.leadStatuses?.length
-            ? res.settings.leadStatuses
-            : ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up'];
-          this.settingsInterestedPageStatuses = res.settings.interestedPageStatuses || ['Interested', 'Follow Up'];
-          this.settingsDnpPageStatuses = res.settings.dnpPageStatuses || ['Not Interested'];
+          this.settingsLeadStatuses = res.settings.leadStatuses || [];
+          this.settingsInterestedPageStatuses = res.settings.interestedPageStatuses || [];
+          this.settingsDnpPageStatuses = res.settings.dnpPageStatuses || [];
+          this.settingsConvertedPageStatuses = res.settings.convertedPageStatuses || [];
+          this.settingsCompanyName = res.settings.companyName || '';
+          this.settingsInvoiceLogo = res.settings.invoiceLogo || '';
+          this.settingsShowCompanyNameOnInvoice = res.settings.showCompanyNameOnInvoice ?? true;
+          this.settingsGstNumber = res.settings.gstNumber || '';
+          this.settingsGstPercentage = res.settings.gstPercentage ?? 18;
+          this.settingsBankDetails = res.settings.bankDetails || { bankName: '', accountNumber: '', ifscCode: '', branchName: '' };
+          this.settingsContactDetails = res.settings.contactDetails || { website: '', email: '', phone: '' };
+          this.settingsProducts = res.settings.products || [];
         }
       },
       error: () => { this.settingsLoading = false; }
     });
+  }
+
+  onLogoUpload(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 3 * 1024 * 1024) {
+        this.settingsSaveError = 'Logo size must be under 3MB.';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.settingsInvoiceLogo = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  addProduct(): void {
+    if (!this.newProductInput.name || this.newProductInput.minPrice < 0 || this.newProductInput.maxPrice < this.newProductInput.minPrice) {
+      return;
+    }
+    this.settingsProducts.push({ ...this.newProductInput });
+    this.newProductInput = { name: '', minPrice: 0, maxPrice: 0 };
+  }
+
+  removeProduct(index: number): void {
+    this.settingsProducts.splice(index, 1);
   }
 
   saveSettings(): void {
@@ -2520,6 +2576,14 @@ export class AppComponent implements OnInit {
       leadStatuses: this.settingsLeadStatuses,
       interestedPageStatuses: this.settingsInterestedPageStatuses,
       dnpPageStatuses: this.settingsDnpPageStatuses,
+      convertedPageStatuses: this.settingsConvertedPageStatuses,
+      invoiceLogo: this.settingsInvoiceLogo,
+      showCompanyNameOnInvoice: this.settingsShowCompanyNameOnInvoice,
+      gstNumber: this.settingsGstNumber,
+      gstPercentage: this.settingsGstPercentage,
+      bankDetails: this.settingsBankDetails,
+      contactDetails: this.settingsContactDetails,
+      products: this.settingsProducts,
     }).subscribe({
       next: (res: any) => {
         this.settingsLoading = false;
@@ -2549,8 +2613,12 @@ export class AppComponent implements OnInit {
     this.newLeadStatusInput = '';
   }
 
-  toggleStatusForPage(status: string, page: 'interested' | 'dnp'): void {
-    const list = page === 'interested' ? this.settingsInterestedPageStatuses : this.settingsDnpPageStatuses;
+  toggleStatusForPage(status: string, page: 'interested' | 'dnp' | 'converted'): void {
+    let list: string[] = [];
+    if (page === 'interested') list = this.settingsInterestedPageStatuses;
+    else if (page === 'dnp') list = this.settingsDnpPageStatuses;
+    else if (page === 'converted') list = this.settingsConvertedPageStatuses;
+
     const idx = list.indexOf(status);
     if (idx > -1) {
       list.splice(idx, 1);
@@ -2560,7 +2628,16 @@ export class AppComponent implements OnInit {
   }
 
   removeLeadStatus(status: string): void {
+    const protectedStatuses = ['New', 'Interested', 'Not Connected', 'Converted', 'Follow Up', 'Not Interested'];
+    if (protectedStatuses.includes(status)) {
+      this.settingsSaveError = `The status "${status}" is a core workflow stage and cannot be deleted.`;
+      setTimeout(() => this.settingsSaveError = '', 4000);
+      return;
+    }
     this.settingsLeadStatuses = this.settingsLeadStatuses.filter(s => s !== status);
+    this.settingsInterestedPageStatuses = this.settingsInterestedPageStatuses.filter(s => s !== status);
+    this.settingsDnpPageStatuses = this.settingsDnpPageStatuses.filter(s => s !== status);
+    this.settingsConvertedPageStatuses = this.settingsConvertedPageStatuses.filter(s => s !== status);
   }
 
   // ── Break Notifications ───────────────────────────────────────
@@ -2863,7 +2940,7 @@ Thank You.`;
       next: (res: any) => {
         this.allLeadsLoading = false;
         if (res.success) {
-          this.allLeads = res.leads;
+          this.allLeads = (res.leads || []).map((l: any) => this.normalizeLead(l));
           this.adminLeadSets = res.sets || [];
           this.fetchLeadCallCounts();
           if (!this.selectedLeadCompany && this.allLeads.length > 0) {
@@ -2874,6 +2951,44 @@ Thank You.`;
       error: () => {
         this.allLeadsLoading = false;
       }
+    });
+  }
+
+  deleteLeadRemark(lead: Lead, index: number): void {
+    if (!confirm('Delete this remark?')) return;
+    this.api.delete(`/api/leads/${lead._id}/remarks/${index}`).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          const idx = this.allLeads.findIndex(l => l._id === lead._id);
+          if (idx !== -1) {
+            this.allLeads[idx] = this.normalizeLead(res.lead);
+          }
+        }
+      }
+    });
+  }
+
+  normalizeLead(lead: any): Lead {
+    if (!lead) return lead;
+    return {
+      ...lead,
+      remarks: Array.isArray(lead.remarks) ? lead.remarks : (lead.remarks ? [lead.remarks] : [])
+    };
+  }
+
+  toggleStar(lead: Lead): void {
+    const newValue = !lead.isStarred;
+    lead.isStarred = newValue;
+    this.leadService.updateLeadFlags(lead._id!, { isStarred: newValue }).subscribe({
+      error: () => { lead.isStarred = !newValue; }
+    });
+  }
+
+  toggleFavourite(lead: Lead): void {
+    const newValue = !lead.isFavourite;
+    lead.isFavourite = newValue;
+    this.leadService.updateLeadFlags(lead._id!, { isFavourite: newValue }).subscribe({
+      error: () => { lead.isFavourite = !newValue; }
     });
   }
 
@@ -3192,7 +3307,10 @@ Thank You.`;
           directorEmailAddress,
           remarks: remarks ? [remarks] : [],
           status,
-          companyDescription
+          companyDescription,
+          isStarred: false,
+          isFavourite: false,
+          createdAt: new Date().toISOString()
         };
       })
       .filter(l => l.contactNumber && l.leadCompanyName); // Drop rows missing required fields
@@ -3342,7 +3460,8 @@ Thank You.`;
         }
 
         // Auto mapping logic
-        this.followupColumnMapping.contactName = this.excelHeaders.find(h => h.toLowerCase().includes('name')) || '';
+        this.followupColumnMapping.firstName = this.excelHeaders.find(h => h.toLowerCase().includes('first name') || h.toLowerCase().includes('firstname') || h.toLowerCase() === 'name') || '';
+        this.followupColumnMapping.lastName = this.excelHeaders.find(h => h.toLowerCase().includes('last name') || h.toLowerCase().includes('lastname') || h.toLowerCase() === 'surname') || '';
         this.followupColumnMapping.contactNumber = this.excelHeaders.find(h => h.toLowerCase().includes('number') || h.toLowerCase().includes('phone')) || '';
         this.followupColumnMapping.companyName = this.excelHeaders.find(h => h.toLowerCase().includes('company')) || '';
         this.followupColumnMapping.description = this.excelHeaders.find(h => h.toLowerCase().includes('requirement') || h.toLowerCase().includes('desc')) || '';
@@ -3367,7 +3486,11 @@ Thank You.`;
     this.followupUploadStep = 'uploading';
     const mappedFollowups: any[] = this.parsedExcelData.map(row => {
       const contactNumber = row[this.followupColumnMapping.contactNumber]?.toString().trim() || '';
-      const contactName = row[this.followupColumnMapping.contactName]?.toString().trim() || '';
+      
+      let contactName = '';
+      if (this.followupColumnMapping.firstName || this.followupColumnMapping.lastName) {
+        contactName = ((row[this.followupColumnMapping.firstName] || '') + ' ' + (row[this.followupColumnMapping.lastName] || '')).trim();
+      }
       const companyName = row[this.followupColumnMapping.companyName]?.toString().trim() || '';
       const description = row[this.followupColumnMapping.description]?.toString().trim() || '';
       const remark = row[this.followupColumnMapping.remarks]?.toString().trim() || '';
