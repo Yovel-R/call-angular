@@ -1290,6 +1290,16 @@
           <span>Leads</span>
         </button>
 
+        <button class="sidebar-item" [class.active]="dashTab==='remarks_filter'" (click)="switchTab('remarks_filter')"
+          [title]="sidebarMinimized ? 'Remarks Filter' : ''">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2z"/>
+            <path d="M7 7h.01"/>
+          </svg>
+          <span>Remarks Filter</span>
+        </button>
+
         <button class="sidebar-item" [class.active]="dashTab==='followups'" (click)="switchTab('followups')"
           [title]="sidebarMinimized ? 'Follow-ups' : ''">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -1844,186 +1854,11 @@
           </div>
         </div>
 
+
         <div *ngIf="selectedEmpLoading" class="dash-loading" style="padding: 4rem;">Loading employee metrics...</div>
 
         <div *ngIf="!selectedEmpLoading && selectedEmpStats" class="dash-grid-layout"
           style="contain: layout style; will-change: auto;">
-
-          <!-- ══ Follow-ups (Interested Clients) ══ -->
-          <div *ngIf="selectedEmpStats" style="margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h3 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0;">Follow-ups</h3>
-              <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <label class="cta-secondary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; transition: all 0.2s;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                  Import Interested
-                  <input type="file" (change)="onFollowupExcelUpload($event)" accept=".xlsx, .xls" style="display:none;">
-                </label>
-                <span style="font-size: 0.7rem; font-weight: 700; color: #ef4444; background: #fee2e2; padding: 3px 10px; border-radius: 20px;">{{ selectedEmpBookmarks.length }} ACTIVE</span>
-              </div>
-            </div>
-
-            <!-- FOLLOW-UP MAPPING UI -->
-            <div *ngIf="followupUploadStep === 'mapping' || followupUploadStep === 'uploading'" class="animate-fade-in" style="background: #ffffff; border: 1px solid #4f46e5; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.1);">
-              <div style="margin-bottom: 1.25rem;">
-                <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #4f46e5;">Map Interested Clients</h4>
-                <p style="margin: 4px 0 0; font-size: 0.8rem; color: #64748b;">Mapping <strong>{{ parsedExcelData.length }}</strong> rows for {{ selectedEmployee.name }}</p>
-              </div>
-
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                <div>
-                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Contact Number *</label>
-                  <select [(ngModel)]="followupColumnMapping.contactNumber" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <option value="">-- Select --</option>
-                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">First Name</label>
-                  <select [(ngModel)]="followupColumnMapping.firstName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <option value="">-- Select --</option>
-                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Last Name</label>
-                  <select [(ngModel)]="followupColumnMapping.lastName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <option value="">-- Select --</option>
-                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Company Name</label>
-                  <select [(ngModel)]="followupColumnMapping.companyName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <option value="">-- Select --</option>
-                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Requirement / Desc</label>
-                  <select [(ngModel)]="followupColumnMapping.description" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <option value="">-- Select --</option>
-                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">History / Remarks</label>
-                  <select [(ngModel)]="followupColumnMapping.remarks" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <option value="">-- Select --</option>
-                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Follow-up Date</label>
-                  <select [(ngModel)]="followupColumnMapping.reminderDate" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
-                    <option value="">-- Select --</option>
-                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="cta-primary" (click)="confirmFollowupMapping()" [disabled]="followupUploadStep === 'uploading'" style="width: 180px; padding: 0.7rem; border-radius: 10px; font-weight: 700;">
-                  {{ followupUploadStep === 'uploading' ? 'Importing...' : 'Complete Import' }}
-                </button>
-                <button class="btn-login" (click)="followupUploadStep = 'idle'" style="width: 120px; padding: 0.7rem; border-radius: 10px;">Cancel</button>
-              </div>
-            </div>
-            <div *ngIf="selectedEmpBookmarks.length === 0 && followupUploadStep === 'idle'" 
-              style="text-align: center; padding: 3rem; background: #ffffff; border: 1px dashed #e2e8f0; border-radius: 18px; color: #64748b;">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; opacity: 0.5;">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <h4 style="margin: 0; font-size: 0.9rem; font-weight: 600;">No interested clients yet</h4>
-              <p style="margin: 4px 0 0; font-size: 0.8rem;">Click "Import Interested" above to upload your client list.</p>
-            </div>
-
-            <div *ngIf="selectedEmpBookmarks.length > 0" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem;">
-              <div *ngFor="let b of selectedEmpBookmarks" class="bookmark-card-compact"
-                style="background: #ffffff; border: 1px solid #edf2f7; border-radius: 18px; padding: 1.25rem; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.04); position: relative; transition: all 0.3s ease; display: flex; flex-direction: column; min-height: 340px; height: 100%;">
-
-                <!-- Header -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
-                  <div style="overflow: hidden; flex: 1; padding-right: 0.75rem;">
-                    <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #1a202c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                      {{ b.contactName || 'Unknown Lead' }}
-                    </h4>
-                    <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px;">
-                      <span style="font-size: 0.8rem; color: #718096; font-weight: 500;">{{ b.contactNumber }}</span>
-                      <span *ngIf="b.companyName" style="color: #cbd5e0;">•</span>
-                      <span *ngIf="b.companyName" style="font-size: 0.75rem; color: #a0aec0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ b.companyName }}</span>
-                    </div>
-                  </div>
-                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                    </svg>
-                    {{ getLeadInteractionCount(b.contactNumber) }}
-                  </div>
-                </div>
-
-                <!-- Timeline / Info Panel -->
-                <div style="background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 1rem; margin-bottom: 1.25rem;">
-                  <div *ngIf="b.description" style="margin-bottom: 1rem;">
-                    <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: #6366f1; margin-bottom: 4px; font-weight: 700;">Requirement</div>
-                    <div style="font-size: 0.9rem; color: #1e293b; line-height: 1.4; font-weight: 600;">{{ b.description }}</div>
-                  </div>
-                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; font-weight: 700;">Latest Interaction</div>
-                    <button *ngIf="b.remarks && b.remarks.length > 2" (click)="viewAllRemarks(b)"
-                      style="background: transparent; border: none; color: #6366f1; font-size: 0.75rem; font-weight: 700; cursor: pointer; text-transform: uppercase; padding: 4px 0; display: flex; align-items: center; gap: 4px;">
-                      See All
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                    </button>
-                  </div>
-                  <div *ngFor="let r of (b.remarks || []).slice(-2); let isLast = last"
-                    [style.margin-bottom]="isLast ? '0' : '10px'"
-                    style="font-size: 0.85rem; color: #4a5568; line-height: 1.6; display: flex; gap: 10px;">
-                    <span style="color: #cbd5e0; flex-shrink: 0; margin-top: 2px;">•</span>
-                    <span>{{ r }}</span>
-                  </div>
-                  <div *ngIf="!b.remarks || b.remarks.length === 0" style="font-size: 0.85rem; color: #a0aec0; font-style: italic;">No interaction history yet.</div>
-                </div>
-
-                <!-- Checkbox Badges -->
-                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem;">
-                  <span *ngIf="b.brochuresSent" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Brochures</span>
-                  <span *ngIf="b.techMeet" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Tech Meet</span>
-                  <span *ngIf="b.meetingRemarks" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Meeting Done</span>
-                  <span *ngIf="b.quotationSent" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Quotation</span>
-                  <span *ngIf="b.proposalSent" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">Proposal</span>
-                  <span *ngIf="b.whatsappGrp" style="background: #ffffff; color: #475569; border: 1px solid #e2e8f0; padding: 4px 10px; border-radius: 8px; font-size: 0.65rem; font-weight: 600;">WA Group</span>
-                </div>
-
-                <!-- Footer -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #f1f5f9; padding-top: 1rem; margin-top: auto;">
-                  <div style="display: flex; flex-direction: column; gap: 6px;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <div style="width: 20px; height: 20px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: #475569;">
-                        {{ selectedEmployee!.name.charAt(0) }}</div>
-                      <span style="font-size: 0.75rem; color: #718096; font-weight: 500;">{{ selectedEmployee!.name }}</span>
-                    </div>
-                    <div *ngIf="b.reminderDate"
-                      style="background: #fff5f5; color: #c53030; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid #fed7d7; width: fit-content; display: flex; align-items: center; gap: 5px;">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      FOLLOW-UP: {{ b.reminderDate | date:'MMM d' }}
-                    </div>
-                  </div>
-                  <button (click)="deleteBookmark(b._id!)"
-                    style="background: #111827; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">
-                    Mark Done
-                  </button>
-                </div>
-
-              </div>
-            </div>
-          </div>
 
           <!-- ══ Row 1: KPI Cards ══ -->
           <div
@@ -2578,7 +2413,203 @@
             </div>
           </div>
 
-        </div>
+
+          <!-- ══ Follow-ups (Interested Clients) — BOTTOM ══ -->
+          <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <div>
+                <h3 style="font-size: 1rem; font-weight: 700; color: #1e293b; margin: 0;">Follow-ups / Interested Clients</h3>
+                <p style="margin: 2px 0 0; font-size: 0.75rem; color: #64748b;">Active follow-ups for {{ selectedEmployee!.name }}</p>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <label class="cta-secondary" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; transition: all 0.2s;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  Import Interested
+                  <input type="file" (change)="onFollowupExcelUpload($event)" accept=".xlsx, .xls" style="display:none;">
+                </label>
+                <span style="font-size: 0.7rem; font-weight: 700; color: #ef4444; background: #fee2e2; padding: 3px 10px; border-radius: 20px;">{{ selectedEmpBookmarks.length }} ACTIVE</span>
+              </div>
+            </div>
+
+            <!-- Excel Mapping UI -->
+            <div *ngIf="followupUploadStep === 'mapping' || followupUploadStep === 'uploading'" class="animate-fade-in"
+              style="background: #fff; border: 1px solid #4f46e5; border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 10px 25px -5px rgba(79,70,229,0.1);">
+              <h4 style="margin: 0 0 4px; font-size: 1rem; font-weight: 700; color: #4f46e5;">Map Interested Clients</h4>
+              <p style="margin: 0 0 1.25rem; font-size: 0.8rem; color: #64748b;">Mapping <strong>{{ parsedExcelData.length }}</strong> rows for {{ selectedEmployee!.name }}</p>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Contact Number *</label>
+                  <select [(ngModel)]="followupColumnMapping.contactNumber" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">First Name</label>
+                  <select [(ngModel)]="followupColumnMapping.firstName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Last Name</label>
+                  <select [(ngModel)]="followupColumnMapping.lastName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Company Name</label>
+                  <select [(ngModel)]="followupColumnMapping.companyName" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Requirement / Desc</label>
+                  <select [(ngModel)]="followupColumnMapping.description" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">History / Remarks</label>
+                  <select [(ngModel)]="followupColumnMapping.remarks" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; margin-bottom: 4px;">Follow-up Date</label>
+                  <select [(ngModel)]="followupColumnMapping.reminderDate" style="width: 100%; padding: 0.5rem; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem;">
+                    <option value="">-- Select --</option>
+                    <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+                  </select>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="cta-primary" (click)="confirmFollowupMapping()" [disabled]="followupUploadStep === 'uploading'" style="padding: 0.7rem 1.5rem; border-radius: 10px; font-weight: 700;">
+                  {{ followupUploadStep === 'uploading' ? 'Importing...' : 'Complete Import' }}
+                </button>
+                <button class="btn-login" (click)="followupUploadStep = 'idle'" style="padding: 0.7rem 1.2rem; border-radius: 10px;">Cancel</button>
+              </div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="selectedEmpBookmarks.length === 0 && followupUploadStep === 'idle'"
+              style="text-align: center; padding: 3rem; background: #fff; border: 1px dashed #e2e8f0; border-radius: 18px; color: #64748b;">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 1rem; opacity: 0.5;">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <h4 style="margin: 0; font-size: 0.9rem; font-weight: 600;">No follow-ups yet</h4>
+              <p style="margin: 4px 0 0; font-size: 0.8rem;">Click "Import Interested" above to upload a client list.</p>
+            </div>
+
+            <!-- START Follow-ups (Emp UI Style) -->
+            <div *ngIf="drilldownTab==='followups'" style="animation: fadeIn 0.4s ease;">
+              
+              <div style="display: flex; gap: 2rem; align-items: flex-start; min-height: 600px;">
+                
+                <!-- Left Sidebar: Companies List -->
+                <div style="width: 320px; background: #ffffff; border: 1px solid #edf2f7; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.04);">
+                  <div style="padding: 1.5rem; border-bottom: 1px solid #f1f5f9; background: #fff;">
+                    <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #1e293b;">Companies</h3>
+                    <p style="margin: 4px 0 0; font-size: 0.85rem; color: #94a3b8; font-weight: 600;">{{ groupedEmpBookmarks.length }} companies</p>
+                  </div>
+                  
+                  <div class="custom-scroll" style="flex: 1; overflow-y: auto; max-height: 700px;">
+                    <div *ngFor="let group of groupedEmpBookmarks" 
+                      (click)="selectedEmpFollowupCompany = group.company"
+                      [style.background]="selectedEmpFollowupCompany === group.company ? '#eff6ff' : 'transparent'"
+                      [style.border-left]="selectedEmpFollowupCompany === group.company ? '4px solid #3b82f6' : '4px solid transparent'"
+                      style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #f8fafc; cursor: pointer; transition: all 0.2s;">
+                      <div style="font-size: 0.9rem; font-weight: 800; color: #1e293b; line-height: 1.4; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.02em;">
+                        {{ group.company }}
+                      </div>
+                      <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">{{ group.count }} follow-ups</div>
+                    </div>
+                    <div *ngIf="groupedEmpBookmarks.length === 0" style="padding: 3rem 1.5rem; text-align: center; color: #94a3b8; font-style: italic; font-size: 0.9rem;">
+                      No follow-ups recorded yet.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Main Content: Selected Company Details -->
+                <div style="flex: 1; background: #ffffff; border: 1px solid #edf2f7; border-radius: 24px; padding: 2.5rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);">
+                  
+                  <div *ngIf="selectedEmpFollowupCompany" style="margin-bottom: 2rem;">
+                    <h2 style="margin: 0; font-size: 1.75rem; font-weight: 900; color: #0f172a; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1.2;">
+                      {{ selectedEmpFollowupCompany }}
+                    </h2>
+                  </div>
+
+                  <div *ngIf="!selectedEmpFollowupCompany" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5rem 0; color: #94a3b8;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.2; margin-bottom: 1.5rem;">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <p style="font-size: 1.1rem; font-weight: 600;">Select a company from the sidebar to view follow-ups</p>
+                  </div>
+
+                  <!-- Contact Cards Grid -->
+                  <div *ngIf="selectedEmpFollowupCompany" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 1.5rem;">
+                    <div *ngFor="let b of selectedEmpBookmarksByCompany"
+                      style="background: #ffffff; border: 1px solid #f1f5f9; border-radius: 20px; padding: 1.75rem; box-shadow: 0 4px 15px -5px rgba(0,0,0,0.05); position: relative; transition: transform 0.2s;">
+                      
+                      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                        <div>
+                          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                            <h4 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #1e293b; text-transform: uppercase;">{{ b.contactName || 'Unknown' }}</h4>
+                            <button (click)="openEditFollowupModal(b)" title="Edit" 
+                              style="background: none; border: none; cursor: pointer; color: #94a3b8; transition: color 0.2s;">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                              </svg>
+                            </button>
+                          </div>
+                          <div style="display: flex; align-items: center; gap: 8px; color: #64748b; font-weight: 600; font-size: 0.95rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            {{ b.contactNumber }}
+                          </div>
+                        </div>
+                        
+                        <div *ngIf="getLeadByPhone(b.contactNumber) as lead">
+                          <span class="status-badge" [ngClass]="getLeadStatusClass(lead.status)"
+                            style="font-size: 0.7rem; font-weight: 800; padding: 6px 14px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid currentColor;">
+                            {{ lead.status || 'FOLLOW UP' }}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button (click)="dashTab='invoice'; selectedEmployeeForInvoice=selectedEmployee; invoiceLead=getLeadByPhone(b.contactNumber)"
+                        style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 10px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Generate Invoice
+                      </button>
+
+                      <div style="border-top: 1px dashed #e2e8f0; padding-top: 1.25rem;">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                          <span style="font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">REMARKS</span>
+                        </div>
+                        <div style="background: #f8fafc; padding: 12px 15px; border-radius: 12px; font-size: 0.9rem; color: #1e293b; line-height: 1.5; font-weight: 600; border-left: 3px solid #cbd5e1;">
+                          {{ (b.remarks && b.remarks.length > 0) ? b.remarks[b.remarks.length - 1] : 'No remarks shared yet.' }}
+                        </div>
+                      </div>
+
+                      <div *ngIf="b.reminderDate" style="margin-top: 1.25rem; display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #ef4444; font-weight: 800; background: #fef2f2; padding: 6px 12px; border-radius: 8px; width: fit-content;">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        REMINDER: {{ b.reminderDate | date:'MMM d, y' }}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+
+      </div>
 
       </div>
 
@@ -2949,6 +2980,171 @@
               </svg>
               <h3>No Company Selected</h3>
               <p>Select a company from the list to view all lead details</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ REMARKS FILTER TAB ══ -->
+      <div *ngIf="dashTab==='remarks_filter'" class="animate-fade-in">
+
+        <div class="dash-header-row" style="margin-bottom: 1.5rem;">
+          <div>
+            <h2 class="dash-title">Remarks Filter</h2>
+            <p class="dash-subtitle">Browse clients filtered by their product certifications & remarks</p>
+          </div>
+          <div style="display:flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <!-- Search -->
+            <div class="search-wrapper">
+              <input type="text" class="lead-filter-input" style="width: 100%; padding-left: 2.5rem;"
+                placeholder="Search company, name, phone..." [(ngModel)]="remarkFilterSearch">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+            <button class="cta-primary"
+              style="padding: 0.65rem 1.4rem; font-size: 0.85rem; height: 40px; display: flex; align-items: center; gap: 8px; border-radius: 12px;"
+              (click)="fetchAdminLeads()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+              </svg>
+              REFRESH
+            </button>
+          </div>
+        </div>
+
+        <!-- Remark Pills / Filters -->
+        <div style="margin-bottom: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem;">
+          <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Filter by Remark / Certification</div>
+          <div *ngIf="settingsProductRemarks.length === 0" style="color: var(--text-3); font-style: italic; font-size: 0.85rem;">No product remarks configured yet. Add them in App Settings.</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <button *ngFor="let rem of settingsProductRemarks"
+              (click)="selectedRemarkFilter = rem; selectedRemarksFilterCompany = '';"
+              style="padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1.5px solid; transition: all 0.15s;"
+              [style.background]="selectedRemarkFilter === rem ? '#4f46e5' : 'var(--bg-card-2)'"
+              [style.color]="selectedRemarkFilter === rem ? '#fff' : 'var(--text-1)'"
+              [style.borderColor]="selectedRemarkFilter === rem ? '#4f46e5' : 'var(--border)'">
+              {{ rem }}
+            </button>
+          </div>
+        </div>
+
+        <!-- No remark selected -->
+        <div *ngIf="!selectedRemarkFilter" class="leads-empty-state" style="margin-top: 3rem;">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+            style="opacity: 0.2; margin-bottom: 1rem;">
+            <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2z"/>
+            <path d="M7 7h.01"/>
+          </svg>
+          <h3>Select a Remark</h3>
+          <p>Click any remark pill above to view matching clients</p>
+        </div>
+
+        <!-- Leads container (same layout as All Leads) -->
+        <div *ngIf="selectedRemarkFilter" class="leads-container">
+
+          <!-- Left Sidebar: Company List -->
+          <div class="leads-sidebar">
+            <div class="leads-sidebar-header">
+              <div style="font-weight: 700; color: var(--text-1); font-size: 0.95rem;">Companies</div>
+              <div style="font-size: 0.75rem; color: var(--text-3); margin-top: 4px;">{{ remarksFilterUniqueCompanies.length }} found</div>
+            </div>
+            <div class="leads-list">
+              <div *ngFor="let company of remarksFilterUniqueCompanies" class="lead-item"
+                [class.active]="selectedRemarksFilterCompany === company"
+                (click)="selectedRemarksFilterCompany = company">
+                <div class="lead-item-name">{{ company || 'Unnamed Company' }}</div>
+                <div class="lead-item-meta">
+                  <span style="font-size: 0.75rem;">{{ getRemarksFilterCompanyCount(company) }} contacts</span>
+                </div>
+              </div>
+              <div *ngIf="remarksFilterUniqueCompanies.length === 0 && !allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
+                No companies found with remark "{{ selectedRemarkFilter }}".
+              </div>
+              <div *ngIf="allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Right: Lead Cards -->
+          <div class="lead-detail-view">
+            <div *ngIf="selectedRemarksFilterCompany">
+              <div class="customer-detail-header">
+                <div class="cd-header-icon" style="background: #f0fdf4; color: #16a34a;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2z"/>
+                    <path d="M7 7h.01"/>
+                  </svg>
+                </div>
+                <h3 class="cd-header-title">{{ selectedRemarksFilterCompany }}</h3>
+              </div>
+
+              <div class="leads-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+                <div *ngFor="let lead of remarksFilterLeadsInCompany" class="contact-card"
+                  style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; position: relative; overflow: hidden;">
+
+                  <div class="customer-identity">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <h4 style="margin: 0; font-size: 1.1rem; color: var(--text-1);">{{ lead.contactName || 'Unnamed' }}</h4>
+                      </div>
+                      <span class="status-badge"
+                        [style.background]="(lead.status === 'New' || !lead.status) ? '#ecfdf5' : '#fff7ed'"
+                        [style.color]="(lead.status === 'New' || !lead.status) ? '#10b981' : '#f59e0b'"
+                        style="font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">
+                        {{ lead.status || 'New' }}
+                      </span>
+                    </div>
+
+                    <div class="info-row" style="margin-bottom: 8px;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      </svg>
+                      <span style="font-size: 0.9rem;">{{ lead.contactNumber }}</span>
+                    </div>
+
+                    <div class="info-row" style="margin-bottom: 1rem;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      <span style="font-size: 0.9rem;">{{ lead.directorEmailAddress || lead.email || 'No email' }}</span>
+                    </div>
+
+                    <div *ngIf="lead.mainDivisionDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #4338ca; background: #eef2ff; padding: 4px 10px; border-radius: 6px; font-weight: 600;">
+                      Div: {{ lead.mainDivisionDescription }}
+                    </div>
+
+                    <div *ngIf="lead.companyDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #475569; background: #f1f5f9; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #cbd5e1;">
+                      <strong>Desc:</strong> {{ lead.companyDescription }}
+                    </div>
+
+                    <!-- Remarks highlighted -->
+                    <div *ngIf="lead.remarks && lead.remarks.length > 0" style="margin-top: 12px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
+                      <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; margin-bottom: 4px; text-transform: uppercase;">Remarks / Certifications</div>
+                      <div *ngFor="let r of lead.remarks"
+                        [style.background]="r.toLowerCase().includes(selectedRemarkFilter.toLowerCase()) ? '#f0fdf4' : '#fffbeb'"
+                        [style.borderColor]="r.toLowerCase().includes(selectedRemarkFilter.toLowerCase()) ? '#86efac' : '#fde68a'"
+                        [style.color]="r.toLowerCase().includes(selectedRemarkFilter.toLowerCase()) ? '#15803d' : '#b45309'"
+                        style="font-size: 0.72rem; padding: 5px 8px; border-radius: 6px; border: 1px solid; margin-bottom: 4px; line-height: 1.3; font-weight: 600;">
+                        {{ r }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="!selectedRemarksFilterCompany" class="leads-empty-state">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                style="opacity: 0.2; margin-bottom: 1rem;">
+                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2z"/>
+                <path d="M7 7h.01"/>
+              </svg>
+              <h3>No Company Selected</h3>
+              <p>Select a company from the list to view leads</p>
             </div>
           </div>
         </div>
@@ -3906,6 +4102,44 @@
             </div>
           </div>
 
+          <!-- Product Remarks Card (Moved from Invoice) -->
+          <div class="company-card" style="grid-column: 1 / -1;">
+            <h3 class="cc-title" style="margin-bottom:0.5rem;">Product Remarks</h3>
+            <p style="font-size:0.85rem;color:#64748b;margin-bottom:1.5rem;line-height:1.5;">Add global remarks, certifications (ISO, MSME, etc.) or other product details to be used across the application.</p>
+            
+            <div style="display:flex; gap:0.75rem; margin-bottom:1.25rem;">
+              <input type="text" [(ngModel)]="newProductRemarkInput" (keyup.enter)="addProductRemark()"
+                list="remarkSuggestions"
+                style="flex:1; border:1px solid var(--border); padding:0.65rem 1rem; border-radius:10px; font-size:0.85rem; background:var(--bg-card-2);" 
+                placeholder="e.g. ISO 9001:2015 Certified">
+              <datalist id="remarkSuggestions">
+                <option *ngFor="let rem of settingsProductRemarks" [value]="rem"></option>
+              </datalist>
+              <button (click)="addProductRemark()" class="cta-primary" style="padding:0 1.25rem; border-radius:10px; font-weight:600; font-size:0.85rem;">Add</button>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem;">
+              <div *ngFor="let rem of settingsProductRemarks" 
+                style="display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:20px; background:var(--bg-card-2); border:1px solid var(--border); font-size:0.85rem; font-weight:600; color:var(--text-1);">
+                {{ rem }}
+                <button (click)="removeProductRemark(rem)" style="border:none; background:transparent; color:#8d8d8d; padding:0; display:flex; align-items:center; cursor:pointer; margin-left:4px;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div *ngIf="settingsProductRemarks.length === 0" style="width: 100%; text-align: center; padding: 20px; color: var(--text-3); font-style: italic; font-size: 0.85rem;">
+                No product remarks added yet.
+              </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+              <button (click)="saveSettings()" class="cta-primary" [disabled]="settingsLoading"
+                style="padding: 0.6rem 1.5rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
+                <span *ngIf="settingsLoading" class="btn-spinner"></span>
+                {{ settingsLoading ? 'Saving...' : 'Save Remarks' }}
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -4231,7 +4465,6 @@
               </table>
             </div>
           </div>
-
           <!-- Banking Details Card -->
           <div class="premium-card">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.75rem;">
@@ -4273,7 +4506,7 @@
         <div *ngIf="settingsSaveSuccess" style="margin-top: 1rem; padding: 1rem; background: #ecfdf5; color: #059669; border-radius: 10px; font-weight: 700; text-align: center; border: 1px solid #10b981;">✓ {{ settingsSaveSuccess }}</div>
       </div>
     </main>
-  </div>
+    </div>
 
   <!-- Employee drilldown panel (Legacy - disabled when using new emp_dashboard) -->
   <div class="drilldown-overlay" [class.open]="!!selectedEmployee && dashTab !== 'emp_dashboard'"
@@ -4322,6 +4555,8 @@
             class="badge-count" *ngIf="selectedEmpCalls.length">{{ selectedEmpCalls.length }}</span></button>
         <button [class.active]="drilldownTab==='leads'" (click)="switchDrilldownTab('leads')">Leads <span
             class="badge-count" *ngIf="empLeads.length">{{ empLeads.length }}</span></button>
+        <button [class.active]="drilldownTab==='followups'" (click)="switchDrilldownTab('followups')">Follow-ups <span
+            class="badge-count" *ngIf="selectedEmpBookmarks.length">{{ selectedEmpBookmarks.length }}</span></button>
       </div>
       <div *ngIf="drilldownTab==='stats'">
         <div *ngIf="selectedEmpLoading" class="dash-loading">Loading&hellip;</div>
@@ -4532,7 +4767,7 @@
               style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
           </div>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-            <input type="text" [(ngModel)]="newSingleLead.remarks" placeholder="Remarks (Optional)"
+            <input type="text" [(ngModel)]="newSingleLead.remarks" placeholder="Remarks (Optional)" list="remarkSuggestions"
               style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem;">
             <select [(ngModel)]="newSingleLead.status"
               style="padding: 0.6rem; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.82rem; background: #fff;">
@@ -4890,6 +5125,101 @@
     <div style="margin-top: 2rem;">
       <button class="cta-primary" (click)="closeAllRemarksModal()"
         style="width: 100%; border-radius: 12px; padding: 0.8rem;">Close History</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== SAVE FOLLOW-UP MODAL (Mirroring Emp UI) ========== -->
+<div class="modal-overlay" *ngIf="showFollowupModal" (click)="closeFollowupModal()" style="display: flex; align-items: center; justify-content: center; z-index: 100000;">
+  <div class="modal followup-modal" (click)="$event.stopPropagation()" style="max-width: 500px; width: 95%;">
+    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="background: #eef2ff; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2">
+            <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/>
+          </svg>
+        </div>
+        <h2 class="modal-title" style="margin: 0;">{{ editingBookmarkId ? 'Edit Follow Up' : 'Save Follow Up' }}</h2>
+      </div>
+      <button class="modal-close" (click)="closeFollowupModal()" style="background:none; border:none; font-size: 1.5rem; cursor:pointer; color: var(--text-3);">&times;</button>
+    </div>
+
+    <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding-right: 8px;">
+      <div style="background: #f8fafc; border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; font-weight: 700; color: #475569; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">
+        CONTACT: {{ followupLead?.contactName || 'Unknown' }} ({{ followupLead?.contactNumber }})
+      </div>
+
+      <!-- Checkbox Grid -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="followupForm.brochuresSent" style="width: 18px; height: 18px; cursor: pointer;">
+          <span style="font-size: 0.85rem; color: var(--text-2); font-weight: 600;">Brochures</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="followupForm.techMeet" style="width: 18px; height: 18px; cursor: pointer;">
+          <span style="font-size: 0.85rem; color: var(--text-2); font-weight: 600;">Tech Meet</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="followupForm.meetingRemarks" style="width: 18px; height: 18px; cursor: pointer;">
+          <span style="font-size: 0.85rem; color: var(--text-2); font-weight: 600;">Meeting Done</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="followupForm.quotationSent" style="width: 18px; height: 18px; cursor: pointer;">
+          <span style="font-size: 0.85rem; color: var(--text-2); font-weight: 600;">Quotation</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="followupForm.proposalSent" style="width: 18px; height: 18px; cursor: pointer;">
+          <span style="font-size: 0.85rem; color: var(--text-2); font-weight: 600;">Proposal</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+          <input type="checkbox" [(ngModel)]="followupForm.whatsappGrp" style="width: 18px; height: 18px; cursor: pointer;">
+          <span style="font-size: 0.85rem; color: var(--text-2); font-weight: 600;">WA Group</span>
+        </label>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">CLIENT REQUIREMENT / NOTE</label>
+        <textarea placeholder="Type requirement or details here..." [(ngModel)]="followupForm.description" 
+          style="width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-family: inherit; font-size: 0.85rem; resize: none;"></textarea>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;" *ngIf="followupForm.remarks.length > 0">
+        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">HISTORICAL REMARKS</label>
+        <div style="max-height: 120px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;" class="custom-scroll">
+          <div *ngFor="let r of followupForm.remarks; let i = index; trackBy: trackByFn" 
+            style="display: flex; gap: 8px; align-items: center; background: #f1f5f9; padding: 6px 10px; border-radius: 6px;">
+            <input type="text" [(ngModel)]="followupForm.remarks[i]" style="flex: 1; border: none; background: transparent; font-size: 0.8rem; outline: none; color: #475569;" />
+            <button (click)="removeRemark(i)" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 2px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.25rem;">
+        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">REMARKS (NEW)</label>
+        <input type="text" placeholder="Add a new remark to history..." [(ngModel)]="followupForm.newRemark" 
+          style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 0.85rem;" />
+      </div>
+
+      <div class="form-group" style="margin-bottom: 1.5rem;">
+        <label style="display: block; font-size: 0.7rem; font-weight: 800; color: var(--text-3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;">SET FOLLOW-UP DATE</label>
+        <div style="position: relative; display: flex; align-items: center;">
+          <svg style="position: absolute; left: 10px; color: #64748b;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <input type="date" [(ngModel)]="followupForm.reminderDate" 
+            style="width: 100%; padding: 10px 10px 10px 36px; border: 1px solid var(--border); border-radius: 8px; outline: none; font-size: 0.85rem;" />
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 1rem;">
+      <button class="cta-secondary" (click)="closeFollowupModal()" style="flex: 1; padding: 0.8rem; border-radius: 12px; justify-content: center;">Cancel</button>
+      <button class="cta-primary" (click)="saveFollowup()" [disabled]="followupSaving" 
+        style="flex: 2; padding: 0.8rem; border-radius: 12px; justify-content: center; font-weight: 700;">
+        {{ followupSaving ? 'Saving...' : (editingBookmarkId ? 'Update Follow Up' : 'Save Follow Up') }}
+      </button>
     </div>
   </div>
 </div>

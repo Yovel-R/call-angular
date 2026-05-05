@@ -115,6 +115,7 @@ export class AuthService {
       minPrice: number;
       maxPrice: number;
     }>;
+    productRemarks?: string[];
   }): Observable<any> {
     return this.api.put(`/api/auth/company/${encodeURIComponent(companyCode)}/settings`, settings);
   }

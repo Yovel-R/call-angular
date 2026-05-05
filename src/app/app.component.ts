@@ -253,7 +253,7 @@ export class AppComponent implements OnInit {
   resetPwdChecks = { length: false, upper: false, number: false, symbol: false };
 
   // ── Dashboard tabs ─────────────────────────────────────────
-  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' | 'emp_dashboard' | 'settings' | 'invoice' = 'overview';
+  dashTab: 'overview' | 'leads' | 'followups' | 'employees' | 'reports' | 'company' | 'support' | 'emp_dashboard' | 'settings' | 'invoice' | 'remarks_filter' = 'overview';
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
@@ -296,6 +296,65 @@ export class AppComponent implements OnInit {
   isFollowupEmpSelected(phone: string): boolean {
     return this.followupSelectedEmps.includes(phone);
   }
+
+  readonly LEAD_STATUSES = ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up', 'Meeting Scheduled', 'Quotation Sent'];
+  updatingLeadId: string | null = null;
+  leadRemarksInputs: { [key: string]: string } = {};
+
+  selectedEmpFollowupCompany: string = '';
+
+  get selectedEmpBookmarksByCompany(): Bookmark[] {
+    if (!this.selectedEmpFollowupCompany) return [];
+    return this.selectedEmpBookmarks.filter(b => (b.companyName || 'Unnamed Company') === this.selectedEmpFollowupCompany);
+  }
+
+  get groupedEmpBookmarks(): { company: string, count: number }[] {
+    const groups: { [key: string]: number } = {};
+    this.selectedEmpBookmarks.forEach(b => {
+      const co = b.companyName || 'Unnamed Company';
+      groups[co] = (groups[co] || 0) + 1;
+    });
+    return Object.keys(groups).map(co => ({
+      company: co,
+      count: groups[co]
+    })).sort((a, b) => a.company.localeCompare(b.company));
+  }
+
+  getLeadByPhone(phone: string): Lead | undefined {
+    return this.allLeads.find(l => l.contactNumber === phone);
+  }
+
+  updateLeadStatus(lead: Lead, status: string): void {
+    if (!lead._id) return;
+    this.updatingLeadId = lead._id;
+    this.leadService.updateLeadStatus(lead._id, status).subscribe({
+      next: (res) => {
+        if (res.success) {
+          lead.status = status;
+        }
+        this.updatingLeadId = null;
+      },
+      error: () => {
+        this.updatingLeadId = null;
+        alert('Failed to update lead status.');
+      }
+    });
+  }
+
+  getLeadStatusClass(status: string): string {
+    if (!status) return 'status-new';
+    const s = status.toLowerCase();
+    if (s.includes('interested') || s.includes('follow')) return 'status-interested';
+    if (s.includes('not')) return 'status-not-interested';
+    if (s.includes('convert')) return 'status-converted';
+    if (s.includes('contact')) return 'status-contacted';
+    return 'status-new';
+  }
+
+  // Invoice Flow Support
+  selectedEmployeeForInvoice: any = null;
+  invoiceLead: any = null;
+
 
   get filteredBookmarks(): Bookmark[] {
     return this.allBookmarks.filter(b => {
@@ -344,6 +403,90 @@ export class AppComponent implements OnInit {
     this.updateScrollLock();
   }
 
+  // --- Follow-up Edit Modal Logic (Mirroring Emp UI) ---
+  showFollowupModal = false;
+  editingBookmarkId: string | null = null;
+  followupLead: any = null;
+  followupSaving = false;
+  followupForm = {
+    brochuresSent: false,
+    techMeet: false,
+    meetingRemarks: false,
+    quotationSent: false,
+    proposalSent: false,
+    whatsappGrp: false,
+    description: '',
+    remarks: [] as string[],
+    newRemark: '',
+    reminderDate: ''
+  };
+
+  openEditFollowupModal(bookmark: any) {
+    this.editingBookmarkId = bookmark._id;
+    this.followupLead = bookmark;
+    this.followupForm = {
+      brochuresSent: !!bookmark.brochuresSent,
+      techMeet: !!bookmark.techMeet,
+      meetingRemarks: !!bookmark.meetingRemarks,
+      quotationSent: !!bookmark.quotationSent,
+      proposalSent: !!bookmark.proposalSent,
+      whatsappGrp: !!bookmark.whatsappGrp,
+      description: bookmark.description || '',
+      remarks: [...(bookmark.remarks || [])],
+      newRemark: '',
+      reminderDate: bookmark.reminderDate ? bookmark.reminderDate.substring(0, 10) : ''
+    };
+    this.showFollowupModal = true;
+    this.updateScrollLock();
+  }
+
+  closeFollowupModal() {
+    this.showFollowupModal = false;
+    this.editingBookmarkId = null;
+    this.followupLead = null;
+    this.updateScrollLock();
+  }
+
+  removeRemark(index: number) {
+    this.followupForm.remarks.splice(index, 1);
+  }
+
+  trackByFn(index: number, item: any) {
+    return index;
+  }
+
+  async saveFollowup() {
+    if (!this.editingBookmarkId) return;
+    this.followupSaving = true;
+
+    try {
+      const finalRemarks = [...this.followupForm.remarks];
+      if (this.followupForm.newRemark.trim()) {
+        finalRemarks.push(this.followupForm.newRemark.trim());
+      }
+
+      const payload = {
+        ...this.followupForm,
+        remarks: finalRemarks
+      };
+      delete (payload as any).newRemark;
+
+      await this.bookmarkService.updateBookmark(this.editingBookmarkId, payload).toPromise();
+      
+      // Refresh bookmarks
+      this.fetchCompanyBookmarks();
+      
+      this.closeFollowupModal();
+      // Optional: show toast/alert
+    } catch (err) {
+      console.error("Error updating bookmark:", err);
+      alert("Failed to update follow-up. Please try again.");
+    } finally {
+      this.followupSaving = false;
+    }
+  }
+
+
   openSignup(): void {
     this.closeModals();
     this.isSignupOpen = true;
@@ -382,7 +525,7 @@ export class AppComponent implements OnInit {
   }
 
   updateScrollLock(): void {
-    const isAnyModalOpen = this.isLoginOpen || this.isSignupOpen || this.isForgotPwdOpen || this.isResetPwdOpen || this.isAddEmployeeOpen || this.isEditEmployeeOpen || this.showAllCallsModal || this.isLogoutConfirmOpen;
+    const isAnyModalOpen = this.isLoginOpen || this.isSignupOpen || this.isForgotPwdOpen || this.isResetPwdOpen || this.isAddEmployeeOpen || this.isEditEmployeeOpen || this.showAllCallsModal || this.isLogoutConfirmOpen || this.showFollowupModal;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -465,6 +608,8 @@ export class AppComponent implements OnInit {
   };
   settingsProducts: Array<{ name: string, minPrice: number, maxPrice: number }> = [];
   newProductInput = { name: '', minPrice: 0, maxPrice: 0 };
+  settingsProductRemarks: string[] = [];
+  newProductRemarkInput: string = '';
 
   // ── Break Notifications (admin) ───────────────────────────────
   breakOverLimitEmps: { employeePhone: string; employeeName: string; totalSeconds: number; limitSeconds: number }[] = [];
@@ -508,7 +653,7 @@ export class AppComponent implements OnInit {
   selectedEmpLoading = false;
   selectedEmpCalls: any[] = [];
   selectedEmpCallsLoading = false;
-  drilldownTab: 'stats' | 'calls' | 'leads' = 'stats';
+  drilldownTab: 'stats' | 'calls' | 'leads' | 'followups' = 'stats';
 
   // ── Leads Management (Drilldown) ───────────────────────────
   empLeads: any[] = [];
@@ -710,13 +855,18 @@ export class AppComponent implements OnInit {
       }, 100);
     }
 
-    if (tab === 'leads' || tab === 'followups') {
-      if (tab === 'leads') this.fetchAdminLeads();
-      this.fetchCompanyBookmarks();
+    if (tab === 'leads' || tab === 'followups' || tab === 'remarks_filter') {
+      if (tab === 'leads' || tab === 'remarks_filter') this.fetchAdminLeads();
+      if (tab === 'followups') this.fetchCompanyBookmarks();
+      if (tab === 'remarks_filter') {
+        this.selectedAdminLeadSet = ''; // Reset set filter for global remarks search
+        this.selectedRemarkFilter = this.settingsProductRemarks[0] || '';
+        this.selectedRemarksFilterCompany = '';
+      }
     }
 
-    // Load settings when navigating to settings tab
-    if (tab === 'settings') {
+    // Load settings when navigating to settings or remarks_filter tab
+    if (tab === 'settings' || tab === 'remarks_filter') {
       this.fetchSettings();
     }
   }
@@ -2531,6 +2681,7 @@ export class AppComponent implements OnInit {
           this.settingsBankDetails = res.settings.bankDetails || { bankName: '', accountNumber: '', ifscCode: '', branchName: '' };
           this.settingsContactDetails = res.settings.contactDetails || { website: '', email: '', phone: '' };
           this.settingsProducts = res.settings.products || [];
+          this.settingsProductRemarks = res.settings.productRemarks || [];
         }
       },
       error: () => { this.settingsLoading = false; }
@@ -2560,6 +2711,18 @@ export class AppComponent implements OnInit {
     this.newProductInput = { name: '', minPrice: 0, maxPrice: 0 };
   }
 
+  addProductRemark(): void {
+    const val = this.newProductRemarkInput.trim();
+    if (val && !this.settingsProductRemarks.includes(val)) {
+      this.settingsProductRemarks.push(val);
+      this.newProductRemarkInput = '';
+    }
+  }
+
+  removeProductRemark(remark: string): void {
+    this.settingsProductRemarks = this.settingsProductRemarks.filter(r => r !== remark);
+  }
+
   removeProduct(index: number): void {
     this.settingsProducts.splice(index, 1);
   }
@@ -2584,6 +2747,7 @@ export class AppComponent implements OnInit {
       bankDetails: this.settingsBankDetails,
       contactDetails: this.settingsContactDetails,
       products: this.settingsProducts,
+      productRemarks: this.settingsProductRemarks,
     }).subscribe({
       next: (res: any) => {
         this.settingsLoading = false;
@@ -3011,6 +3175,44 @@ Thank You.`;
     return [...new Set(companies)].sort();
   }
 
+  // ── Remarks Filter Page ───────────────────────────────────────
+  selectedRemarkFilter: string = '';
+  remarkFilterSearch: string = '';
+
+  get remarksFilteredLeads(): any[] {
+    if (!this.selectedRemarkFilter) return [];
+    const filterLower = this.selectedRemarkFilter.toLowerCase();
+    return this.allLeads.filter(lead => {
+      const remarks: string[] = Array.isArray(lead.remarks) ? lead.remarks : [];
+      const matchesRemark = remarks.some(r => {
+        const rLower = r.toLowerCase();
+        // Bidirectional match: stored remark contains filter OR filter contains stored remark
+        return rLower.includes(filterLower) || filterLower.includes(rLower);
+      });
+      const matchesSearch = !this.remarkFilterSearch ||
+        (lead.contactName?.toLowerCase().includes(this.remarkFilterSearch.toLowerCase())) ||
+        (lead.contactNumber?.includes(this.remarkFilterSearch)) ||
+        (lead.leadCompanyName?.toLowerCase().includes(this.remarkFilterSearch.toLowerCase()));
+      return matchesRemark && matchesSearch;
+    });
+  }
+
+  get remarksFilterUniqueCompanies(): string[] {
+    const companies = this.remarksFilteredLeads.map(l => l.leadCompanyName);
+    return [...new Set(companies)].filter(Boolean) as string[];
+  }
+
+  selectedRemarksFilterCompany: string = '';
+
+  getRemarksFilterCompanyCount(company: string): number {
+    return this.remarksFilteredLeads.filter(l => l.leadCompanyName === company).length;
+  }
+
+  get remarksFilterLeadsInCompany(): any[] {
+    if (!this.selectedRemarksFilterCompany) return [];
+    return this.remarksFilteredLeads.filter(l => l.leadCompanyName === this.selectedRemarksFilterCompany);
+  }
+
   get leadsInSelectedCompany(): any[] {
     if (!this.selectedLeadCompany) return [];
     return this.allLeads.filter(l => l.leadCompanyName === this.selectedLeadCompany);
@@ -3054,6 +3256,10 @@ Thank You.`;
         if (res.success) {
           this.allBookmarks = res.bookmarks;
           this.fetchLeadCallCounts();
+          
+          if (!this.selectedEmpFollowupCompany && this.selectedEmpBookmarks.length > 0) {
+            this.selectedEmpFollowupCompany = this.selectedEmpBookmarks[0].companyName || 'Unnamed Company';
+          }
         }
       },
       error: () => {
@@ -3069,6 +3275,29 @@ Thank You.`;
         if (res.success) this.leadCallCounts = res.counts;
       }
     });
+  }
+
+  getLeadInteractionCount(phone: string): number {
+    if (!phone) return 0;
+    const cleanNum = phone.replace(/\D/g, '').slice(-10);
+
+    // Find bookmark by normalized number
+    const b = this.allBookmarks.find(bm => {
+      const bmNum = (bm.contactNumber || '').replace(/\D/g, '').slice(-10);
+      return bmNum === cleanNum;
+    });
+    const loggedCount = b?.remarks?.length || 0;
+
+    // Find call count by normalized number
+    let rawCount = 0;
+    Object.keys(this.leadCallCounts).forEach(key => {
+      const kNum = key.replace(/\D/g, '').slice(-10);
+      if (kNum === cleanNum) {
+        rawCount += this.leadCallCounts[key];
+      }
+    });
+
+    return loggedCount + rawCount;
   }
 
   viewAllRemarks(bookmark: any): void {
@@ -3092,29 +3321,6 @@ Thank You.`;
         }
       }
     });
-  }
-
-  getLeadInteractionCount(contactNumber: string): number {
-    if (!contactNumber) return 0;
-    const cleanNum = contactNumber.replace(/\D/g, '').slice(-10);
-
-    // Find bookmark by normalized number
-    const b = this.allBookmarks.find(bm => {
-      const bmNum = (bm.contactNumber || '').replace(/\D/g, '').slice(-10);
-      return bmNum === cleanNum;
-    });
-    const loggedCount = b?.remarks?.length || 0;
-
-    // Find call count by normalized number
-    let rawCount = 0;
-    Object.keys(this.leadCallCounts).forEach(key => {
-      const kNum = key.replace(/\D/g, '').slice(-10);
-      if (kNum === cleanNum) {
-        rawCount += this.leadCallCounts[key];
-      }
-    });
-
-    return loggedCount + rawCount;
   }
 
   getEmployeeInteractionCount(mobile: string): number {
@@ -3411,7 +3617,7 @@ Thank You.`;
     return this.filteredEmpLeads.filter(l => (l.leadCompanyName || 'Unknown') === this.selectedEmpLeadCompany);
   }
 
-  switchDrilldownTab(tab: 'stats' | 'calls' | 'leads'): void {
+  switchDrilldownTab(tab: 'stats' | 'calls' | 'leads' | 'followups'): void {
     this.drilldownTab = tab;
     if (tab === 'leads') {
       this.fetchEmpLeads();
@@ -3421,6 +3627,9 @@ Thank You.`;
         this.renderChart();
         this.renderEmpDonutChart();
       }, 100);
+    }
+    if (tab === 'followups') {
+      this.fetchCompanyBookmarks();
     }
   }
 

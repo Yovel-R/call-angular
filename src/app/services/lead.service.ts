@@ -61,4 +61,16 @@ export class LeadService {
   updateLeadFlags(id: string, flags: { isStarred?: boolean; isFavourite?: boolean }): Observable<any> {
     return this.api.patch(`/api/leads/${id}/flags`, flags);
   }
+
+  updateLeadStatus(id: string, status: string): Observable<any> {
+    return this.api.patch(`/api/leads/${id}/status`, { status });
+  }
+
+  addLeadRemark(id: string, remark: string): Observable<any> {
+    return this.api.post(`/api/leads/${id}/remarks`, { remark });
+  }
+
+  deleteLeadRemark(id: string, index: number): Observable<any> {
+    return this.api.delete(`/api/leads/${id}/remarks/${index}`);
+  }
 }
