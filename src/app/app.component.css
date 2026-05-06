@@ -7124,6 +7124,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  overflow-x: hidden;
 }
 
 .leads-sidebar-header {
@@ -7134,6 +7135,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .leads-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .lead-item {
@@ -7156,6 +7158,9 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-weight: 600;
   color: var(--text-1);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .lead-item-meta {

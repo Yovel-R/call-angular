@@ -867,6 +867,7 @@ export class AppComponent implements OnInit {
   selectedAdminLeadSet: string = '';
   leadSearchQuery: string = '';
   leadEmployeeFilter: string = '';
+  companyLimit = 200;
 
   // Bookmarks (Follow-up)
   allBookmarks: Bookmark[] = [];
@@ -3368,11 +3369,25 @@ Thank You.`;
 
   get uniqueLeadCompanies(): string[] {
     if (this.lastFilteredLeadsRefForUnique !== this.filteredLeads) {
+      this.companyLimit = 200;
       const companies = this.filteredLeads.map(l => l.leadCompanyName);
       this.uniqueLeadCompaniesCache = [...new Set(companies)].sort();
       this.lastFilteredLeadsRefForUnique = this.filteredLeads;
     }
     return this.uniqueLeadCompaniesCache;
+  }
+
+  get displayedLeadCompanies(): string[] {
+    return this.uniqueLeadCompanies.slice(0, this.companyLimit);
+  }
+
+  onSidebarScroll(event: any): void {
+    const element = event.target;
+    if (element.scrollHeight - element.scrollTop <= element.clientHeight + 100) {
+      if (this.companyLimit < this.uniqueLeadCompanies.length) {
+        this.companyLimit += 200;
+      }
+    }
   }
 
   // ── Remarks Filter Page ───────────────────────────────────────

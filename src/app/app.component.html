@@ -2895,8 +2895,8 @@
               <div style="font-size: 0.75rem; color: var(--text-3); margin-top: 4px;">{{ filteredLeads.length }} leads
                 found</div>
             </div>
-            <div class="leads-list">
-              <div *ngFor="let company of uniqueLeadCompanies" class="lead-item"
+            <div class="leads-list" (scroll)="onSidebarScroll($event)">
+              <div *ngFor="let company of displayedLeadCompanies" class="lead-item"
                 [class.active]="selectedLeadCompany === company" (click)="selectLeadCompany(company)">
                 <div class="lead-item-name">{{ company || 'Unnamed Company' }}</div>
                 <div class="lead-item-meta" style="display: flex; flex-direction: column; gap: 2px;">
@@ -2906,6 +2906,10 @@
                     {{ getCompanyInteractionCount(company) }} Interactions
                   </span>
                 </div>
+              </div>
+              <div *ngIf="companyLimit < uniqueLeadCompanies.length" 
+                style="padding: 1rem; text-align: center; color: var(--text-3); font-size: 0.75rem; border-top: 1px dashed var(--border);">
+                Scroll to load more leads...
               </div>
               <div *ngIf="uniqueLeadCompanies.length === 0 && !allLeadsLoading" class="leads-empty-state"
                 style="padding: 2rem;">
