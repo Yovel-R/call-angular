@@ -2952,15 +2952,17 @@
                     <path d="M16 14h.01"></path>
                   </svg>
                 </div>
-                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                  <h3 class="cd-header-title">{{ selectedLeadCompany }}</h3>
-                  <button (click)="openHistory(leadsInSelectedCompany[0])" *ngIf="leadsInSelectedCompany.length > 0"
-                    style="background: #eef2ff; border: none; cursor: pointer; padding: 6px; border-radius: 8px; color: #6366f1; display: flex; align-items: center; transition: all 0.2s;" 
-                    onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="View Company Audit History">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                    </svg>
-                  </button>
+                <div style="display: flex; flex-direction: column;">
+                  <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                    <h3 class="cd-header-title">{{ selectedLeadCompany }}</h3>
+                    <button (click)="openHistory(leadsInSelectedCompany[0])" *ngIf="leadsInSelectedCompany.length > 0"
+                      style="background: #eef2ff; border: none; cursor: pointer; padding: 6px; border-radius: 8px; color: #6366f1; display: flex; align-items: center; transition: all 0.2s;" 
+                      onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="View Company Audit History">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
