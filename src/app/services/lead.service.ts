@@ -40,9 +40,10 @@ export class LeadService {
     return this.api.get(url);
   }
 
-  getAdminLeads(companyCode: string, setLabel?: string): Observable<any> {
+  getAdminLeads(companyCode: string, setLabel?: string, remark?: string): Observable<any> {
     let url = `/api/leads/admin?companyCode=${encodeURIComponent(companyCode)}`;
     if (setLabel) url += `&setLabel=${encodeURIComponent(setLabel)}`;
+    if (remark) url += `&remark=${encodeURIComponent(remark)}`;
     return this.api.get(url);
   }
 

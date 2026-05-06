@@ -300,6 +300,8 @@ export class AppComponent implements OnInit {
   readonly LEAD_STATUSES = ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up', 'Meeting Scheduled', 'Quotation Sent'];
   updatingLeadId: string | null = null;
   leadRemarksInputs: { [key: string]: string } = {};
+  remarkLeads: any[] = [];
+  remarkLeadsLoading: boolean = false;
 
   selectedEmpFollowupCompany: string = '';
 
@@ -1027,13 +1029,16 @@ export class AppComponent implements OnInit {
     }
 
     if (tab === 'leads' || tab === 'followups' || tab === 'remarks_filter') {
-      if (tab === 'leads' || tab === 'remarks_filter') this.fetchAdminLeads();
-      if (tab === 'followups') this.fetchCompanyBookmarks();
       if (tab === 'remarks_filter') {
         this.selectedAdminLeadSet = ''; // Reset set filter for global remarks search
         this.selectedRemarkFilter = this.settingsProductRemarks[0] || '';
         this.selectedRemarksFilterCompany = '';
+        this.remarkFilterSearch = ''; // Reset search when switching to this tab
+        if (this.selectedRemarkFilter) this.fetchLeadsByRemark(this.selectedRemarkFilter);
       }
+      
+      if (tab === 'leads' || tab === 'remarks_filter') this.fetchAdminLeads();
+      if (tab === 'followups') this.fetchCompanyBookmarks();
     }
 
     // Load settings when navigating to settings or remarks_filter tab
@@ -3348,10 +3353,14 @@ Thank You.`;
     const depsStr = JSON.stringify([this.leadSearchQuery, this.leadEmployeeFilter]);
     if (this.lastAllLeadsRefForFiltered !== this.allLeads || this.filteredLeadsDepsStr !== depsStr) {
       this.filteredLeadsCache = this.allLeads.filter(lead => {
+        const q = this.leadSearchQuery.toLowerCase();
+        const remarks: string[] = Array.isArray(lead.remarks) ? lead.remarks : [];
+        
         const matchesSearch = !this.leadSearchQuery ||
-          (lead.contactName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase())) ||
+          (lead.contactName?.toLowerCase().includes(q)) ||
           (lead.contactNumber?.includes(this.leadSearchQuery)) ||
-          (lead.leadCompanyName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase()));
+          (lead.leadCompanyName?.toLowerCase().includes(q)) ||
+          (remarks.some(r => r.toLowerCase().includes(q)));
 
         const matchesEmployee = !this.leadEmployeeFilter ||
           lead.assignedEmployeePhone === this.leadEmployeeFilter;
@@ -3394,21 +3403,44 @@ Thank You.`;
   selectedRemarkFilter: string = '';
   remarkFilterSearch: string = '';
 
+  selectRemarkFilter(remark: string): void {
+    this.selectedRemarkFilter = remark;
+    this.selectedRemarksFilterCompany = '';
+    this.fetchLeadsByRemark(remark);
+  }
+
+  fetchLeadsByRemark(remark: string): void {
+    if (!this.dashboardCode) return;
+    this.remarkLeadsLoading = true;
+    this.leadService.getAdminLeads(this.dashboardCode, undefined, remark).subscribe({
+      next: (res: any) => {
+        this.remarkLeadsLoading = false;
+        if (res.success) {
+          this.remarkLeads = (res.leads || []).map((l: any) => this.normalizeLead(l));
+        }
+      },
+      error: () => {
+        this.remarkLeadsLoading = false;
+      }
+    });
+  }
+
   get remarksFilteredLeads(): any[] {
     if (!this.selectedRemarkFilter) return [];
-    const filterLower = this.selectedRemarkFilter.toLowerCase();
-    return this.allLeads.filter(lead => {
+    const searchLower = this.remarkFilterSearch.toLowerCase();
+    
+    // Base results come from remarkLeads (fetched from DB)
+    // We then apply the local search filter if any
+    return this.remarkLeads.filter(lead => {
       const remarks: string[] = Array.isArray(lead.remarks) ? lead.remarks : [];
-      const matchesRemark = remarks.some(r => {
-        const rLower = r.toLowerCase();
-        // Bidirectional match: stored remark contains filter OR filter contains stored remark
-        return rLower.includes(filterLower) || filterLower.includes(rLower);
-      });
+
       const matchesSearch = !this.remarkFilterSearch ||
-        (lead.contactName?.toLowerCase().includes(this.remarkFilterSearch.toLowerCase())) ||
+        (lead.contactName?.toLowerCase().includes(searchLower)) ||
         (lead.contactNumber?.includes(this.remarkFilterSearch)) ||
-        (lead.leadCompanyName?.toLowerCase().includes(this.remarkFilterSearch.toLowerCase()));
-      return matchesRemark && matchesSearch;
+        (lead.leadCompanyName?.toLowerCase().includes(searchLower)) ||
+        (remarks.some(r => r.toLowerCase().includes(searchLower)));
+        
+      return matchesSearch;
     });
   }
 

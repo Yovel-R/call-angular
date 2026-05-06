@@ -3087,7 +3087,7 @@
           <div *ngIf="settingsProductRemarks.length === 0" style="color: var(--text-3); font-style: italic; font-size: 0.85rem;">No product remarks configured yet. Add them in App Settings.</div>
           <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
             <button *ngFor="let rem of settingsProductRemarks"
-              (click)="selectedRemarkFilter = rem; selectedRemarksFilterCompany = '';"
+              (click)="selectRemarkFilter(rem)"
               style="padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1.5px solid; transition: all 0.15s;"
               [style.background]="selectedRemarkFilter === rem ? '#4f46e5' : 'var(--bg-card-2)'"
               [style.color]="selectedRemarkFilter === rem ? '#fff' : 'var(--text-1)'"
@@ -3126,10 +3126,13 @@
                   <span style="font-size: 0.75rem;">{{ getRemarksFilterCompanyCount(company) }} contacts</span>
                 </div>
               </div>
-              <div *ngIf="remarksFilterUniqueCompanies.length === 0 && !allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
+              <div *ngIf="remarksFilterUniqueCompanies.length === 0 && !remarkLeadsLoading && !allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
                 No companies found with remark "{{ selectedRemarkFilter }}".
               </div>
-              <div *ngIf="allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">Loading...</div>
+              <div *ngIf="remarkLeadsLoading || allLeadsLoading" class="leads-empty-state" style="padding: 2rem;">
+                <div class="spinner-small" style="margin: 0 auto 10px;"></div>
+                Searching database...
+              </div>
             </div>
           </div>
 
