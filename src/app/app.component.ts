@@ -303,25 +303,113 @@ export class AppComponent implements OnInit {
 
   selectedEmpFollowupCompany: string = '';
 
+  selectedEmpBookmarksDepsStr = '';
+  lastAllBookmarksRefForEmp: any[] | null = null;
+  selectedEmpBookmarksCache: Bookmark[] = [];
+
+  get selectedEmpBookmarks(): Bookmark[] {
+    if (!this.selectedEmployee) return [];
+    const depsStr = this.selectedEmployee.mobile;
+    if (this.lastAllBookmarksRefForEmp !== this.allBookmarks || this.selectedEmpBookmarksDepsStr !== depsStr) {
+      this.selectedEmpBookmarksCache = this.allBookmarks.filter(b => b.employeePhone === this.selectedEmployee!.mobile);
+      this.lastAllBookmarksRefForEmp = this.allBookmarks;
+      this.selectedEmpBookmarksDepsStr = depsStr;
+    }
+    return this.selectedEmpBookmarksCache;
+  }
+
+  selectedEmpBookmarksFilteredDepsStr = '';
+  lastSelectedEmpBookmarksRefForFiltered: any[] | null = null;
+  selectedEmpBookmarksFilteredCache: Bookmark[] = [];
+
+  get selectedEmpBookmarksFiltered(): Bookmark[] {
+    const depsStr = JSON.stringify([this.followupFilter, this.selectedFollowupDate, this.followupSearch]);
+    if (this.lastSelectedEmpBookmarksRefForFiltered !== this.selectedEmpBookmarks || this.selectedEmpBookmarksFilteredDepsStr !== depsStr) {
+      let list = this.selectedEmpBookmarks;
+
+      if (this.followupFilter === 'today') {
+        const today = new Date().toISOString().substring(0, 10);
+        list = list.filter(b => b.reminderDate && b.reminderDate.substring(0, 10) === today);
+      }
+
+      if (this.selectedFollowupDate) {
+        list = list.filter(b => b.reminderDate && b.reminderDate.substring(0, 10) === this.selectedFollowupDate);
+      }
+
+      if (this.followupSearch) {
+        const q = this.followupSearch.toLowerCase();
+        list = list.filter(b =>
+          (b.contactName?.toLowerCase().includes(q) ||
+            b.contactNumber?.toLowerCase().includes(q) ||
+            b.companyName?.toLowerCase().includes(q) ||
+            (b.remarks && b.remarks.some(r => r.toLowerCase().includes(q))))
+        );
+      }
+      this.selectedEmpBookmarksFilteredCache = list;
+      this.lastSelectedEmpBookmarksRefForFiltered = this.selectedEmpBookmarks;
+      this.selectedEmpBookmarksFilteredDepsStr = depsStr;
+    }
+    return this.selectedEmpBookmarksFilteredCache;
+  }
+
+  selectedEmpBookmarksByCompanyDepsStr = '';
+  lastSelectedEmpBookmarksFilteredRef: any[] | null = null;
+  selectedEmpBookmarksByCompanyCache: Bookmark[] = [];
+
   get selectedEmpBookmarksByCompany(): Bookmark[] {
     if (!this.selectedEmpFollowupCompany) return [];
-    return this.selectedEmpBookmarks.filter(b => (b.companyName || 'Unnamed Company') === this.selectedEmpFollowupCompany);
+    const depsStr = this.selectedEmpFollowupCompany;
+    if (this.lastSelectedEmpBookmarksFilteredRef !== this.selectedEmpBookmarksFiltered || this.selectedEmpBookmarksByCompanyDepsStr !== depsStr) {
+      this.selectedEmpBookmarksByCompanyCache = this.selectedEmpBookmarksFiltered.filter(b => (b.companyName || 'Unnamed Company') === this.selectedEmpFollowupCompany);
+      this.lastSelectedEmpBookmarksFilteredRef = this.selectedEmpBookmarksFiltered;
+      this.selectedEmpBookmarksByCompanyDepsStr = depsStr;
+    }
+    return this.selectedEmpBookmarksByCompanyCache;
   }
+
+  get todayFollowupCount(): number {
+    const today = new Date().toISOString().substring(0, 10);
+    return this.selectedEmpBookmarks.filter(b => b.reminderDate && b.reminderDate.substring(0, 10) === today).length;
+  }
+
+  get todayGlobalFollowupCount(): number {
+    const today = new Date().toISOString().substring(0, 10);
+    return this.allBookmarks.filter(b => b.reminderDate && b.reminderDate.substring(0, 10) === today).length;
+  }
+
+  groupedEmpBookmarksCache: { company: string, count: number }[] = [];
+  lastGroupedEmpBookmarksRef: any[] | null = null;
 
   get groupedEmpBookmarks(): { company: string, count: number }[] {
-    const groups: { [key: string]: number } = {};
-    this.selectedEmpBookmarks.forEach(b => {
-      const co = b.companyName || 'Unnamed Company';
-      groups[co] = (groups[co] || 0) + 1;
-    });
-    return Object.keys(groups).map(co => ({
-      company: co,
-      count: groups[co]
-    })).sort((a, b) => a.company.localeCompare(b.company));
+    if (this.lastGroupedEmpBookmarksRef !== this.selectedEmpBookmarksFiltered) {
+      const groups: { [key: string]: number } = {};
+      this.selectedEmpBookmarksFiltered.forEach(b => {
+        const co = b.companyName || 'Unnamed Company';
+        groups[co] = (groups[co] || 0) + 1;
+      });
+      this.groupedEmpBookmarksCache = Object.keys(groups).map(co => ({
+        company: co,
+        count: groups[co]
+      })).sort((a, b) => a.company.localeCompare(b.company));
+      this.lastGroupedEmpBookmarksRef = this.selectedEmpBookmarksFiltered;
+    }
+    return this.groupedEmpBookmarksCache;
   }
 
+  leadMapCache: { [phone: string]: Lead } | null = null;
+  lastAllLeadsRef: any[] | null = null;
+
   getLeadByPhone(phone: string): Lead | undefined {
-    return this.allLeads.find(l => l.contactNumber === phone);
+    if (this.lastAllLeadsRef !== this.allLeads) {
+      this.leadMapCache = {};
+      for (const l of this.allLeads) {
+        if (l.contactNumber) {
+          this.leadMapCache[l.contactNumber] = l;
+        }
+      }
+      this.lastAllLeadsRef = this.allLeads;
+    }
+    return this.leadMapCache![phone];
   }
 
   updateLeadStatus(lead: Lead, status: string): void {
@@ -356,30 +444,108 @@ export class AppComponent implements OnInit {
   invoiceLead: any = null;
 
 
+  filteredBookmarksDepsStr = '';
+  lastAllBookmarksRefForFiltered: any[] | null = null;
+  filteredBookmarksCache: Bookmark[] = [];
+
   get filteredBookmarks(): Bookmark[] {
-    return this.allBookmarks.filter(b => {
-      const emp = this.employees.find(e => e.mobile === b.employeePhone);
+    const depsStr = JSON.stringify([this.followupSelectedCompanyTags, this.followupSelectedEmps, this.followupSearchQuery]);
+    if (this.lastAllBookmarksRefForFiltered !== this.allBookmarks || this.filteredBookmarksDepsStr !== depsStr) {
+      this.filteredBookmarksCache = this.allBookmarks.filter(b => {
+        const emp = this.employees.find(e => e.mobile === b.employeePhone);
 
-      // Company Tag filter (matches employee tags)
-      if (this.followupSelectedCompanyTags.length > 0) {
-        if (!emp || !emp.tags) return false;
-        const eTags = emp.tags;
-        const matchesCompanyTag = this.followupSelectedCompanyTags.every(tag => eTags.includes(tag));
-        if (!matchesCompanyTag) return false;
+        if (this.followupSelectedCompanyTags.length > 0) {
+          if (!emp || !emp.tags) return false;
+          const eTags = emp.tags;
+          const matchesCompanyTag = this.followupSelectedCompanyTags.every(tag => eTags.includes(tag));
+          if (!matchesCompanyTag) return false;
+        }
+
+        if (this.followupSelectedEmps.length > 0 && !this.followupSelectedEmps.includes(b.employeePhone)) {
+          return false;
+        }
+        if (this.followupSearchQuery) {
+          const q = this.followupSearchQuery.toLowerCase();
+          return (b.contactName?.toLowerCase().includes(q) ||
+            b.contactNumber?.toLowerCase().includes(q) ||
+            b.companyName?.toLowerCase().includes(q) ||
+            b.description?.toLowerCase().includes(q) ||
+            (b.remarks && b.remarks.some(r => r.toLowerCase().includes(q))));
+        }
+        return true;
+      });
+      this.lastAllBookmarksRefForFiltered = this.allBookmarks;
+      this.filteredBookmarksDepsStr = depsStr;
+    }
+    return this.filteredBookmarksCache;
+  }
+
+  filteredBookmarksFilteredDepsStr = '';
+  lastFilteredBookmarksRefForFiltered: any[] | null = null;
+  filteredBookmarksFilteredCache: Bookmark[] = [];
+
+  get filteredBookmarksFiltered(): Bookmark[] {
+    const depsStr = JSON.stringify([this.followupFilter, this.selectedFollowupDate, this.followupSearch]);
+    if (this.lastFilteredBookmarksRefForFiltered !== this.filteredBookmarks || this.filteredBookmarksFilteredDepsStr !== depsStr) {
+      let list = this.filteredBookmarks;
+
+      if (this.followupFilter === 'today') {
+        const today = new Date().toISOString().substring(0, 10);
+        list = list.filter(b => b.reminderDate && b.reminderDate.substring(0, 10) === today);
       }
 
-      if (this.followupSelectedEmps.length > 0 && !this.followupSelectedEmps.includes(b.employeePhone)) {
-        return false;
+      if (this.selectedFollowupDate) {
+        list = list.filter(b => b.reminderDate && b.reminderDate.substring(0, 10) === this.selectedFollowupDate);
       }
-      if (this.followupSearchQuery) {
-        const q = this.followupSearchQuery.toLowerCase();
-        return (b.contactName?.toLowerCase().includes(q) ||
-          b.contactNumber?.toLowerCase().includes(q) ||
-          b.companyName?.toLowerCase().includes(q) ||
-          b.description?.toLowerCase().includes(q));
+
+      if (this.followupSearch) {
+        const q = this.followupSearch.toLowerCase();
+        list = list.filter(b =>
+          (b.contactName?.toLowerCase().includes(q) ||
+            b.contactNumber?.toLowerCase().includes(q) ||
+            b.companyName?.toLowerCase().includes(q) ||
+            (b.remarks && b.remarks.some(r => r.toLowerCase().includes(q))))
+        );
       }
-      return true;
-    });
+      this.filteredBookmarksFilteredCache = list;
+      this.lastFilteredBookmarksRefForFiltered = this.filteredBookmarks;
+      this.filteredBookmarksFilteredDepsStr = depsStr;
+    }
+    return this.filteredBookmarksFilteredCache;
+  }
+
+  lastFilteredBookmarksFilteredRefForGrouped: any[] | null = null;
+  groupedAllBookmarksCache: { company: string, count: number }[] = [];
+
+  get groupedAllBookmarks(): { company: string, count: number }[] {
+    if (this.lastFilteredBookmarksFilteredRefForGrouped !== this.filteredBookmarksFiltered) {
+      const groups: { [key: string]: number } = {};
+      this.filteredBookmarksFiltered.forEach(b => {
+        const co = b.companyName || 'Unnamed Company';
+        groups[co] = (groups[co] || 0) + 1;
+      });
+      this.groupedAllBookmarksCache = Object.keys(groups).map(co => ({
+        company: co,
+        count: groups[co]
+      })).sort((a, b) => a.company.localeCompare(b.company));
+      this.lastFilteredBookmarksFilteredRefForGrouped = this.filteredBookmarksFiltered;
+    }
+    return this.groupedAllBookmarksCache;
+  }
+
+  filteredBookmarksByGlobalCompanyDepsStr = '';
+  lastFilteredBookmarksFilteredRefForGlobal: any[] | null = null;
+  filteredBookmarksByGlobalCompanyCache: Bookmark[] = [];
+
+  get filteredBookmarksByGlobalCompany(): Bookmark[] {
+    if (!this.selectedGlobalFollowupCompany) return [];
+    const depsStr = this.selectedGlobalFollowupCompany;
+    if (this.lastFilteredBookmarksFilteredRefForGlobal !== this.filteredBookmarksFiltered || this.filteredBookmarksByGlobalCompanyDepsStr !== depsStr) {
+      this.filteredBookmarksByGlobalCompanyCache = this.filteredBookmarksFiltered.filter(b => (b.companyName || 'Unnamed Company') === this.selectedGlobalFollowupCompany);
+      this.lastFilteredBookmarksFilteredRefForGlobal = this.filteredBookmarksFiltered;
+      this.filteredBookmarksByGlobalCompanyDepsStr = depsStr;
+    }
+    return this.filteredBookmarksByGlobalCompanyCache;
   }
 
   // ── Support & RM ───────────────────────────────────────────
@@ -654,6 +820,10 @@ export class AppComponent implements OnInit {
   selectedEmpCalls: any[] = [];
   selectedEmpCallsLoading = false;
   drilldownTab: 'stats' | 'calls' | 'leads' | 'followups' = 'stats';
+  followupFilter: 'all' | 'today' = 'all';
+  selectedFollowupDate: string = '';
+  followupSearch: string = '';
+  selectedGlobalFollowupCompany: string = '';
 
   // ── Leads Management (Drilldown) ───────────────────────────
   empLeads: any[] = [];
@@ -902,9 +1072,20 @@ export class AppComponent implements OnInit {
     return `${s}s`;
   }
 
+  empMapCache: { [phone: string]: string } | null = null;
+  lastEmployeesRef: any[] | null = null;
+
   getEmployeeName(phone: string): string {
-    const emp = this.employees.find(e => e.mobile === phone);
-    return emp ? emp.name : phone;
+    if (this.lastEmployeesRef !== this.employees) {
+      this.empMapCache = {};
+      for (const e of this.employees) {
+        if (e.mobile) {
+          this.empMapCache[e.mobile] = e.name;
+        }
+      }
+      this.lastEmployeesRef = this.employees;
+    }
+    return this.empMapCache![phone] || phone;
   }
 
   fmtDate(d: string | undefined | null): string {
@@ -1315,6 +1496,10 @@ export class AppComponent implements OnInit {
     this.selectedEmpCallsLoading = true;
     this.drilldownTab = 'stats';
     this.dashTab = 'emp_dashboard';
+    this.selectedEmpFollowupCompany = '';
+    this.followupFilter = 'all';
+    this.followupSearch = '';
+    this.selectedFollowupDate = '';
 
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1355,11 +1540,8 @@ export class AppComponent implements OnInit {
     this.fetchEmpLeads();
     this.fetchCompanyBookmarks();
   }
+  
 
-  get selectedEmpBookmarks(): Bookmark[] {
-    if (!this.selectedEmployee) return [];
-    return this.allBookmarks.filter(b => b.employeePhone === this.selectedEmployee!.mobile);
-  }
 
   empDonutChart: Chart | null = null;
   renderEmpDonutChart(): void {
@@ -3126,6 +3308,7 @@ Thank You.`;
           const idx = this.allLeads.findIndex(l => l._id === lead._id);
           if (idx !== -1) {
             this.allLeads[idx] = this.normalizeLead(res.lead);
+            this.lastAllLeadsRef = null; // force map rebuild
           }
         }
       }
@@ -3156,23 +3339,40 @@ Thank You.`;
     });
   }
 
+  filteredLeadsDepsStr = '';
+  lastAllLeadsRefForFiltered: any[] | null = null;
+  filteredLeadsCache: any[] = [];
+
   get filteredLeads(): any[] {
-    return this.allLeads.filter(lead => {
-      const matchesSearch = !this.leadSearchQuery ||
-        (lead.contactName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase())) ||
-        (lead.contactNumber?.includes(this.leadSearchQuery)) ||
-        (lead.leadCompanyName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase()));
+    const depsStr = JSON.stringify([this.leadSearchQuery, this.leadEmployeeFilter]);
+    if (this.lastAllLeadsRefForFiltered !== this.allLeads || this.filteredLeadsDepsStr !== depsStr) {
+      this.filteredLeadsCache = this.allLeads.filter(lead => {
+        const matchesSearch = !this.leadSearchQuery ||
+          (lead.contactName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase())) ||
+          (lead.contactNumber?.includes(this.leadSearchQuery)) ||
+          (lead.leadCompanyName?.toLowerCase().includes(this.leadSearchQuery.toLowerCase()));
 
-      const matchesEmployee = !this.leadEmployeeFilter ||
-        lead.assignedEmployeePhone === this.leadEmployeeFilter;
+        const matchesEmployee = !this.leadEmployeeFilter ||
+          lead.assignedEmployeePhone === this.leadEmployeeFilter;
 
-      return matchesSearch && matchesEmployee;
-    });
+        return matchesSearch && matchesEmployee;
+      });
+      this.lastAllLeadsRefForFiltered = this.allLeads;
+      this.filteredLeadsDepsStr = depsStr;
+    }
+    return this.filteredLeadsCache;
   }
 
+  lastFilteredLeadsRefForUnique: any[] | null = null;
+  uniqueLeadCompaniesCache: string[] = [];
+
   get uniqueLeadCompanies(): string[] {
-    const companies = this.filteredLeads.map(l => l.leadCompanyName);
-    return [...new Set(companies)].sort();
+    if (this.lastFilteredLeadsRefForUnique !== this.filteredLeads) {
+      const companies = this.filteredLeads.map(l => l.leadCompanyName);
+      this.uniqueLeadCompaniesCache = [...new Set(companies)].sort();
+      this.lastFilteredLeadsRefForUnique = this.filteredLeads;
+    }
+    return this.uniqueLeadCompaniesCache;
   }
 
   // ── Remarks Filter Page ───────────────────────────────────────
@@ -3238,8 +3438,22 @@ Thank You.`;
     return this.empLeads.filter(l => (l.leadCompanyName || 'Unnamed Company') === this.selectedEmpLeadCompany);
   }
 
+  empLeadsByCompanyCache: { [company: string]: any[] } = {};
+  lastFilteredEmpLeadsRefForCompany: any[] | null = null;
+
   getEmpLeadsByCompany(company: string): any[] {
-    return this.filteredEmpLeads.filter(l => (l.leadCompanyName || 'Unnamed Company') === company);
+    if (this.lastFilteredEmpLeadsRefForCompany !== this.filteredEmpLeads) {
+      this.empLeadsByCompanyCache = {};
+      for (const l of this.filteredEmpLeads) {
+        const co = l.leadCompanyName || 'Unnamed Company';
+        if (!this.empLeadsByCompanyCache[co]) {
+          this.empLeadsByCompanyCache[co] = [];
+        }
+        this.empLeadsByCompanyCache[co].push(l);
+      }
+      this.lastFilteredEmpLeadsRefForCompany = this.filteredEmpLeads;
+    }
+    return this.empLeadsByCompanyCache[company] || [];
   }
 
   selectEmpLeadCompany(company: string): void {
@@ -3277,27 +3491,53 @@ Thank You.`;
     });
   }
 
+  normalizedBookmarkCounts: { [num: string]: number } | null = null;
+  normalizedCallCounts: { [num: string]: number } | null = null;
+  interactionCountCache: { [phone: string]: number } = {};
+
+  lastBookmarksRefForCount: any[] | null = null;
+  lastCallCountsRefForCount: any | null = null;
+
   getLeadInteractionCount(phone: string): number {
     if (!phone) return 0;
-    const cleanNum = phone.replace(/\D/g, '').slice(-10);
 
-    // Find bookmark by normalized number
-    const b = this.allBookmarks.find(bm => {
-      const bmNum = (bm.contactNumber || '').replace(/\D/g, '').slice(-10);
-      return bmNum === cleanNum;
-    });
-    const loggedCount = b?.remarks?.length || 0;
-
-    // Find call count by normalized number
-    let rawCount = 0;
-    Object.keys(this.leadCallCounts).forEach(key => {
-      const kNum = key.replace(/\D/g, '').slice(-10);
-      if (kNum === cleanNum) {
-        rawCount += this.leadCallCounts[key];
+    if (this.lastBookmarksRefForCount !== this.allBookmarks) {
+      this.normalizedBookmarkCounts = {};
+      for (const bm of this.allBookmarks) {
+        if (bm.contactNumber) {
+          const cleanNum = bm.contactNumber.replace(/\D/g, '').slice(-10);
+          if (this.normalizedBookmarkCounts[cleanNum] === undefined) {
+             this.normalizedBookmarkCounts[cleanNum] = bm.remarks?.length || 0;
+          }
+        }
       }
-    });
+      this.lastBookmarksRefForCount = this.allBookmarks;
+      this.interactionCountCache = {}; 
+    }
 
-    return loggedCount + rawCount;
+    if (this.lastCallCountsRefForCount !== this.leadCallCounts) {
+      this.normalizedCallCounts = {};
+      if (this.leadCallCounts) {
+        for (const key of Object.keys(this.leadCallCounts)) {
+          const cleanNum = key.replace(/\D/g, '').slice(-10);
+          this.normalizedCallCounts[cleanNum] = (this.normalizedCallCounts[cleanNum] || 0) + this.leadCallCounts[key];
+        }
+      }
+      this.lastCallCountsRefForCount = this.leadCallCounts;
+      this.interactionCountCache = {}; 
+    }
+
+    if (this.interactionCountCache[phone] !== undefined) {
+      return this.interactionCountCache[phone];
+    }
+
+    const cleanNum = phone.replace(/\D/g, '').slice(-10);
+    const bCount = this.normalizedBookmarkCounts![cleanNum] || 0;
+    const cCount = this.normalizedCallCounts![cleanNum] || 0;
+    
+    const total = bCount + cCount;
+    this.interactionCountCache[phone] = total;
+    return total;
   }
 
   viewAllRemarks(bookmark: any): void {
@@ -3621,6 +3861,12 @@ Thank You.`;
     this.drilldownTab = tab;
     if (tab === 'leads') {
       this.fetchEmpLeads();
+    }
+    if (tab === 'followups') {
+      this.fetchCompanyBookmarks();
+      if (!this.selectedEmpFollowupCompany && this.selectedEmpBookmarks.length > 0) {
+        this.selectedEmpFollowupCompany = this.selectedEmpBookmarks[0].companyName || 'Unnamed Company';
+      }
     }
     if (tab === 'stats' && this.selectedEmpStats) {
       setTimeout(() => {

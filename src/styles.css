@@ -121,3 +121,69 @@ body {
 .skeleton-title { height: 24px; margin-bottom: 12px; width: 40%; }
 .skeleton-card { background: white; border-radius: 20px; border: 1px solid #edf2f7; padding: 1.5rem; }
 .skeleton-circle { width: 40px; height: 40px; border-radius: 50%; }
+
+/* Modern Search and Date Picker UI */
+.date-input-wrap, .search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0 12px;
+  transition: all 0.2s ease;
+}
+
+.date-input-wrap:focus-within, .search-wrap:focus-within {
+  background: #ffffff;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+.date-input-wrap svg, .search-wrap svg.search-icon {
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.date-picker-input, .search-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 10px 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  outline: none;
+}
+
+.date-picker-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: 0.2s;
+}
+
+.date-picker-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.btn-edit-followup {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-edit-followup:hover {
+  color: #6366f1;
+  background: #f1f5f9;
+}
