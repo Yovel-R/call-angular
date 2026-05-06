@@ -74,4 +74,15 @@ export class LeadService {
   deleteLeadRemark(id: string, index: number): Observable<any> {
     return this.api.delete(`/api/leads/${id}/remarks/${index}`);
   }
+
+  getLeadHistory(companyCode: string, companyName?: string, contactNumber?: string): Observable<any> {
+    let url = `/api/history?companyCode=${encodeURIComponent(companyCode)}`;
+    if (companyName) {
+      url += `&companyName=${encodeURIComponent(companyName)}`;
+    }
+    if (contactNumber) {
+      url += `&contactNumber=${encodeURIComponent(contactNumber)}`;
+    }
+    return this.api.get(url);
+  }
 }

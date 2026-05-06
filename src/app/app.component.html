@@ -2570,9 +2570,18 @@
                 <div style="flex: 1; background: #ffffff; border: 1px solid #edf2f7; border-radius: 24px; padding: 1.5rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);">
                   
                   <div *ngIf="selectedEmpFollowupCompany" style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                    <h2 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: #0f172a; text-transform: uppercase;">
-                      {{ selectedEmpFollowupCompany }}
-                    </h2>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <h2 style="margin: 0; font-size: 1.25rem; font-weight: 900; color: #0f172a; text-transform: uppercase;">
+                        {{ selectedEmpFollowupCompany }}
+                      </h2>
+                      <button (click)="openHistory(getLeadByPhone(selectedEmpBookmarksByCompany[0].contactNumber)!)" *ngIf="selectedEmpBookmarksByCompany.length > 0 && getLeadByPhone(selectedEmpBookmarksByCompany[0].contactNumber)"
+                        style="background: #eef2ff; border: none; cursor: pointer; padding: 6px; border-radius: 8px; color: #6366f1; display: flex; align-items: center; transition: all 0.2s;" 
+                        onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="View Company Audit History">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                        </svg>
+                      </button>
+                    </div>
                     <span style="font-size: 0.75rem; color: #64748b; font-weight: 700; background: #f1f5f9; padding: 4px 12px; border-radius: 20px;">
                       {{ selectedEmpBookmarksByCompany.length }} FOLLOW-UPS
                     </span>
@@ -2943,7 +2952,16 @@
                     <path d="M16 14h.01"></path>
                   </svg>
                 </div>
-                <h3 class="cd-header-title">{{ selectedLeadCompany }}</h3>
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                  <h3 class="cd-header-title">{{ selectedLeadCompany }}</h3>
+                  <button (click)="openHistory(leadsInSelectedCompany[0])" *ngIf="leadsInSelectedCompany.length > 0"
+                    style="background: #eef2ff; border: none; cursor: pointer; padding: 6px; border-radius: 8px; color: #6366f1; display: flex; align-items: center; transition: all 0.2s;" 
+                    onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="View Company Audit History">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <div class="leads-grid"
@@ -3146,7 +3164,16 @@
                     <path d="M7 7h.01"/>
                   </svg>
                 </div>
-                <h3 class="cd-header-title">{{ selectedRemarksFilterCompany }}</h3>
+                <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                  <h3 class="cd-header-title">{{ selectedRemarksFilterCompany }}</h3>
+                  <button (click)="openHistory(remarksFilterLeadsInCompany[0])" *ngIf="remarksFilterLeadsInCompany.length > 0"
+                    style="background: #eef2ff; border: none; cursor: pointer; padding: 6px; border-radius: 8px; color: #6366f1; display: flex; align-items: center; transition: all 0.2s;" 
+                    onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="View Company Audit History">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <div class="leads-grid"
@@ -5220,5 +5247,65 @@
         {{ followupSaving ? 'Saving...' : (editingBookmarkId ? 'Update Follow Up' : 'Save Follow Up') }}
       </button>
     </div>
+  </div>
+</div>
+<!-- ══ HISTORY MODAL ══ -->
+<div class="modal-overlay" [class.open]="showHistoryModal" (click)="closeHistoryModal()">
+  <div class="modal history-modal" (click)="$event.stopPropagation()" style="max-width: 500px;">
+    <button class="modal-close" (click)="closeHistoryModal()">×</button>
+    <div style="margin-bottom: 1.5rem;">
+      <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: #6366f1;">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Activity History
+      </h3>
+      <div *ngIf="historyLead" style="margin-top: 4px; font-size: 0.85rem; color: #64748b; font-weight: 600;">
+        {{ historyLead.contactName }} • {{ historyLead.contactNumber }}
+      </div>
+    </div>
+
+    <div *ngIf="historyLoading" style="padding: 3rem 0; text-align: center; color: #94a3b8;">
+      <div class="spinner-small" style="margin: 0 auto 12px; width: 24px; height: 24px; border-width: 3px;"></div>
+      <p style="font-size: 0.9rem; font-weight: 600;">Fetching logs...</p>
+    </div>
+
+    <div *ngIf="!historyLoading && historyLogs.length === 0" style="padding: 3rem 1rem; text-align: center; color: #94a3b8; background: #f8fafc; border-radius: 16px;">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.3; margin-bottom: 1rem;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <p style="font-size: 0.9rem; font-weight: 600;">No history logs found for this lead.</p>
+    </div>
+
+    <div class="history-timeline" *ngIf="!historyLoading && historyLogs.length > 0">
+      <div class="timeline-item" *ngFor="let log of historyLogs">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <div style="display: flex; flex-direction: column;">
+              <span class="timeline-action">{{ log.action }}</span>
+              <span *ngIf="log.contactName" style="font-size: 0.75rem; color: #6366f1; font-weight: 700;">{{ log.contactName }}</span>
+            </div>
+            <span class="timeline-time">{{ (log.createdAt || log.timestamp) | date:'MMM d, h:mm a' }}</span>
+          </div>
+          <div class="timeline-details" *ngIf="log.oldValue || log.newValue">
+            <span class="old-val" *ngIf="log.oldValue">{{ log.oldValue }}</span>
+            <svg *ngIf="log.oldValue && log.newValue" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="color: #94a3b8;"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            <span class="new-val" *ngIf="log.newValue">{{ log.newValue }}</span>
+          </div>
+          <div class="timeline-extra" *ngIf="log.details || log.metadata?.remark">
+            {{ log.details || log.metadata?.remark }}
+          </div>
+          <div class="timeline-actor" *ngIf="log.changedBy">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            {{ log.action === 'Lead Created' && log.changedBy === 'System (Legacy)' ? 'INITIAL DATA' : 'BY: ' + log.changedBy }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="cta-primary" (click)="closeHistoryModal()" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; border-radius: 12px; justify-content: center;">
+      Close History
+    </button>
   </div>
 </div>

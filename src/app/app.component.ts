@@ -305,6 +305,85 @@ export class AppComponent implements OnInit {
 
   selectedEmpFollowupCompany: string = '';
 
+  // ── History Modal ─────────────────────────────────────────────
+  showHistoryModal = false;
+  historyLogs: any[] = [];
+  historyLoading = false;
+  historyLead: Lead | null = null;
+
+  openHistory(lead: Lead): void {
+    if (!this.dashboardCode || !lead.contactNumber) return;
+    this.historyLead = lead;
+    this.historyLogs = [];
+    this.historyLoading = true;
+    this.showHistoryModal = true;
+    this.updateScrollLock();
+
+    this.leadService.getLeadHistory(lead.companyCode, lead.leadCompanyName).subscribe({
+      next: res => {
+        this.historyLoading = false;
+        if (res.success) {
+          this.historyLogs = res.logs;
+
+          const companyLeads = this.allLeads.filter(l => l.companyCode === lead.companyCode && l.leadCompanyName === lead.leadCompanyName);
+
+          companyLeads.forEach((cL: Lead) => {
+            // 1. Fallback for "Lead Created" for each director
+            const hasCreated = this.historyLogs.some(l => 
+              l.action.toLowerCase().includes('created') && 
+              l.contactNumber === cL.contactNumber
+            );
+            if (!hasCreated && cL.createdAt) {
+              this.historyLogs.push({
+                action: 'Lead Created',
+                contactNumber: cL.contactNumber,
+                contactName: cL.contactName,
+                createdAt: cL.createdAt,
+                changedBy: 'System (Legacy)',
+                newValue: cL.status || 'New'
+              });
+            }
+
+            // 2. Fallback for legacy Remarks for each director
+            if (cL.remarks && Array.isArray(cL.remarks)) {
+              const loggedRemarks = new Set(
+                this.historyLogs
+                  .filter(l => l.action === 'Remark Added' && l.contactNumber === cL.contactNumber)
+                  .map(l => l.newValue)
+              );
+
+              cL.remarks.forEach((rem: string) => {
+                if (rem && !loggedRemarks.has(rem)) {
+                  this.historyLogs.push({
+                    action: 'Legacy Remark',
+                    contactNumber: cL.contactNumber,
+                    contactName: cL.contactName,
+                    createdAt: cL.createdAt,
+                    changedBy: 'System (Legacy)',
+                    metadata: { remark: rem }
+                  });
+                }
+              });
+            }
+          });
+
+          // 3. Final Sort
+          this.historyLogs.sort((a, b) => new Date(b.createdAt || b.timestamp).getTime() - new Date(a.createdAt || a.timestamp).getTime());
+        }
+      },
+      error: () => {
+        this.historyLoading = false;
+      }
+    });
+  }
+
+  closeHistoryModal(): void {
+    this.showHistoryModal = false;
+    this.historyLead = null;
+    this.historyLogs = [];
+    this.updateScrollLock();
+  }
+
   selectedEmpBookmarksDepsStr = '';
   lastAllBookmarksRefForEmp: any[] | null = null;
   selectedEmpBookmarksCache: Bookmark[] = [];
