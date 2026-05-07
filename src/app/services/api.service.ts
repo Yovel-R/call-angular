@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
-  readonly baseUrl = 'https://softrate-call.onrender.com';
-  // readonly baseUrl = 'http://localhost:4000';
+  readonly baseUrl = environment.apiBaseUrl;
 
   private jsonHeaders = new HttpHeaders({ 'Content-Type': 'application/json' });
 
