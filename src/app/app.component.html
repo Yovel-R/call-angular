@@ -1640,25 +1640,52 @@
             <div class="chart-card dark flex-1 animate-fade-in-up stagger-5 admin-statistics-card">
 
               <!-- Card header -->
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
-                <div>
-                  <h3
-                    style="font-size:1.15rem;color:var(--text-1);margin:0 0 0.6rem 0;font-family:var(--font-head);font-weight:700;">
-                    Statistics</h3>
-                  <div style="display:flex;gap:2rem;">
+              <div class="admin-statistics-header">
+                <div class="admin-statistics-kpis">
+                  <h3>Statistics</h3>
+                  <div class="admin-statistics-metrics">
                     <div>
-                      <div
-                        style="font-size:1.4rem;font-weight:700;color:var(--text-1);font-family:var(--font-head);line-height:1.2;">
-                        {{ summaryStats.total }}</div>
-                      <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Total Calls</div>
+                      <div class="admin-statistics-value">{{ summaryStats.total }}</div>
+                      <div class="admin-statistics-label">Total Calls</div>
                     </div>
                     <div>
-                      <div
-                        style="font-size:1.4rem;font-weight:700;color:var(--text-1);font-family:var(--font-head);line-height:1.2;">
-                        {{ fmtAvgDur(summaryStats.totalDuration, summaryStats.connected) }}</div>
-                      <div style="font-size:0.8rem;color:var(--text-2);margin-top:2px;">Avg Duration</div>
+                      <div class="admin-statistics-value">{{ fmtAvgDur(summaryStats.totalDuration, summaryStats.connected) }}</div>
+                      <div class="admin-statistics-label">Avg Duration</div>
                     </div>
                   </div>
+                </div>
+                <div class="admin-stat-toolbar" role="tablist" aria-label="Statistics views">
+                  <button type="button" class="admin-stat-icon-btn"
+                    [class.active]="adminStatsView === 'overview'"
+                    (click)="setAdminStatsView('overview')" title="Overview">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a9 9 0 1 1-9-9"></path>
+                      <path d="M12 3v9h9"></path>
+                    </svg>
+                  </button>
+                  <button type="button" class="admin-stat-icon-btn"
+                    [class.active]="adminStatsView === 'bars'"
+                    (click)="setAdminStatsView('bars')" title="Distribution">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 20V4"></path>
+                      <path d="M8 20v-6"></path>
+                      <path d="M12 20v-10"></path>
+                      <path d="M16 20V8"></path>
+                      <path d="M20 20v-3"></path>
+                    </svg>
+                  </button>
+                  <button type="button" class="admin-stat-icon-btn"
+                    [class.active]="adminStatsView === 'grid'"
+                    (click)="setAdminStatsView('grid')" title="Summary grid">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 6h16"></path>
+                      <path d="M4 12h16"></path>
+                      <path d="M4 18h16"></path>
+                    </svg>
+                  </button>
                 </div>
               </div>
 
@@ -1694,7 +1721,7 @@
               </div>
 
               <!-- Chart body: centered donut + legend grid -->
-              <div class="stats-chart-body">
+              <div class="stats-chart-body" *ngIf="adminStatsView === 'overview'">
                 <div class="donut-chart-wrap">
                   <canvas id="donutChart" width="160" height="160"></canvas>
                   <div class="donut-center-label">
@@ -1711,6 +1738,58 @@
                       class="lg-label">Missed</span><span class="lg-val">{{ summaryStats.missed }}</span></div>
                   <div class="legend-item"><span class="lg-dot" style="background:#f59e0b;"></span><span
                       class="lg-label">Rej</span><span class="lg-val">{{ summaryStats.rejected }}</span></div>
+                </div>
+              </div>
+
+              <div class="admin-stats-bars" *ngIf="adminStatsView === 'bars'">
+                <div class="admin-stats-bars-row">
+                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#3b82f6;"></span>Incoming</div>
+                  <div class="admin-stats-bars-track"><i style="background:#3b82f6;" [style.width.%]="adminIncomingShare"></i></div>
+                  <div class="admin-stats-bars-value">{{ summaryStats.incoming }}</div>
+                </div>
+                <div class="admin-stats-bars-row">
+                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#22c55e;"></span>Outgoing</div>
+                  <div class="admin-stats-bars-track"><i style="background:#22c55e;" [style.width.%]="adminOutboundShare"></i></div>
+                  <div class="admin-stats-bars-value">{{ summaryStats.outgoing }}</div>
+                </div>
+                <div class="admin-stats-bars-row">
+                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#f87171;"></span>Missed</div>
+                  <div class="admin-stats-bars-track"><i style="background:#f87171;" [style.width.%]="adminMissedRate"></i></div>
+                  <div class="admin-stats-bars-value">{{ summaryStats.missed }}</div>
+                </div>
+                <div class="admin-stats-bars-row">
+                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#f59e0b;"></span>Rejected</div>
+                  <div class="admin-stats-bars-track"><i style="background:#f59e0b;" [style.width.%]="adminRejectedRate"></i></div>
+                  <div class="admin-stats-bars-value">{{ summaryStats.rejected }}</div>
+                </div>
+              </div>
+
+              <div class="admin-stats-grid-view" *ngIf="adminStatsView === 'grid'">
+                <div class="admin-stat-grid-card">
+                  <span>Connect Rate</span>
+                  <strong>{{ adminConnectRate }}%</strong>
+                </div>
+                <div class="admin-stat-grid-card">
+                  <span>Outbound Share</span>
+                  <strong>{{ adminOutboundShare }}%</strong>
+                </div>
+                <div class="admin-stat-grid-card">
+                  <span>Peak Window</span>
+                  <strong>{{ adminPeakActivity.label }}</strong>
+                  <small>{{ adminPeakActivity.count }} calls</small>
+                </div>
+                <div class="admin-stat-grid-card">
+                  <span>Active Reps</span>
+                  <strong>{{ adminActiveEmployeeCount }}</strong>
+                  <small>{{ adminAvgCallsPerActiveEmployee }} calls / rep</small>
+                </div>
+                <div class="admin-stat-grid-card">
+                  <span>Top Performer</span>
+                  <strong>{{ adminTopPerformerName }}</strong>
+                </div>
+                <div class="admin-stat-grid-card">
+                  <span>Exceptions</span>
+                  <strong>{{ (summaryStats.missed || 0) + (summaryStats.rejected || 0) }}</strong>
                 </div>
               </div>
             </div>

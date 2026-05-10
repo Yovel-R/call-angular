@@ -975,6 +975,7 @@ export class AppComponent implements OnInit {
 
   overviewChartType: 'pie' | 'bar' = 'pie';
   overviewChart: Chart | null = null;
+  adminStatsView: 'overview' | 'bars' | 'grid' = 'overview';
   timelineChart: Chart | null = null;
   donutChart: Chart | null = null;
   timelineData: any[] = [];
@@ -1757,6 +1758,10 @@ export class AppComponent implements OnInit {
   setOverviewChartType(type: 'pie' | 'bar'): void {
     this.overviewChartType = type;
     this.renderOverviewChart();
+  }
+
+  setAdminStatsView(view: 'overview' | 'bars' | 'grid'): void {
+    this.adminStatsView = view;
   }
 
   // ── Chart renderers ───────────────────────────────────────

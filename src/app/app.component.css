@@ -11150,6 +11150,191 @@ body,
   font-weight: 750 !important;
 }
 
+.dashboard-wrapper .kpi-label {
+  color: #6f7785 !important;
+  font-family: var(--font-body, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif) !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+.dashboard-wrapper .kpi-val {
+  color: var(--crm-ink) !important;
+  font-family: var(--font-mono, "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace) !important;
+  font-size: clamp(30px, 2vw, 42px) !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.06em !important;
+  line-height: 1 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.dashboard-wrapper .admin-statistics-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 20px !important;
+  margin-bottom: 0 !important;
+}
+
+.dashboard-wrapper .admin-statistics-kpis {
+  min-width: 0 !important;
+}
+
+.dashboard-wrapper .admin-statistics-kpis h3 {
+  margin: 0 0 14px !important;
+  color: var(--crm-ink) !important;
+  font-family: var(--font-body, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif) !important;
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.dashboard-wrapper .admin-statistics-metrics {
+  display: flex !important;
+  gap: 32px !important;
+  flex-wrap: wrap !important;
+}
+
+.dashboard-wrapper .admin-statistics-value {
+  color: var(--crm-ink) !important;
+  font-family: var(--font-mono, "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace) !important;
+  font-size: 22px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.05em !important;
+  line-height: 1.1 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.dashboard-wrapper .admin-statistics-label {
+  color: #667085 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  margin-top: 4px !important;
+}
+
+.dashboard-wrapper .admin-stat-toolbar {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 6px !important;
+  border: 1px solid var(--crm-line) !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  flex-shrink: 0 !important;
+}
+
+.dashboard-wrapper .admin-stat-icon-btn {
+  width: 36px !important;
+  height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #667085 !important;
+  cursor: pointer !important;
+  transition: background 140ms ease, color 140ms ease, transform 140ms ease !important;
+}
+
+.dashboard-wrapper .admin-stat-icon-btn:hover {
+  background: #f4f4f5 !important;
+  color: #111827 !important;
+  transform: translateY(-1px) !important;
+}
+
+.dashboard-wrapper .admin-stat-icon-btn.active {
+  background: #111827 !important;
+  color: #fff !important;
+}
+
+.dashboard-wrapper .admin-stats-bars {
+  display: grid !important;
+  gap: 16px !important;
+  padding-top: 8px !important;
+}
+
+.dashboard-wrapper .admin-stats-bars-row {
+  display: grid !important;
+  grid-template-columns: 140px minmax(0, 1fr) max-content !important;
+  align-items: center !important;
+  gap: 16px !important;
+}
+
+.dashboard-wrapper .admin-stats-bars-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #475467 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.dashboard-wrapper .admin-stats-bars-track {
+  position: relative !important;
+  height: 10px !important;
+  border-radius: 999px !important;
+  background: #edf2f7 !important;
+  overflow: hidden !important;
+}
+
+.dashboard-wrapper .admin-stats-bars-track i {
+  display: block !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+}
+
+.dashboard-wrapper .admin-stats-bars-value {
+  color: var(--crm-ink) !important;
+  font-family: var(--font-mono, "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace) !important;
+  font-size: 15px !important;
+  font-weight: 750 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.dashboard-wrapper .admin-stats-grid-view {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  padding-top: 6px !important;
+}
+
+.dashboard-wrapper .admin-stat-grid-card {
+  min-height: 118px !important;
+  padding: 18px 20px !important;
+  border: 1px solid var(--crm-line) !important;
+  border-radius: 8px !important;
+  background: linear-gradient(180deg, #fff 0%, #fafbfc 100%) !important;
+}
+
+.dashboard-wrapper .admin-stat-grid-card span {
+  display: block !important;
+  color: #6f7785 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+.dashboard-wrapper .admin-stat-grid-card strong {
+  display: block !important;
+  margin-top: 12px !important;
+  color: var(--crm-ink) !important;
+  font-family: var(--font-body, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif) !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+}
+
+.dashboard-wrapper .admin-stat-grid-card small {
+  display: block !important;
+  margin-top: 6px !important;
+  color: #667085 !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
 @media (max-width: 1280px) {
   .dashboard-wrapper .charts-row,
   .dashboard-wrapper .leads-container {
@@ -11184,5 +11369,21 @@ body,
   .dashboard-wrapper .admin-statistics-card,
   .dashboard-wrapper .admin-employees-card {
     padding: 24px !important;
+  }
+
+  .dashboard-wrapper .admin-statistics-header,
+  .dashboard-wrapper .admin-stats-bars-row,
+  .dashboard-wrapper .admin-statistics-metrics {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  .dashboard-wrapper .admin-stat-toolbar {
+    margin-top: 2px !important;
+  }
+
+  .dashboard-wrapper .admin-stats-grid-view {
+    grid-template-columns: 1fr !important;
   }
 }
