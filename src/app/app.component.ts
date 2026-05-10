@@ -771,14 +771,13 @@ export class AppComponent implements OnInit {
     this.showShareModal = false;
     this.isAddEmployeeOpen = false;
     this.isEditEmployeeOpen = false;
-    this.isGlobalImportOpen = false;
     this.showAllCallsModal = false;
     this.isLogoutConfirmOpen = false;
     this.updateScrollLock();
   }
 
   updateScrollLock(): void {
-    const isAnyModalOpen = this.isLoginOpen || this.isSignupOpen || this.isForgotPwdOpen || this.isResetPwdOpen || this.isAddEmployeeOpen || this.isEditEmployeeOpen || this.isGlobalImportOpen || this.showAllCallsModal || this.isLogoutConfirmOpen || this.showFollowupModal;
+    const isAnyModalOpen = this.isLoginOpen || this.isSignupOpen || this.isForgotPwdOpen || this.isResetPwdOpen || this.isAddEmployeeOpen || this.isEditEmployeeOpen || this.showAllCallsModal || this.isLogoutConfirmOpen || this.showFollowupModal;
     if (isAnyModalOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -927,9 +926,6 @@ export class AppComponent implements OnInit {
   excelHeaders: string[] = [];
   leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', companyDescription: '' };
   batchDefaultStatus = 'New';
-  isGlobalImportOpen = false;
-  importTargetEmployee: Employee | null = null;
-  importEmployeeSearch = '';
   newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', status: 'New', companyDescription: '' };
   addLeadLoading = false;
   addLeadError = '';
@@ -1200,20 +1196,6 @@ export class AppComponent implements OnInit {
 
   get adminSelectedPeriodLabel(): string {
     return this.periods.find(p => p.key === this.selectedPeriod)?.label || 'Selected period';
-  }
-
-  get activeLeadImportEmployee(): Employee | null {
-    return this.importTargetEmployee || this.selectedEmployee;
-  }
-
-  get filteredImportEmployees(): Employee[] {
-    const query = this.importEmployeeSearch.trim().toLowerCase();
-    if (!query) return this.employees;
-    return this.employees.filter(emp =>
-      (emp.name || '').toLowerCase().includes(query) ||
-      (emp.mobile || '').toLowerCase().includes(query) ||
-      (emp.employeeCode || '').toLowerCase().includes(query)
-    );
   }
 
   get adminActiveEmployeeCount(): number {
@@ -2720,46 +2702,6 @@ export class AppComponent implements OnInit {
   }
   closeAddEmployee(): void { this.isAddEmployeeOpen = false; }
 
-  private resetLeadImportDraft(): void {
-    this.leadUploadStep = 'idle';
-    this.parsedExcelData = [];
-    this.excelHeaders = [];
-    this.leadColumnMapping = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', companyDescription: '' };
-    this.batchDefaultStatus = 'New';
-    this.newLeadSetLabel = '';
-    this.addLeadError = '';
-    this.addLeadSuccess = '';
-    this.addLeadLoading = false;
-  }
-
-  openGlobalImportLeads(): void {
-    this.closeModals();
-    this.resetLeadImportDraft();
-    this.importTargetEmployee = null;
-    this.importEmployeeSearch = '';
-    this.isGlobalImportOpen = true;
-    if (!this.employees.length && this.dashboardCode) this.fetchEmployees();
-    this.updateScrollLock();
-  }
-
-  closeGlobalImportLeads(): void {
-    this.isGlobalImportOpen = false;
-    this.importTargetEmployee = null;
-    this.importEmployeeSearch = '';
-    this.resetLeadImportDraft();
-    this.updateScrollLock();
-  }
-
-  selectImportTargetEmployee(emp: Employee): void {
-    this.importTargetEmployee = emp;
-    this.addLeadError = '';
-    if (this.leadUploadStep !== 'idle') {
-      this.parsedExcelData = [];
-      this.excelHeaders = [];
-      this.leadUploadStep = 'idle';
-    }
-  }
-
   onAddEmployeeSubmit(event: Event): void {
     event.preventDefault();
     this.addEmployeeError = '';
@@ -4020,12 +3962,6 @@ Thank You.`;
     const file = event.target.files[0];
     if (!file) return;
 
-    if (!this.activeLeadImportEmployee) {
-      this.addLeadError = 'Select an employee before uploading leads.';
-      event.target.value = null;
-      return;
-    }
-
     this.addLeadError = '';
     this.leadUploadStep = 'mapping';
     this.parsedExcelData = [];
@@ -4093,14 +4029,6 @@ Thank You.`;
   }
 
   confirmLeadMapping(): void {
-    const targetEmployee = this.activeLeadImportEmployee;
-    if (!targetEmployee) {
-      this.addLeadError = 'Select an employee before importing leads.';
-      this.leadUploadStep = 'mapping';
-      this.addLeadLoading = false;
-      return;
-    }
-
     if (!this.leadColumnMapping.contactNumber || !this.leadColumnMapping.leadCompanyName) {
       this.addLeadError = 'Contact Number and Company Name columns must be mapped.';
       return;
@@ -4128,7 +4056,7 @@ Thank You.`;
 
         return {
           companyCode: this.dashboardCode,
-          assignedEmployeePhone: targetEmployee.mobile,
+          assignedEmployeePhone: this.selectedEmployee!.mobile,
           contactNumber,
           leadCompanyName,
           contactName,
@@ -4158,7 +4086,7 @@ Thank You.`;
         if (res.success) {
           this.addLeadSuccess = `Successfully mapped and imported ${res.count} leads!`;
           this.leadUploadStep = 'idle';
-          if (this.selectedEmployee?.mobile === targetEmployee.mobile) this.fetchEmpLeads();
+          this.fetchEmpLeads();
           setTimeout(() => this.addLeadSuccess = '', 4000);
         } else {
           this.addLeadError = res.message || 'Bulk upload failed.';
