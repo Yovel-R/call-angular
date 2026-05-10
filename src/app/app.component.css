@@ -10429,3 +10429,252 @@ body,
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
+
+.global-import-modal {
+  width: min(1080px, calc(100vw - 32px));
+  max-height: calc(100vh - 52px);
+  overflow: auto;
+  padding: 28px;
+  border-radius: 8px;
+}
+
+.global-import-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.global-import-eyebrow,
+.global-panel-title span,
+.global-import-target span {
+  color: #6b7280;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.global-import-header h2 {
+  margin: 6px 0 4px;
+  color: #111827;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.global-import-header p,
+.global-panel-title p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.global-import-target {
+  min-width: 210px;
+  display: grid;
+  gap: 3px;
+  align-content: center;
+  padding-left: 18px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.global-import-target strong,
+.global-employee-option strong {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.global-import-target em,
+.global-employee-option em {
+  color: #6b7280;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.global-import-grid {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.global-import-panel {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fff;
+  padding: 18px;
+}
+
+.global-panel-title {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.global-panel-title span {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #111827;
+  border-radius: 4px;
+  color: #111827;
+}
+
+.global-panel-title strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.global-import-search,
+.global-map-row input,
+.global-map-row select {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid #dfe5ee;
+  border-radius: 4px;
+  background: #fff;
+  color: #111827;
+  font-size: 13px;
+}
+
+.global-import-search {
+  padding: 0 12px;
+  margin-bottom: 12px;
+}
+
+.global-employee-list {
+  display: grid;
+  gap: 8px;
+  max-height: 430px;
+  overflow: auto;
+}
+
+.global-employee-option {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.global-employee-option > span {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: #111827;
+  color: #fff;
+  font-weight: 800;
+}
+
+.global-employee-option.active {
+  border-color: #2563eb;
+  background: #f8fbff;
+}
+
+.global-upload-drop {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  border: 1px dashed #aeb7c5;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #111827;
+  cursor: pointer;
+}
+
+.global-upload-drop span {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.global-upload-drop.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.global-mapping-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.global-map-row {
+  display: grid;
+  gap: 5px;
+}
+
+.global-map-row label {
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.global-map-full,
+.global-import-actions,
+.global-import-empty,
+.global-import-success,
+.global-mapping-box .form-error {
+  grid-column: 1 / -1;
+}
+
+.global-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.global-import-actions button {
+  min-width: 130px;
+}
+
+.global-import-empty {
+  color: #b45309;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.global-import-success {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 4px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .global-import-header,
+  .global-import-grid {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .global-import-target {
+    border-left: 0;
+    border-top: 1px solid #e5e7eb;
+    padding: 14px 0 0;
+  }
+}

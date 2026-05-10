@@ -1303,7 +1303,7 @@
         <div class="sidebar-separator sidebar-separator-tight"></div>
         <div class="sidebar-header sidebar-header-quick" *ngIf="!sidebarMinimized">Quick Access</div>
 
-        <button class="sidebar-item sidebar-action" (click)="switchTab('employees')" [title]="sidebarMinimized ? 'Import Leads' : ''">
+        <button class="sidebar-item sidebar-action" (click)="openGlobalImportLeads()" [title]="sidebarMinimized ? 'Import Leads' : ''">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -5049,6 +5049,166 @@
         {{ addEmployeeLoading ? 'Adding...' : 'Add Employee' }}
       </button>
     </form>
+  </div>
+</div>
+
+<!-- ========== GLOBAL IMPORT LEADS MODAL ========== -->
+<div class="modal-overlay" [class.open]="isGlobalImportOpen" (click)="closeGlobalImportLeads()">
+  <div class="modal global-import-modal" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeGlobalImportLeads()">&#x2715;</button>
+
+    <div class="global-import-header">
+      <div>
+        <span class="global-import-eyebrow">Admin action</span>
+        <h2>Import Leads</h2>
+        <p>Select an employee, upload Excel, map columns, and assign the batch.</p>
+      </div>
+      <div class="global-import-target" *ngIf="importTargetEmployee">
+        <span>Target employee</span>
+        <strong>{{ importTargetEmployee.name }}</strong>
+        <em>{{ importTargetEmployee.mobile }}</em>
+      </div>
+    </div>
+
+    <div class="global-import-grid">
+      <section class="global-import-panel employee-picker-panel">
+        <div class="global-panel-title">
+          <span>1</span>
+          <div>
+            <strong>Select employee</strong>
+            <p>Leads from this file will be assigned to this user.</p>
+          </div>
+        </div>
+
+        <input class="global-import-search" type="text" [(ngModel)]="importEmployeeSearch"
+          placeholder="Search employee name, mobile, or code...">
+
+        <div class="global-employee-list">
+          <button type="button" *ngFor="let emp of filteredImportEmployees" class="global-employee-option"
+            [class.active]="importTargetEmployee?.mobile === emp.mobile" (click)="selectImportTargetEmployee(emp)">
+            <span>{{ emp.name.charAt(0).toUpperCase() }}</span>
+            <div>
+              <strong>{{ emp.name }}</strong>
+              <em>{{ emp.mobile }} <ng-container *ngIf="emp.employeeCode">· #{{ emp.employeeCode }}</ng-container></em>
+            </div>
+          </button>
+          <div class="global-import-empty" *ngIf="!employeesLoading && filteredImportEmployees.length === 0">
+            No employees found.
+          </div>
+          <div class="global-import-empty" *ngIf="employeesLoading">Loading employees...</div>
+        </div>
+      </section>
+
+      <section class="global-import-panel import-mapping-panel">
+        <div class="global-panel-title">
+          <span>2</span>
+          <div>
+            <strong>Upload and map file</strong>
+            <p>{{ parsedExcelData.length ? parsedExcelData.length + ' rows found' : 'Excel .xlsx or .xls supported' }}</p>
+          </div>
+        </div>
+
+        <div class="form-error" *ngIf="addLeadError">{{ addLeadError }}</div>
+        <div class="global-import-success" *ngIf="addLeadSuccess">✓ {{ addLeadSuccess }}</div>
+
+        <label class="global-upload-drop" [class.disabled]="!importTargetEmployee || leadUploadStep === 'uploading'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <strong>{{ importTargetEmployee ? 'Upload Excel file' : 'Select employee first' }}</strong>
+          <span>File will import into {{ importTargetEmployee?.name || 'selected employee' }}</span>
+          <input type="file" (change)="onLeadExcelUpload($event)" accept=".xlsx, .xls"
+            [disabled]="!importTargetEmployee || leadUploadStep === 'uploading'" style="display:none;">
+        </label>
+
+        <div class="global-mapping-box" *ngIf="leadUploadStep === 'mapping' || leadUploadStep === 'uploading'">
+          <div class="global-map-row global-map-full">
+            <label>Set / Batch Label *</label>
+            <input type="text" [(ngModel)]="newLeadSetLabel" list="globalExistingLeadSets"
+              placeholder='e.g. "Real Estate Leads" or "May 2026 Import"'>
+            <datalist id="globalExistingLeadSets">
+              <option *ngFor="let set of leadSets" [value]="set">{{ set }}</option>
+            </datalist>
+          </div>
+
+          <div class="global-map-row">
+            <label>Company Name *</label>
+            <select [(ngModel)]="leadColumnMapping.leadCompanyName">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="global-map-row">
+            <label>Contact Number *</label>
+            <select [(ngModel)]="leadColumnMapping.contactNumber">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="global-map-row">
+            <label>First Name *</label>
+            <select [(ngModel)]="leadColumnMapping.firstName">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="global-map-row">
+            <label>Last Name</label>
+            <select [(ngModel)]="leadColumnMapping.lastName">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="global-map-row">
+            <label>Division</label>
+            <select [(ngModel)]="leadColumnMapping.mainDivisionDescription">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="global-map-row">
+            <label>Email</label>
+            <select [(ngModel)]="leadColumnMapping.directorEmailAddress">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="global-map-row">
+            <label>Remarks</label>
+            <select [(ngModel)]="leadColumnMapping.remarks">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+          <div class="global-map-row">
+            <label>Status *</label>
+            <select [(ngModel)]="batchDefaultStatus">
+              <option *ngFor="let s of settingsLeadStatuses" [value]="s">{{ s }}</option>
+            </select>
+          </div>
+          <div class="global-map-row global-map-full">
+            <label>Company Description</label>
+            <select [(ngModel)]="leadColumnMapping.companyDescription">
+              <option value="">-- Select --</option>
+              <option *ngFor="let h of excelHeaders" [value]="h">{{ h }}</option>
+            </select>
+          </div>
+
+          <div class="global-import-actions">
+            <button class="btn-login" type="button" (click)="cancelLeadMapping()"
+              [disabled]="leadUploadStep === 'uploading'">Cancel</button>
+            <button class="cta-primary" type="button" (click)="confirmLeadMapping()"
+              [disabled]="addLeadLoading || !importTargetEmployee || !newLeadSetLabel.trim()">
+              {{ addLeadLoading ? 'Importing...' : 'Start Import' }}
+            </button>
+          </div>
+          <div class="global-import-empty" *ngIf="!newLeadSetLabel.trim()">Enter a set label before importing.</div>
+        </div>
+      </section>
+    </div>
   </div>
 </div>
 
