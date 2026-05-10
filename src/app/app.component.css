@@ -9559,9 +9559,9 @@ body,
 .dashboard-wrapper .top-list-table th,
 .dashboard-wrapper .period-toggle-pill button,
 .dashboard-wrapper .period-tabs button {
-  letter-spacing: 0.12em !important;
+  letter-spacing: 0.15em !important;
   text-transform: uppercase !important;
-  font-size: 10.5px !important;
+  font-size: 10px !important;
   font-weight: 800 !important;
   color: var(--admin-muted) !important;
 }
@@ -9604,29 +9604,30 @@ body,
 }
 
 .admin-profile-trigger {
-  min-width: 224px;
-  height: 42px;
+  min-width: 196px;
+  height: 52px;
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) 14px;
+  grid-template-columns: 34px minmax(0, 1fr) 14px;
   align-items: center;
   gap: 10px;
-  padding: 5px 10px 5px 6px;
-  border: 1px solid var(--admin-line);
-  border-radius: 4px;
-  background: var(--admin-surface);
+  padding: 6px 8px 6px 0;
+  border: 0;
+  border-left: 1px solid var(--admin-line);
+  border-radius: 0;
+  background: transparent;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease;
 }
 
 .admin-profile-trigger:hover,
 .admin-profile-menu[open] .admin-profile-trigger {
-  border-color: #111827;
-  background: #fff;
+  border-color: var(--admin-line);
+  background: #f8fafc;
 }
 
 .admin-avatar {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -9655,7 +9656,7 @@ body,
 .admin-profile-name {
   overflow: hidden;
   color: var(--admin-ink);
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 800;
   line-height: 1.2;
   text-overflow: ellipsis;
@@ -9665,8 +9666,9 @@ body,
 .admin-profile-code {
   color: var(--admin-muted);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
+  opacity: 0.4;
 }
 
 .admin-profile-chevron {
@@ -9835,6 +9837,8 @@ body,
   font-size: 11px !important;
   font-weight: 800 !important;
   line-height: 1.2 !important;
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .dashboard-wrapper .kpi-semantic-icon {
@@ -9896,8 +9900,10 @@ body,
 
 .dashboard-wrapper .donut-center-val {
   color: var(--admin-ink) !important;
-  font-size: 23px !important;
-  font-weight: 850 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 24px !important;
+  font-weight: 800 !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 .dashboard-wrapper .donut-center-sub {
@@ -9937,8 +9943,10 @@ body,
 
 .dashboard-wrapper .lg-label {
   color: #52525b !important;
-  font-size: 12px !important;
-  font-weight: 650 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.15em !important;
+  text-transform: uppercase !important;
 }
 
 .dashboard-wrapper .lg-val {
@@ -10134,6 +10142,7 @@ body,
 
 .dashboard-wrapper .stat-value-v2 {
   color: var(--admin-ink) !important;
+  font-family: var(--font-mono) !important;
   font-size: 30px !important;
   font-weight: 700 !important;
   letter-spacing: -0.03em !important;
@@ -10155,13 +10164,13 @@ body,
 }
 
 .dashboard-wrapper .sidebar-item.active::before {
-  background: #111827 !important;
+  background: #245fe0 !important;
 }
 
 .dashboard-wrapper .sidebar-item.active svg,
 .dashboard-wrapper .sidebar-item.active span {
-  color: #111827 !important;
-  stroke: #111827 !important;
+  color: #245fe0 !important;
+  stroke: #245fe0 !important;
 }
 
 .dashboard-wrapper .period-toggle-pill,
