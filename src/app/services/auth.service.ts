@@ -99,6 +99,8 @@ export class AuthService {
     showCompanyNameOnInvoice?: boolean;
     gstNumber?: string;
     gstPercentage?: number;
+    invoiceRegisteredAddress?: string;
+    invoiceFooter?: string;
     bankDetails?: {
       bankName?: string;
       accountNumber?: string;

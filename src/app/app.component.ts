@@ -523,6 +523,11 @@ export class AppComponent implements OnInit {
   // Invoice Flow Support
   selectedEmployeeForInvoice: any = null;
   invoiceLead: any = null;
+  invoiceRecords: any[] = [];
+  invoiceRecordsLoading = false;
+  invoiceSearch = '';
+  invoiceDateFilter: 'all' | 'today' | '7d' | '30d' = 'all';
+  invoiceSavingLeadId = '';
 
 
   filteredBookmarksDepsStr = '';
@@ -842,6 +847,8 @@ export class AppComponent implements OnInit {
   settingsShowCompanyNameOnInvoice: boolean = true;
   settingsGstNumber: string = '';
   settingsGstPercentage: number = 18;
+  settingsInvoiceRegisteredAddress: string = '';
+  settingsInvoiceFooter: string = '';
   settingsBankDetails = {
     bankName: '',
     accountNumber: '',
@@ -1123,6 +1130,11 @@ export class AppComponent implements OnInit {
     // Load settings when navigating to settings or remarks_filter tab
     if (tab === 'settings' || tab === 'remarks_filter') {
       this.fetchSettings();
+    }
+    if (tab === 'invoice') {
+      this.fetchSettings();
+      this.fetchAdminLeads();
+      this.fetchInvoiceRecords();
     }
   }
 
@@ -2945,6 +2957,8 @@ export class AppComponent implements OnInit {
           this.settingsShowCompanyNameOnInvoice = res.settings.showCompanyNameOnInvoice ?? true;
           this.settingsGstNumber = res.settings.gstNumber || '';
           this.settingsGstPercentage = res.settings.gstPercentage ?? 18;
+          this.settingsInvoiceRegisteredAddress = res.settings.invoiceRegisteredAddress || '';
+          this.settingsInvoiceFooter = res.settings.invoiceFooter || '';
           this.settingsBankDetails = res.settings.bankDetails || { bankName: '', accountNumber: '', ifscCode: '', branchName: '' };
           this.settingsContactDetails = res.settings.contactDetails || { website: '', email: '', phone: '' };
           this.settingsProducts = res.settings.products || [];
@@ -3011,6 +3025,8 @@ export class AppComponent implements OnInit {
       showCompanyNameOnInvoice: this.settingsShowCompanyNameOnInvoice,
       gstNumber: this.settingsGstNumber,
       gstPercentage: this.settingsGstPercentage,
+      invoiceRegisteredAddress: this.settingsInvoiceRegisteredAddress,
+      invoiceFooter: this.settingsInvoiceFooter,
       bankDetails: this.settingsBankDetails,
       contactDetails: this.settingsContactDetails,
       products: this.settingsProducts,
@@ -3382,6 +3398,113 @@ Thank You.`;
       error: () => {
         this.allLeadsLoading = false;
       }
+    });
+  }
+
+  fetchInvoiceRecords(): void {
+    if (!this.dashboardCode) return;
+    this.invoiceRecordsLoading = true;
+    const params = new URLSearchParams({ companyCode: this.dashboardCode });
+    this.api.get<any>(`/api/invoices?${params.toString()}`).subscribe({
+      next: (res) => {
+        this.invoiceRecordsLoading = false;
+        this.invoiceRecords = res?.success ? (res.invoices || []) : [];
+      },
+      error: () => {
+        this.invoiceRecordsLoading = false;
+      },
+    });
+  }
+
+  get adminConvertedInvoiceLeads(): Lead[] {
+    const statuses = (this.settingsConvertedPageStatuses?.length ? this.settingsConvertedPageStatuses : ['Converted'])
+      .map((status) => String(status).toLowerCase());
+    const query = this.invoiceSearch.trim().toLowerCase();
+    return this.allLeads
+      .filter((lead) => statuses.includes(String(lead.status || '').toLowerCase()))
+      .filter((lead) => {
+        if (!query) return true;
+        return [
+          lead.leadCompanyName,
+          lead.contactName,
+          lead.contactNumber,
+          lead.directorEmailAddress,
+          lead.assignedEmployeePhone,
+        ].some((value) => String(value || '').toLowerCase().includes(query));
+      })
+      .slice(0, 200);
+  }
+
+  get filteredInvoiceRecords(): any[] {
+    const query = this.invoiceSearch.trim().toLowerCase();
+    return this.invoiceRecords.filter((invoice) => {
+      const matchesSearch = !query || [
+        invoice.invoiceNumber,
+        invoice.leadCompanyName,
+        invoice.contactName,
+        invoice.contactNumber,
+        invoice.employeeName,
+        invoice.employeePhone,
+      ].join(' ').toLowerCase().includes(query);
+      return matchesSearch && this.matchesAdminInvoiceDateFilter(invoice.invoiceDate || invoice.createdAt);
+    });
+  }
+
+  matchesAdminInvoiceDateFilter(rawDate?: string): boolean {
+    if (this.invoiceDateFilter === 'all') return true;
+    if (!rawDate) return false;
+    const date = new Date(rawDate);
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    if (this.invoiceDateFilter === 'today') return date >= start;
+    const days = this.invoiceDateFilter === '7d' ? 7 : 30;
+    start.setDate(start.getDate() - days + 1);
+    return date >= start;
+  }
+
+  formatInvoiceMoney(value: number): string {
+    return `INR ${Number(value || 0).toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  }
+
+  createAdminInvoiceForLead(lead: Lead): void {
+    if (!lead?._id || this.invoiceSavingLeadId) return;
+    const product = this.settingsProducts[0];
+    if (!product) {
+      alert('Add at least one invoice service in Invoice Settings before generating invoices.');
+      return;
+    }
+
+    this.invoiceSavingLeadId = lead._id;
+    this.api.post<any>('/api/invoices', {
+      companyCode: this.dashboardCode,
+      employeePhone: lead.assignedEmployeePhone,
+      employeeName: this.employees.find((emp) => emp.mobile === lead.assignedEmployeePhone)?.name || '',
+      createdByRole: 'admin',
+      createdByName: this.dashboardCompany,
+      leadId: lead._id,
+      contactNumber: lead.contactNumber,
+      gstPercentage: this.settingsGstPercentage,
+      items: [{
+        name: product.name,
+        rate: product.minPrice || 0,
+        quantity: 1,
+      }],
+    }).subscribe({
+      next: (res) => {
+        this.invoiceSavingLeadId = '';
+        if (!res?.success) {
+          alert(res?.message || 'Failed to save invoice.');
+          return;
+        }
+        this.fetchInvoiceRecords();
+      },
+      error: (err) => {
+        this.invoiceSavingLeadId = '';
+        alert(err?.error?.message || 'Failed to save invoice.');
+      },
     });
   }
 

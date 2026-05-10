@@ -4335,7 +4335,7 @@
         <div class="dash-header-row" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
             <h2 class="dash-title" style="font-size: 1.75rem; letter-spacing: -0.03em;">Invoice Management</h2>
-            <p style="color: #64748b; font-size: 0.95rem; margin-top: 6px; font-weight: 500;">Tailor your financial identity with precision and style.</p>
+            <p style="color: #64748b; font-size: 0.95rem; margin-top: 6px; font-weight: 500;">Create invoices for converted leads and review saved invoice history.</p>
           </div>
           <button class="cta-primary" (click)="saveSettings()" [disabled]="settingsLoading" 
             style="padding: 0.75rem 2rem; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
@@ -4343,6 +4343,89 @@
             <span *ngIf="settingsLoading" class="btn-spinner"></span>
             {{ settingsLoading ? 'Saving...' : 'Save All Changes' }}
           </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+          <div class="premium-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem;">
+              <div>
+                <h3 class="settings-section-title">Converted Leads</h3>
+                <p style="margin-top:6px; color:#64748b;">{{ adminConvertedInvoiceLeads.length }} eligible leads</p>
+              </div>
+              <div style="display:flex; gap:.75rem;">
+                <input class="glass-input" style="width:240px;" type="text" placeholder="Search leads or phone" [(ngModel)]="invoiceSearch">
+                <select class="glass-input" style="width:150px;" [(ngModel)]="invoiceDateFilter">
+                  <option value="all">All Dates</option>
+                  <option value="today">Today</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                </select>
+              </div>
+            </div>
+            <div style="max-height: 340px; overflow:auto; border:1px solid #e5e7eb;">
+              <table style="width:100%; border-collapse:collapse;">
+                <thead style="position:sticky; top:0; background:#fff; z-index:1;">
+                  <tr>
+                    <th style="padding:12px; text-align:left; color:#6b7280; font-weight:600;">Company</th>
+                    <th style="padding:12px; text-align:left; color:#6b7280; font-weight:600;">Contact</th>
+                    <th style="padding:12px; text-align:left; color:#6b7280; font-weight:600;">Status</th>
+                    <th style="padding:12px; text-align:right; color:#6b7280; font-weight:600;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let lead of adminConvertedInvoiceLeads" style="border-top:1px solid #e5e7eb;">
+                    <td style="padding:12px; color:#111827;">{{ lead.leadCompanyName }}</td>
+                    <td style="padding:12px; color:#4b5563;">{{ lead.contactName || lead.contactNumber }}</td>
+                    <td style="padding:12px; color:#4b5563;">{{ lead.status }}</td>
+                    <td style="padding:12px; text-align:right;">
+                      <button class="cta-primary" style="padding:.5rem .8rem; border-radius:8px;" (click)="createAdminInvoiceForLead(lead)" [disabled]="invoiceSavingLeadId===lead._id">
+                        {{ invoiceSavingLeadId===lead._id ? 'Saving...' : 'Generate' }}
+                      </button>
+                    </td>
+                  </tr>
+                  <tr *ngIf="adminConvertedInvoiceLeads.length===0">
+                    <td colspan="4" style="padding:32px; text-align:center; color:#94a3b8;">No converted leads found.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="premium-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem;">
+              <div>
+                <h3 class="settings-section-title">Invoice History</h3>
+                <p style="margin-top:6px; color:#64748b;">{{ filteredInvoiceRecords.length }} saved invoices</p>
+              </div>
+              <button class="btn-light" style="padding:.55rem .9rem;" (click)="fetchInvoiceRecords()">Refresh</button>
+            </div>
+            <div style="max-height: 340px; overflow:auto; border:1px solid #e5e7eb;">
+              <table style="width:100%; border-collapse:collapse;">
+                <thead style="position:sticky; top:0; background:#fff; z-index:1;">
+                  <tr>
+                    <th style="padding:12px; text-align:left; color:#6b7280; font-weight:600;">Invoice</th>
+                    <th style="padding:12px; text-align:left; color:#6b7280; font-weight:600;">Company</th>
+                    <th style="padding:12px; text-align:left; color:#6b7280; font-weight:600;">Employee</th>
+                    <th style="padding:12px; text-align:right; color:#6b7280; font-weight:600;">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let invoice of filteredInvoiceRecords" style="border-top:1px solid #e5e7eb;">
+                    <td style="padding:12px; color:#111827;">{{ invoice.invoiceNumber }}</td>
+                    <td style="padding:12px; color:#4b5563;">{{ invoice.leadCompanyName }}</td>
+                    <td style="padding:12px; color:#4b5563;">{{ invoice.employeeName || invoice.employeePhone || '—' }}</td>
+                    <td style="padding:12px; color:#111827; text-align:right;">{{ formatInvoiceMoney(invoice.total) }}</td>
+                  </tr>
+                  <tr *ngIf="!invoiceRecordsLoading && filteredInvoiceRecords.length===0">
+                    <td colspan="4" style="padding:32px; text-align:center; color:#94a3b8;">No invoices saved yet.</td>
+                  </tr>
+                  <tr *ngIf="invoiceRecordsLoading">
+                    <td colspan="4" style="padding:32px; text-align:center; color:#94a3b8;">Loading invoices...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem;">
@@ -4417,6 +4500,7 @@
               <div>
                 <label class="input-label">Invoice Contact Details</label>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <textarea [(ngModel)]="settingsInvoiceRegisteredAddress" class="glass-input" rows="3" style="resize: vertical; min-height: 82px;" placeholder="Registered invoice address"></textarea>
                   <div style="position: relative;">
                     <svg style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
                     <input type="text" [(ngModel)]="settingsContactDetails.website" class="glass-input" style="padding-left: 35px;" placeholder="www.yourcompany.com">
@@ -4429,6 +4513,7 @@
                     <svg style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                     <input type="text" [(ngModel)]="settingsContactDetails.email" class="glass-input" style="padding-left: 35px;" placeholder="billing@yourcompany.com">
                   </div>
+                  <textarea [(ngModel)]="settingsInvoiceFooter" class="glass-input" rows="3" style="resize: vertical; min-height: 82px;" placeholder="Invoice footer note"></textarea>
                 </div>
               </div>
             </div>
