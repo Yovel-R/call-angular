@@ -1637,7 +1637,7 @@
           <div class="charts-row">
 
             <!-- Statistics card: Line chart LEFT + Donut RIGHT -->
-            <div class="chart-card dark flex-1 animate-fade-in-up stagger-5">
+            <div class="chart-card dark flex-1 animate-fade-in-up stagger-5 admin-statistics-card">
 
               <!-- Card header -->
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;">
@@ -1716,7 +1716,7 @@
             </div>
 
             <!-- Top Employees card -->
-            <div class="chart-card flex-1">
+            <div class="chart-card flex-1 admin-employees-card">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
                 <h3
                   style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">
@@ -1770,174 +1770,88 @@
           </div><!-- /charts-row -->
 
           <!-- ── BOTTOM STATS ROW ── -->
-          <div class="bottom-stats-grid">
-
-            <!-- 1. Total Calls -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-indigo-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path
-                      d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                    </path>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Total Calls</span>
-              </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ summaryStats.total }}</span>
-                <span class="stat-unit-v2">Calls</span>
-              </div>
+          <div class="bottom-stats-grid call-analytics-panel">
+            <div class="call-analytics-header">
+              <h3>Call analytics</h3>
+              <span>{{ adminSelectedPeriodLabel }}</span>
             </div>
 
-            <!-- 2. Call Duration -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-purple-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Call Duration</span>
+            <section class="call-analytics-widget">
+              <div class="analytics-widget-head">
+                <span>Call Volume</span>
+                <strong>{{ summaryStats.total }}</strong>
               </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ shortDur(summaryStats.totalDuration) }}</span>
-                <span class="stat-unit-v2">Total</span>
+              <div class="analytics-row">
+                <span>Total calls</span>
+                <b>{{ summaryStats.total }}</b>
               </div>
-            </div>
+              <div class="analytics-row">
+                <span>Connected</span>
+                <b>{{ summaryStats.connected }}</b>
+              </div>
+              <div class="analytics-meter">
+                <i [style.width.%]="adminConnectRate"></i>
+              </div>
+              <p>{{ adminConnectRate }}% connect rate</p>
+            </section>
 
-            <!-- 3. Incoming -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-blue-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="17" y1="7" x2="7" y2="17"></line>
-                    <polyline points="17 17 7 17 7 7"></polyline>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Incoming</span>
+            <section class="call-analytics-widget">
+              <div class="analytics-widget-head">
+                <span>Traffic Mix</span>
+                <strong>{{ adminOutboundShare }}%</strong>
               </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ summaryStats.incoming }}</span>
-                <span class="stat-unit-v2">Calls</span>
+              <div class="traffic-split">
+                <i class="traffic-in" [style.width.%]="adminIncomingShare"></i>
+                <i class="traffic-out" [style.width.%]="adminOutboundShare"></i>
               </div>
-            </div>
+              <div class="analytics-row">
+                <span>Incoming</span>
+                <b>{{ summaryStats.incoming }}</b>
+              </div>
+              <div class="analytics-row">
+                <span>Outgoing</span>
+                <b>{{ summaryStats.outgoing }}</b>
+              </div>
+              <p>{{ adminOutboundShare }}% outbound motion</p>
+            </section>
 
-            <!-- 4. Incoming Duration -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-blue-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">In Duration</span>
+            <section class="call-analytics-widget">
+              <div class="analytics-widget-head">
+                <span>Talk Time</span>
+                <strong>{{ shortDur(summaryStats.totalDuration) }}</strong>
               </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ shortDur(summaryStats.incomingDuration) }}</span>
-                <span class="stat-unit-v2">Talk</span>
+              <div class="analytics-row">
+                <span>Avg duration</span>
+                <b>{{ fmtAvgDur(summaryStats.totalDuration, summaryStats.connected) }}</b>
               </div>
-            </div>
+              <div class="analytics-row">
+                <span>Inbound talk</span>
+                <b>{{ shortDur(summaryStats.incomingDuration) }}</b>
+              </div>
+              <div class="analytics-row">
+                <span>Outbound talk</span>
+                <b>{{ shortDur(summaryStats.outgoingDuration) }}</b>
+              </div>
+            </section>
 
-            <!-- 5. Outgoing -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-orange-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <line x1="7" y1="17" x2="17" y2="7"></line>
-                    <polyline points="7 7 17 7 17 17"></polyline>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Outgoing</span>
+            <section class="call-analytics-widget">
+              <div class="analytics-widget-head">
+                <span>Exceptions</span>
+                <strong>{{ (summaryStats.missed || 0) + (summaryStats.rejected || 0) }}</strong>
               </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ summaryStats.outgoing }}</span>
-                <span class="stat-unit-v2">Calls</span>
+              <div class="analytics-row is-negative">
+                <span>Missed</span>
+                <b>{{ summaryStats.missed }}</b>
               </div>
-            </div>
-
-            <!-- 6. Outgoing Duration -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-orange-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Out Duration</span>
+              <div class="analytics-row is-warning">
+                <span>Rejected</span>
+                <b>{{ summaryStats.rejected }}</b>
               </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ shortDur(summaryStats.outgoingDuration) }}</span>
-                <span class="stat-unit-v2">Talk</span>
+              <div class="analytics-meter is-risk">
+                <i [style.width.%]="adminMissedRate + adminRejectedRate"></i>
               </div>
-            </div>
-
-            <!-- 7. Missed -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-red-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path
-                      d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91">
-                    </path>
-                    <line x1="23" y1="1" x2="1" y2="23"></line>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Missed</span>
-              </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ summaryStats.missed }}</span>
-                <span class="stat-unit-v2">Calls</span>
-              </div>
-            </div>
-
-            <!-- 8. Rejected -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-pink-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Rejected</span>
-              </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ summaryStats.rejected }}</span>
-                <span class="stat-unit-v2">Calls</span>
-              </div>
-            </div>
-
-
-            <!-- 11. Connected Calls -->
-            <div class="stat-card-v2" *ngIf="summaryStats">
-              <div class="stat-card-top">
-                <div class="stat-icon-wrap bg-green-light">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
-                    stroke-linejoin="round">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
-                  </svg>
-                </div>
-                <span class="stat-label-v2">Connected</span>
-              </div>
-              <div class="stat-card-bottom">
-                <span class="stat-value-v2">{{ summaryStats.connected }}</span>
-                <span class="stat-unit-v2">Calls</span>
-              </div>
-            </div>
-
+              <p>{{ adminMissedRate }}% missed · {{ adminRejectedRate }}% rejected</p>
+            </section>
           </div><!-- /bottom-stats-grid -->
 
         </div><!-- /dash-grid-layout -->

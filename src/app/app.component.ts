@@ -1186,6 +1186,18 @@ export class AppComponent implements OnInit {
     return this.pct(this.summaryStats?.outgoing || 0, this.summaryStats?.total || 0);
   }
 
+  get adminIncomingShare(): number {
+    return this.pct(this.summaryStats?.incoming || 0, this.summaryStats?.total || 0);
+  }
+
+  get adminRejectedRate(): number {
+    return this.pct(this.summaryStats?.rejected || 0, this.summaryStats?.total || 0);
+  }
+
+  get adminSelectedPeriodLabel(): string {
+    return this.periods.find(p => p.key === this.selectedPeriod)?.label || 'Selected period';
+  }
+
   get adminActiveEmployeeCount(): number {
     return this.employeeCallRows.filter(row => (row.stats?.total || 0) > 0).length;
   }
