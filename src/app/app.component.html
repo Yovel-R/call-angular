@@ -1796,10 +1796,11 @@
 
             <!-- Top Employees card -->
             <div class="chart-card flex-1 admin-employees-card">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem;">
-                <h3
-                  style="font-size:1.15rem;color:var(--text-heading);margin:0;font-family:var(--font-head);font-weight:700;">
-                  Top Employees</h3>
+              <div class="top-employee-board-header">
+                <div>
+                  <h3>Top Employees</h3>
+                  <p>Ranked by calls handled, with live productivity context</p>
+                </div>
                 <button class="pill-btn dark" (click)="dashTab='employees'">See All
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round" style="margin-left: 6px;">
@@ -1808,41 +1809,80 @@
                   </svg>
                 </button>
               </div>
-              <div class="top-list-table-container">
-                <table class="top-list-table">
-                  <thead>
-                    <tr>
-                      <th>Employee</th>
-                      <th style="text-align:right">Calls</th>
-                      <th style="text-align:right">Duration</th>
-                      <th style="text-align:center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let row of (employeeCallRows | slice:0:8)" style="cursor:pointer"
-                      (click)="selectEmployee(row.emp)">
-                      <td>
-                        <div class="emp-cell">
-                          <div class="emp-avatar small shadow">{{ row.emp.name.charAt(0).toUpperCase() }}</div>
-                          <span style="font-weight:500;color:var(--text-2);font-size:0.85rem;">{{ row.emp.name ||
-                            row.emp.mobile }}</span>
-                        </div>
-                      </td>
-                      <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.total || 0 }}</td>
-                      <td style="text-align:right;font-weight:500;font-size:0.85rem;">{{ row.stats?.totalDuration ?
-                        fmtDur(row.stats.totalDuration) : '0s' }}</td>
-                      <td style="text-align:center">
-                        <button class="pill-btn outline employee-row-action" aria-label="View employee details"
-                          (click)="openEmployee(row.emp); $event.stopPropagation()">›</button>
-                      </td>
-                    </tr>
-                    <tr *ngIf="!employeeCallRows || !employeeCallRows.length">
-                      <td colspan="4" style="text-align:center;color:var(--text-3);padding:1.5rem 0;">No employee data
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+              <div class="top-employee-board" *ngIf="employeeCallRows && employeeCallRows.length; else noEmployeeBoard">
+                <div class="top-employee-ranklist">
+                  <button *ngFor="let row of (employeeCallRows | slice:0:5); let i = index" type="button"
+                    class="top-employee-row" (click)="selectEmployee(row.emp)">
+                    <div class="top-employee-rank">
+                      <div class="top-employee-rank-num">{{ i + 1 }}</div>
+                      <div class="emp-avatar">{{ row.emp.name.charAt(0).toUpperCase() }}</div>
+                    </div>
+                    <div class="top-employee-copy">
+                      <div class="top-employee-name">{{ row.emp.name || row.emp.mobile }}</div>
+                      <div class="top-employee-sub">{{ row.emp.mobile }}</div>
+                      <div class="top-employee-meter">
+                        <i [style.width.%]="(row.stats?.total || 0) / adminTopEmployeeMaxCalls * 100"></i>
+                      </div>
+                    </div>
+                    <div class="top-employee-metrics">
+                      <div>
+                        <span>Calls</span>
+                        <strong>{{ row.stats?.total || 0 }}</strong>
+                      </div>
+                      <div>
+                        <span>Duration</span>
+                        <strong>{{ row.stats?.totalDuration ? fmtDur(row.stats.totalDuration) : '0s' }}</strong>
+                      </div>
+                    </div>
+                    <div class="top-employee-chevron">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 18 6-6-6-6"></path>
+                      </svg>
+                    </div>
+                  </button>
+                </div>
+
+                <aside class="top-employee-side">
+                  <div class="top-employee-side-card">
+                    <span>Team Volume</span>
+                    <strong>{{ summaryStats.total }}</strong>
+                    <p>Calls handled across the selected period</p>
+                  </div>
+                  <div class="top-employee-side-card">
+                    <span>Active Reps</span>
+                    <strong>{{ adminActiveEmployeeCount }}</strong>
+                    <p>{{ adminAvgCallsPerActiveEmployee }} calls per active rep</p>
+                  </div>
+                  <div class="top-employee-side-card">
+                    <span>Top Performer</span>
+                    <strong>{{ adminTopPerformerName }}</strong>
+                    <p>{{ employeeCallRows.length ? (employeeCallRows[0].stats?.total || 0) : 0 }} calls by the current leader</p>
+                  </div>
+                  <div class="top-employee-side-chart">
+                    <div class="top-employee-side-chart-head">
+                      <span>Signal Mix</span>
+                      <strong>{{ adminConnectRate }}%</strong>
+                    </div>
+                    <div class="top-employee-side-bar">
+                      <i class="signal-in" [style.width.%]="adminIncomingShare"></i>
+                      <i class="signal-out" [style.width.%]="adminOutboundShare"></i>
+                      <i class="signal-missed" [style.width.%]="adminMissedRate"></i>
+                    </div>
+                    <div class="top-employee-side-legend">
+                      <span><i class="signal-dot in"></i>Incoming</span>
+                      <span><i class="signal-dot out"></i>Outgoing</span>
+                      <span><i class="signal-dot miss"></i>Missed</span>
+                    </div>
+                  </div>
+                </aside>
               </div>
+
+              <ng-template #noEmployeeBoard>
+                <div class="top-employee-empty">
+                  No employee data available for this period.
+                </div>
+              </ng-template>
 
             </div>
 

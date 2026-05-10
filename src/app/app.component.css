@@ -10795,6 +10795,256 @@ body,
   font-weight: 800 !important;
 }
 
+.dashboard-wrapper .top-employee-board-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 18px !important;
+  margin-bottom: 18px !important;
+}
+
+.dashboard-wrapper .top-employee-board-header h3 {
+  margin: 0 !important;
+  color: var(--crm-ink) !important;
+  font-family: var(--font-body, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif) !important;
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.dashboard-wrapper .top-employee-board-header p {
+  margin: 8px 0 0 !important;
+  color: #667085 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.dashboard-wrapper .top-employee-board {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr) !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+}
+
+.dashboard-wrapper .top-employee-ranklist {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.dashboard-wrapper .top-employee-row {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 72px minmax(0, 1fr) max-content 18px !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 16px 18px !important;
+  border: 1px solid var(--crm-line) !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+  cursor: pointer !important;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease !important;
+}
+
+.dashboard-wrapper .top-employee-row:hover {
+  background: #f9fafb !important;
+  border-color: #cfd8e3 !important;
+  transform: translateY(-1px) !important;
+}
+
+.dashboard-wrapper .top-employee-rank {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.dashboard-wrapper .top-employee-rank-num {
+  width: 22px !important;
+  color: #94a3b8 !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+}
+
+.dashboard-wrapper .top-employee-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.dashboard-wrapper .top-employee-name {
+  overflow: hidden !important;
+  color: var(--crm-ink) !important;
+  font-size: 16px !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.dashboard-wrapper .top-employee-sub {
+  overflow: hidden !important;
+  color: #667085 !important;
+  font-family: var(--font-mono, "Geist Mono", ui-monospace, monospace) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.dashboard-wrapper .top-employee-meter {
+  height: 5px !important;
+  border-radius: 999px !important;
+  background: #edf2f6 !important;
+  overflow: hidden !important;
+}
+
+.dashboard-wrapper .top-employee-meter i {
+  display: block !important;
+  height: 100% !important;
+  border-radius: inherit !important;
+  background: linear-gradient(90deg, var(--crm-blue), #7c93ff) !important;
+}
+
+.dashboard-wrapper .top-employee-metrics {
+  display: grid !important;
+  grid-template-columns: repeat(2, max-content) !important;
+  gap: 14px 18px !important;
+  align-items: center !important;
+}
+
+.dashboard-wrapper .top-employee-metrics span {
+  display: block !important;
+  color: #98a2b3 !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+.dashboard-wrapper .top-employee-metrics strong {
+  display: block !important;
+  margin-top: 4px !important;
+  color: var(--crm-ink) !important;
+  font-family: var(--font-mono, "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace) !important;
+  font-size: 17px !important;
+  font-weight: 760 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.dashboard-wrapper .top-employee-chevron {
+  color: #94a3b8 !important;
+  transition: color 140ms ease, transform 140ms ease !important;
+}
+
+.dashboard-wrapper .top-employee-row:hover .top-employee-chevron {
+  color: #111827 !important;
+  transform: translateX(1px) !important;
+}
+
+.dashboard-wrapper .top-employee-side {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.dashboard-wrapper .top-employee-side-card,
+.dashboard-wrapper .top-employee-side-chart {
+  padding: 18px 18px 16px !important;
+  border: 1px solid var(--crm-line) !important;
+  border-radius: 8px !important;
+  background: linear-gradient(180deg, #fff 0%, #fafbfc 100%) !important;
+}
+
+.dashboard-wrapper .top-employee-side-card span,
+.dashboard-wrapper .top-employee-side-chart-head span {
+  display: block !important;
+  color: #6f7785 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+.dashboard-wrapper .top-employee-side-card strong,
+.dashboard-wrapper .top-employee-side-chart-head strong {
+  display: block !important;
+  margin-top: 10px !important;
+  color: var(--crm-ink) !important;
+  font-family: var(--font-mono, "Geist Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace) !important;
+  font-size: 24px !important;
+  font-weight: 760 !important;
+  letter-spacing: -0.05em !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+.dashboard-wrapper .top-employee-side-card p {
+  margin: 8px 0 0 !important;
+  color: #667085 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.45 !important;
+}
+
+.dashboard-wrapper .top-employee-side-chart {
+  display: grid !important;
+  gap: 14px !important;
+}
+
+.dashboard-wrapper .top-employee-side-bar {
+  height: 10px !important;
+  display: flex !important;
+  overflow: hidden !important;
+  border-radius: 999px !important;
+  background: #edf2f6 !important;
+}
+
+.dashboard-wrapper .top-employee-side-bar i {
+  display: block !important;
+  height: 100% !important;
+}
+
+.dashboard-wrapper .top-employee-side-bar .signal-in { background: #3b82f6 !important; }
+.dashboard-wrapper .top-employee-side-bar .signal-out { background: #22c55e !important; }
+.dashboard-wrapper .top-employee-side-bar .signal-missed { background: #f87171 !important; }
+
+.dashboard-wrapper .top-employee-side-legend {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px 14px !important;
+}
+
+.dashboard-wrapper .top-employee-side-legend span {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #475467 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+.dashboard-wrapper .signal-dot {
+  width: 8px !important;
+  height: 8px !important;
+  border-radius: 999px !important;
+}
+
+.dashboard-wrapper .signal-dot.in { background: #3b82f6 !important; }
+.dashboard-wrapper .signal-dot.out { background: #22c55e !important; }
+.dashboard-wrapper .signal-dot.miss { background: #f87171 !important; }
+
+.dashboard-wrapper .top-employee-empty {
+  min-height: 220px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px dashed var(--crm-line) !important;
+  border-radius: 8px !important;
+  color: #667085 !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  background: #fff !important;
+}
+
 .dashboard-wrapper .bottom-stats-grid.call-analytics-panel {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -11385,5 +11635,18 @@ body,
 
   .dashboard-wrapper .admin-stats-grid-view {
     grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-wrapper .top-employee-board {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-wrapper .top-employee-row {
+    grid-template-columns: 56px minmax(0, 1fr) !important;
+  }
+
+  .dashboard-wrapper .top-employee-chevron,
+  .dashboard-wrapper .top-employee-metrics {
+    display: none !important;
   }
 }

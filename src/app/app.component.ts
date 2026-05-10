@@ -1214,6 +1214,11 @@ export class AppComponent implements OnInit {
     return Math.round((this.summaryStats?.total || 0) / this.adminActiveEmployeeCount);
   }
 
+  get adminTopEmployeeMaxCalls(): number {
+    const top = this.employeeCallRows.reduce((max, row) => Math.max(max, row.stats?.total || 0), 0);
+    return top || 1;
+  }
+
   get adminPeakActivity(): { label: string; count: number } {
     const peak = (this.timelineData || []).reduce((best, row) => {
       const count = (row?.incoming || 0) + (row?.outgoing || 0) + (row?.missed || 0) + (row?.rejected || 0);
