@@ -11878,3 +11878,23 @@ body,
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Final label typography alignment with the employee dashboard. */
+.dashboard-wrapper .kpi-label,
+.dashboard-wrapper .admin-insight-cell span,
+.dashboard-wrapper .admin-stat-grid-card span,
+.dashboard-wrapper .admin-stats-bars-label,
+.dashboard-wrapper .top-employee-side-card span,
+.dashboard-wrapper .top-employee-side-chart-head span {
+  font-family: var(--font-head) !important;
+  color: #667085 !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.25 !important;
+  text-transform: none !important;
+}
+
+.dashboard-wrapper .kpi-label {
+  font-size: 14px !important;
+}
