@@ -1169,6 +1169,57 @@ export class AppComponent implements OnInit {
     return `${s}s`;
   }
 
+  private pct(value: number, total: number): number {
+    if (!total || total <= 0) return 0;
+    return Math.round((value / total) * 100);
+  }
+
+  get adminConnectRate(): number {
+    return this.pct(this.summaryStats?.connected || 0, this.summaryStats?.total || 0);
+  }
+
+  get adminMissedRate(): number {
+    return this.pct(this.summaryStats?.missed || 0, this.summaryStats?.total || 0);
+  }
+
+  get adminOutboundShare(): number {
+    return this.pct(this.summaryStats?.outgoing || 0, this.summaryStats?.total || 0);
+  }
+
+  get adminActiveEmployeeCount(): number {
+    return this.employeeCallRows.filter(row => (row.stats?.total || 0) > 0).length;
+  }
+
+  get adminTopPerformerName(): string {
+    const top = [...this.employeeCallRows].sort((a, b) => (b.stats?.total || 0) - (a.stats?.total || 0))[0];
+    if (!top || !(top.stats?.total || 0)) return 'No activity';
+    return top.emp?.name || top.emp?.mobile || 'No activity';
+  }
+
+  get adminAvgCallsPerActiveEmployee(): number {
+    if (!this.adminActiveEmployeeCount) return 0;
+    return Math.round((this.summaryStats?.total || 0) / this.adminActiveEmployeeCount);
+  }
+
+  get adminPeakActivity(): { label: string; count: number } {
+    const peak = (this.timelineData || []).reduce((best, row) => {
+      const count = (row?.incoming || 0) + (row?.outgoing || 0) + (row?.missed || 0) + (row?.rejected || 0);
+      return count > best.count ? { row, count } : best;
+    }, { row: null as any, count: 0 });
+
+    if (!peak.row || peak.count <= 0) return { label: 'No activity', count: 0 };
+
+    const rawDate = peak.row._isHourly ? peak.row.hour : peak.row.date;
+    if (!rawDate) return { label: 'Peak window', count: peak.count };
+
+    const date = new Date(rawDate);
+    const label = peak.row._isHourly
+      ? date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    return { label, count: peak.count };
+  }
+
   empMapCache: { [phone: string]: string } | null = null;
   lastEmployeesRef: any[] | null = null;
 
