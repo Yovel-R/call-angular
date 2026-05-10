@@ -1723,7 +1723,7 @@
               <!-- Chart body: centered donut + legend grid -->
               <div class="stats-chart-body" *ngIf="adminStatsView === 'overview'">
                 <div class="donut-chart-wrap">
-                  <canvas id="donutChart" width="160" height="160"></canvas>
+                  <div class="admin-css-donut" [style.background]="adminDonutGradient"></div>
                   <div class="donut-center-label">
                     <div class="donut-center-val">{{ summaryStats.total }}</div>
                     <div class="donut-center-sub">Total</div>

@@ -10658,6 +10658,22 @@ body,
   height: min(280px, 100%) !important;
 }
 
+.dashboard-wrapper .admin-css-donut {
+  position: absolute !important;
+  inset: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.04) !important;
+}
+
+.dashboard-wrapper .admin-css-donut::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 24% !important;
+  border-radius: inherit !important;
+  background: #fff !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.03) !important;
+}
+
 .dashboard-wrapper .donut-legend-grid {
   align-self: center !important;
   display: grid !important;

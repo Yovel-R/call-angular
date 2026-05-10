@@ -1195,6 +1195,32 @@ export class AppComponent implements OnInit {
     return this.pct(this.summaryStats?.rejected || 0, this.summaryStats?.total || 0);
   }
 
+  get adminDonutGradient(): string {
+    const s = this.summaryStats;
+    const incoming = Math.max(0, s?.incoming || 0);
+    const outgoing = Math.max(0, s?.outgoing || 0);
+    const missed = Math.max(0, s?.missed || 0);
+    const rejected = Math.max(0, s?.rejected || 0);
+    const total = incoming + outgoing + missed + rejected;
+
+    if (!total) {
+      return 'conic-gradient(#e5e7eb 0deg 360deg)';
+    }
+
+    const incomingEnd = (incoming / total) * 360;
+    const outgoingEnd = incomingEnd + (outgoing / total) * 360;
+    const missedEnd = outgoingEnd + (missed / total) * 360;
+
+    return [
+      'conic-gradient(',
+      `#3b82f6 0deg ${incomingEnd}deg, `,
+      `#22c55e ${incomingEnd}deg ${outgoingEnd}deg, `,
+      `#f87171 ${outgoingEnd}deg ${missedEnd}deg, `,
+      `#f59e0b ${missedEnd}deg 360deg`,
+      ')'
+    ].join('');
+  }
+
   get adminSelectedPeriodLabel(): string {
     return this.periods.find(p => p.key === this.selectedPeriod)?.label || 'Selected period';
   }
