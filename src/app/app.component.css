@@ -11650,3 +11650,231 @@ body,
     display: none !important;
   }
 }
+
+/* Admin dashboard repair: align typography with employee CRM and stabilize Top Employees. */
+.dashboard-wrapper,
+.dashboard-wrapper .chart-card,
+.dashboard-wrapper .kpi-card,
+.dashboard-wrapper .admin-employees-card,
+.dashboard-wrapper .admin-statistics-card {
+  font-family: var(--font-body) !important;
+  letter-spacing: 0 !important;
+}
+
+.dashboard-wrapper .dash-title,
+.dashboard-wrapper .chart-card h3,
+.dashboard-wrapper .admin-statistics-kpis h3,
+.dashboard-wrapper .top-employee-board-header h3,
+.dashboard-wrapper .call-analytics-header h3 {
+  font-family: var(--font-head) !important;
+  letter-spacing: -0.03em !important;
+}
+
+.dashboard-wrapper .kpi-label,
+.dashboard-wrapper .admin-insight-cell span,
+.dashboard-wrapper .admin-stat-grid-card span,
+.dashboard-wrapper .top-employee-side-card span,
+.dashboard-wrapper .top-employee-side-chart-head span,
+.dashboard-wrapper .top-employee-metrics span {
+  font-family: var(--font-body) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+}
+
+.dashboard-wrapper .admin-insight-cell strong,
+.dashboard-wrapper .admin-stat-grid-card strong,
+.dashboard-wrapper .top-employee-name,
+.dashboard-wrapper .top-employee-side-card strong,
+.dashboard-wrapper .top-employee-board-header p,
+.dashboard-wrapper .admin-statistics-label,
+.dashboard-wrapper .donut-legend-grid .lg-label {
+  font-family: var(--font-body) !important;
+  letter-spacing: 0 !important;
+}
+
+.dashboard-wrapper .kpi-val,
+.dashboard-wrapper .admin-statistics-value,
+.dashboard-wrapper .donut-center-val,
+.dashboard-wrapper .donut-legend-grid .lg-val,
+.dashboard-wrapper .top-employee-metrics strong,
+.dashboard-wrapper .top-employee-inline-stats,
+.dashboard-wrapper .top-employee-side-chart-head strong,
+.dashboard-wrapper .analytics-widget-head strong,
+.dashboard-wrapper .analytics-row b {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums !important;
+  letter-spacing: 0 !important;
+}
+
+.dashboard-wrapper .admin-insight-cell strong,
+.dashboard-wrapper .admin-stat-grid-card strong,
+.dashboard-wrapper .top-employee-side-card strong {
+  font-size: clamp(16px, 1.1vw, 22px) !important;
+  line-height: 1.15 !important;
+  white-space: normal !important;
+}
+
+.dashboard-wrapper .admin-employees-card {
+  overflow: hidden !important;
+}
+
+.dashboard-wrapper .top-employee-board-header {
+  align-items: center !important;
+  margin-bottom: 16px !important;
+}
+
+.dashboard-wrapper .top-employee-board-header h3 {
+  font-size: 24px !important;
+  line-height: 1.1 !important;
+}
+
+.dashboard-wrapper .top-employee-board-header p {
+  max-width: 34ch !important;
+  margin-top: 6px !important;
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+}
+
+.dashboard-wrapper .top-employee-board-header .pill-btn {
+  min-width: 84px !important;
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 8px !important;
+  white-space: nowrap !important;
+}
+
+.dashboard-wrapper .top-employee-board {
+  grid-template-columns: minmax(0, 1fr) 178px !important;
+  gap: 12px !important;
+  align-items: start !important;
+}
+
+.dashboard-wrapper .top-employee-ranklist,
+.dashboard-wrapper .top-employee-side {
+  min-width: 0 !important;
+}
+
+.dashboard-wrapper .top-employee-ranklist {
+  gap: 8px !important;
+}
+
+.dashboard-wrapper .top-employee-row {
+  min-width: 0 !important;
+  min-height: 74px !important;
+  grid-template-columns: 46px minmax(0, 1fr) 14px !important;
+  gap: 10px !important;
+  padding: 12px 12px !important;
+  border-radius: 6px !important;
+}
+
+.dashboard-wrapper .top-employee-rank {
+  gap: 8px !important;
+}
+
+.dashboard-wrapper .top-employee-rank-num {
+  width: 14px !important;
+  font-size: 11px !important;
+}
+
+.dashboard-wrapper .top-employee-row .emp-avatar {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 4px !important;
+  font-size: 13px !important;
+}
+
+.dashboard-wrapper .top-employee-copy {
+  gap: 5px !important;
+}
+
+.dashboard-wrapper .top-employee-name {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.dashboard-wrapper .top-employee-sub {
+  display: none !important;
+}
+
+.dashboard-wrapper .top-employee-inline-stats {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  color: #667085 !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+
+.dashboard-wrapper .top-employee-meter {
+  height: 4px !important;
+}
+
+.dashboard-wrapper .top-employee-metrics {
+  display: none !important;
+}
+
+.dashboard-wrapper .top-employee-side {
+  gap: 8px !important;
+}
+
+.dashboard-wrapper .top-employee-side-card,
+.dashboard-wrapper .top-employee-side-chart {
+  min-width: 0 !important;
+  padding: 12px !important;
+  border-radius: 6px !important;
+}
+
+.dashboard-wrapper .top-employee-side-card strong,
+.dashboard-wrapper .top-employee-side-chart-head strong {
+  margin-top: 6px !important;
+  font-size: 18px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.dashboard-wrapper .top-employee-side-card p {
+  margin-top: 5px !important;
+  font-size: 11px !important;
+  line-height: 1.35 !important;
+}
+
+.dashboard-wrapper .top-employee-side-chart {
+  gap: 10px !important;
+}
+
+.dashboard-wrapper .top-employee-side-bar {
+  height: 7px !important;
+}
+
+.dashboard-wrapper .top-employee-side-legend {
+  gap: 8px !important;
+}
+
+.dashboard-wrapper .top-employee-side-legend span {
+  font-size: 10px !important;
+  gap: 5px !important;
+}
+
+.dashboard-wrapper .signal-dot {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+@media (max-width: 1480px) {
+  .dashboard-wrapper .top-employee-board {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-wrapper .top-employee-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-wrapper .top-employee-side {
+    grid-template-columns: 1fr !important;
+  }
+}

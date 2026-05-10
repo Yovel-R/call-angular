@@ -1820,6 +1820,10 @@
                     <div class="top-employee-copy">
                       <div class="top-employee-name">{{ row.emp.name || row.emp.mobile }}</div>
                       <div class="top-employee-sub">{{ row.emp.mobile }}</div>
+                      <div class="top-employee-inline-stats">
+                        <span>{{ row.stats?.total || 0 }} calls</span>
+                        <span>{{ row.stats?.totalDuration ? fmtDur(row.stats.totalDuration) : '0s' }}</span>
+                      </div>
                       <div class="top-employee-meter">
                         <i [style.width.%]="(row.stats?.total || 0) / adminTopEmployeeMaxCalls * 100"></i>
                       </div>
