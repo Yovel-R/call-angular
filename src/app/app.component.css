@@ -10436,12 +10436,115 @@ body,
 }
 
 .dashboard-wrapper .bottom-stats-grid {
-  display: none !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  border-top: 1px solid var(--admin-line) !important;
+  background: #fff !important;
+}
+
+.dashboard-wrapper .bottom-stats-grid::before {
+  content: "Call analytics";
+  grid-column: 1 / -1;
+  padding: 28px 28px 18px !important;
+  border-bottom: 1px solid var(--admin-line) !important;
+  color: #111827 !important;
+  font-family: var(--font-body) !important;
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  text-transform: none !important;
+}
+
+.dashboard-wrapper .stat-card-v2 {
+  min-height: 118px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 30px !important;
+  grid-template-rows: auto 1fr !important;
+  align-items: start !important;
+  border: 0 !important;
+  border-right: 1px solid var(--admin-line) !important;
+  border-bottom: 1px solid var(--admin-line) !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  padding: 24px 28px !important;
+}
+
+.dashboard-wrapper .stat-card-v2:nth-child(3n + 1) {
+  border-right: 0 !important;
+}
+
+.dashboard-wrapper .stat-card-v2:hover {
+  background: #fff !important;
+}
+
+.dashboard-wrapper .stat-card-top {
+  display: contents !important;
+}
+
+.dashboard-wrapper .stat-label-v2 {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  color: var(--admin-muted) !important;
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.35 !important;
+  text-transform: none !important;
+}
+
+.dashboard-wrapper .stat-icon-wrap {
+  grid-column: 2 !important;
+  grid-row: 1 / span 2 !important;
+  width: 30px !important;
+  height: 30px !important;
+  border: 1px solid var(--admin-line) !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  color: #6b7280 !important;
+}
+
+.dashboard-wrapper .stat-icon-wrap svg {
+  width: 16px !important;
+  height: 16px !important;
+  stroke-width: 1.5 !important;
+}
+
+.dashboard-wrapper .stat-card-bottom {
+  grid-column: 1 !important;
+  grid-row: 2 !important;
+  align-self: end !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 12px !important;
+  margin-top: 22px !important;
+}
+
+.dashboard-wrapper .stat-value-v2 {
+  color: #111827 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 30px !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.03em !important;
+  line-height: 1.1 !important;
+}
+
+.dashboard-wrapper .stat-unit-v2 {
+  color: var(--admin-muted) !important;
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
 }
 
 @media (max-width: 1180px) {
   .dashboard-wrapper .top-stats-row,
   .dashboard-wrapper .charts-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-wrapper .bottom-stats-grid {
     grid-template-columns: 1fr !important;
   }
 
