@@ -21,6 +21,7 @@ export interface Bookmark {
   reminderDate: string | null;
   companyName?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 @Injectable({
