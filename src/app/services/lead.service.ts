@@ -31,6 +31,8 @@ export interface LeadListQuery {
   pageSize?: number;
   paginated?: boolean;
   remark?: string;
+  includeContacts?: boolean | string;
+  contactPageSize?: number;
 }
 
 export interface LeadListResponse {

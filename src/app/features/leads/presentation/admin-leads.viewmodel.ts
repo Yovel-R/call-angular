@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Subject, catchError, debounceTime, distinctUntilChanged, from, mergeMap, of, switchMap, tap } from 'rxjs';
 import { OPERATIONAL_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '../../../core/config/pagination.config';
 import { Lead, LeadCompany } from '../domain/lead.model';
 import { AdminLeadsRepository } from '../data/admin-leads.repository';
@@ -42,6 +42,7 @@ export class AdminLeadsViewModel {
   private readonly searchSubject = new Subject<string>();
   private companyCode = '';
   private requestRun = 0;
+  private readonly contactHydrationConcurrency = 12;
 
   constructor(private repository: AdminLeadsRepository) {
     this.searchSubject.pipe(
@@ -91,13 +92,24 @@ export class AdminLeadsViewModel {
   private reloadCompaniesAndLeads() {
     this.patch({ loading: true, error: '', page: 1, leads: [], hasMore: false });
     const run = ++this.requestRun;
-    return this.repository.listCompanies(this.companyCode, this.queryFor(1)).pipe(
+    return this.repository.listCompanies(this.companyCode, this.queryFor(1, false)).pipe(
       tap({
-        next: (companies) => {
+        next: (result) => {
           if (run !== this.requestRun) return;
-          const selectedCompany = companies[0]?.name || '';
-          this.patch({ companies, selectedCompany });
-          this.loadLeads(false, run).subscribe();
+          const selectedCompany = result.companies[0]?.name || '';
+          const hydratedLeads = this.flattenContactsByCompany(result.contactsByCompany);
+          this.patch({
+            companies: result.companies,
+            selectedCompany,
+            leads: hydratedLeads,
+            page: 1,
+            hasMore: false,
+            loading: false,
+            empty: !hydratedLeads.length,
+          });
+          if (!hydratedLeads.length) {
+            this.hydrateCompanyContacts(result.companies, run, true);
+          }
         },
         error: () => this.patch({ loading: false, error: 'Failed to load lead companies.' }),
       })
@@ -113,7 +125,20 @@ export class AdminLeadsViewModel {
       tap({
         next: (result) => {
           if (run !== this.requestRun) return;
-          const leads = append ? [...this.stateSubject.value.leads, ...result.items] : result.items;
+          const selectedCompany = this.stateSubject.value.selectedCompany;
+          const currentLeads = this.stateSubject.value.leads;
+          const selectedLeads = append
+            ? [
+                ...currentLeads.filter((lead) => lead.companyName === selectedCompany),
+                ...result.items,
+              ]
+            : result.items;
+          const leads = selectedCompany
+            ? this.mergeLeadItems(
+                currentLeads.filter((lead) => lead.companyName !== selectedCompany),
+                selectedLeads,
+              )
+            : (append ? [...currentLeads, ...result.items] : result.items);
           this.patch({
             leads,
             page: result.page,
@@ -128,18 +153,94 @@ export class AdminLeadsViewModel {
     );
   }
 
-  private queryFor(page: number): LeadListQueryDto {
+  private hydrateCompanyContacts(companies: LeadCompany[], run: number, replaceExisting: boolean): void {
+    const selectedCompany = this.stateSubject.value.selectedCompany;
+    const orderedCompanies = [
+      ...companies.filter((company) => company.name === selectedCompany),
+      ...companies.filter((company) => company.name !== selectedCompany),
+    ].filter((company) => !!company.name);
+
+    if (!orderedCompanies.length) {
+      this.patch({ loading: false, empty: true });
+      return;
+    }
+
+    if (replaceExisting) {
+      this.patch({ leads: [], page: 1, hasMore: false, loading: true, empty: false });
+    }
+
+    from(orderedCompanies).pipe(
+      mergeMap((company) => (
+        this.repository.list(this.companyCode, this.queryForCompany(1, company.name)).pipe(
+          catchError(() => of({
+            items: [],
+            page: 1,
+            pageSize: OPERATIONAL_PAGE_SIZE,
+            total: 0,
+            hasMore: false,
+            sets: [],
+            companies: [],
+          }))
+        )
+      ), this.contactHydrationConcurrency),
+    ).subscribe({
+      next: (result) => {
+        if (run !== this.requestRun) return;
+        const currentLeads = this.stateSubject.value.leads;
+        const leads = this.mergeLeadItems(currentLeads, result.items);
+        const selectedResult = result.items[0]?.companyName === selectedCompany;
+        this.patch({
+          leads,
+          page: selectedResult ? result.page : this.stateSubject.value.page,
+          hasMore: selectedResult ? result.hasMore : this.stateSubject.value.hasMore,
+          loading: selectedResult ? false : this.stateSubject.value.loading,
+          empty: !leads.length,
+        });
+      },
+      complete: () => {
+        if (run !== this.requestRun) return;
+        this.patch({ loading: false, empty: !this.stateSubject.value.leads.length });
+      },
+    });
+  }
+
+  private queryFor(page: number, includeCompany = true): LeadListQueryDto {
     const state = this.stateSubject.value;
     return {
       page,
       pageSize: OPERATIONAL_PAGE_SIZE,
       paginated: true,
       includeFacets: page === 1,
+      includeContacts: !includeCompany && page === 1 ? 'true' : undefined,
+      contactPageSize: !includeCompany && page === 1 ? OPERATIONAL_PAGE_SIZE : undefined,
       search: state.search,
       status: state.status,
       setLabel: state.setLabel,
-      company: state.selectedCompany,
+      company: includeCompany ? state.selectedCompany : '',
     } as LeadListQueryDto;
+  }
+
+  private queryForCompany(page: number, company: string): LeadListQueryDto {
+    return {
+      ...this.queryFor(page, false),
+      company,
+      includeFacets: false,
+    } as LeadListQueryDto;
+  }
+
+  private mergeLeadItems(existing: Lead[], incoming: Lead[]): Lead[] {
+    const incomingCompanies = new Set(incoming.map((lead) => lead.companyName).filter(Boolean));
+    const incomingIds = new Set(incoming.map((lead) => lead.id).filter(Boolean));
+    const retained = existing.filter((lead) => {
+      if (incomingIds.has(lead.id)) return false;
+      return !incomingCompanies.has(lead.companyName);
+    });
+    return [...retained, ...incoming];
+  }
+
+  private flattenContactsByCompany(contactsByCompany: Record<string, Lead[]> | undefined): Lead[] {
+    if (!contactsByCompany) return [];
+    return Object.values(contactsByCompany).flat();
   }
 
   private patch(partial: Partial<AdminLeadsState>): void {

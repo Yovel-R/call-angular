@@ -3128,9 +3128,9 @@
               </div>
 
               <div class="leads-grid"
-                style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
                 <div *ngFor="let lead of leadsInSelectedCompany" class="contact-card"
-                  style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; position: relative; overflow: hidden;">
+                  style="background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; position: relative; overflow: hidden; min-width: 0;">
 
                   <!-- Interaction Badge for Leads -->
                   <div *ngIf="getLeadInteractionCount(lead.contactNumber) > 0"
