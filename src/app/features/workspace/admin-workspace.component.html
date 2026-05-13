@@ -1183,6 +1183,28 @@
           <img src="assets/icon/logo.png" alt="DealVoice Logo">
         </div>
       </div>
+
+      <div class="admin-topbar-page-title">{{ adminTopbarTitle }}</div>
+
+      <label class="topbar-search admin-global-search" for="adminGlobalSearch">
+        <span class="topbar-search-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="6"></circle>
+            <path d="m20 20-4.35-4.35"></path>
+          </svg>
+        </span>
+        <input
+          id="adminGlobalSearch"
+          class="topbar-input"
+          type="text"
+          [placeholder]="adminSearchPlaceholder"
+          autocomplete="off"
+          [(ngModel)]="adminGlobalSearch"
+          (keyup.enter)="onAdminGlobalSearchEnter()"
+        />
+        <span class="topbar-search-shortcut" aria-hidden="true">⌘ K</span>
+      </label>
+
       <div class="nav-auth" style="gap:1rem;">
 
         <details class="admin-profile-menu">
@@ -1478,9 +1500,9 @@
     <main class="dash-main" [class.expanded]="sidebarMinimized">
 
       <!-- ══ OVERVIEW TAB ══ -->
-      <div *ngIf="dashTab==='overview'">
+      <div *ngIf="dashTab==='overview'" class="admin-overview-view">
         <div class="dash-header-row">
-          <h2 class="dash-title">Call Overview</h2>
+          <h2 class="dash-title">Overview</h2>
           <div class="period-tabs">
             <button *ngFor="let p of periods" [class.active]="selectedPeriod===p.key" (click)="onPeriodChange(p.key)">{{
               p.label }}</button>
@@ -1981,7 +2003,7 @@
       </div><!-- /overview tab -->
 
       <!-- ══ EMPLOYEE DASHBOARD (DETAILED VIEW) ══ -->
-      <div *ngIf="dashTab==='emp_dashboard' && selectedEmployee" class="animate-fade-in">
+      <div *ngIf="dashTab==='emp_dashboard' && selectedEmployee" class="animate-fade-in admin-employee-detail-view">
         <div class="dash-header-row" style="margin-bottom: 2rem;">
           <div style="display: flex; align-items: center; gap: 1rem;">
             <button class="back-btn-circle" (click)="closeEmployee()" title="Back to Employees">
@@ -2669,36 +2691,31 @@
             <div style="animation: fadeIn 0.4s ease;">
               
               <!-- Toolbar from Employee UI -->
-              <div class="leads-toolbar" style="margin-bottom: 1.5rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                <div style="display: flex; gap: 8px;">
-                  <button class="filter-chip" [class.active]="followupFilter === 'all'" (click)="followupFilter = 'all'">
+              <div class="leads-toolbar admin-followups-toolbar">
+                <div class="admin-followups-toolbar-group">
+                  <button class="toolbar-button admin-followups-filter-chip" [class.active]="followupFilter === 'all'" type="button" (click)="followupFilter = 'all'">
                     All Follow-ups
                   </button>
-                  <button class="filter-chip" [class.active]="followupFilter === 'today'" (click)="followupFilter = 'today'">
+                  <button class="toolbar-button admin-followups-filter-chip" [class.active]="followupFilter === 'today'" type="button" (click)="followupFilter = 'today'">
                     Today's Tasks
-                    <span class="chip-badge" *ngIf="todayFollowupCount > 0">{{ todayFollowupCount }}</span>
+                    <span class="admin-followups-chip-badge" *ngIf="todayFollowupCount > 0">{{ todayFollowupCount }}</span>
                   </button>
                 </div>
 
-                <div class="date-input-wrap" style="max-width: 200px;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                  </svg>
-                  <input type="date" [(ngModel)]="selectedFollowupDate" class="date-picker-input">
-                  <button *ngIf="selectedFollowupDate" (click)="selectedFollowupDate = ''" 
-                    style="background:none; border:none; color:#ef4444; font-weight:800; cursor:pointer; padding:0 4px;">×</button>
-                </div>
+                <label class="sidebar-search admin-followups-date-field">
+                  <span class="sidebar-search-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  </span>
+                  <input type="date" [(ngModel)]="selectedFollowupDate" class="admin-followups-date-input">
+                  <button *ngIf="selectedFollowupDate" class="admin-inline-clear" type="button" (click)="selectedFollowupDate = ''" aria-label="Clear follow-up date">×</button>
+                </label>
 
-                <div class="search-wrap" style="flex: 1; min-width: 200px;">
-                  <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                  <input type="text" class="search-input" placeholder="Search by name, company or remarks..." [(ngModel)]="followupSearch">
-                </div>
+                <label class="sidebar-search admin-followups-toolbar-search">
+                  <span class="sidebar-search-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.35-4.35"></path></svg>
+                  </span>
+                  <input type="text" placeholder="Search by name, company or remarks..." [(ngModel)]="followupSearch">
+                </label>
               </div>
 
               <div style="display: flex; gap: 2rem; align-items: flex-start; min-height: 600px;">
@@ -2847,7 +2864,7 @@
 
 
       <!-- ══ EMPLOYEES TAB ══ -->
-      <div *ngIf="dashTab==='employees'">
+      <div *ngIf="dashTab==='employees'" class="admin-employees-view">
         <div class="dash-header-row">
           <h2 class="dash-title">Employees</h2>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -2903,7 +2920,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let emp of employees" class="emp-row">
+              <tr *ngFor="let emp of filteredEmployeesForTable" class="emp-row">
                 <td (click)="openEmployee(emp)">
                   <div class="emp-cell">
                     <div class="emp-avatar">{{ emp.name.charAt(0).toUpperCase() }}</div>
@@ -3012,116 +3029,61 @@
       <!-- ══ LEADS MANAGEMENT TAB ══ -->
       <div *ngIf="dashTab==='leads'" class="animate-fade-in admin-leads-view">
 
-        <div class="dash-header-row" style="margin-bottom: 1.5rem;">
-          <h2 class="dash-title">Leads Management</h2>
-          <div style="display:flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-            <!-- Search Input -->
-            <div class="search-wrapper">
-              <input type="text" class="lead-filter-input" style="width: 100%; padding-left: 2.5rem;"
-                placeholder="Search leads..." [(ngModel)]="leadSearchQuery" (ngModelChange)="onAdminLeadSearchChange()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                class="search-icon">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </div>
-
-            <!-- Employee Filter -->
-            <select class="lead-filter-select" [(ngModel)]="leadEmployeeFilter">
-              <option value="">All Employees</option>
-              <option *ngFor="let emp of employees" [value]="emp.mobile">{{ emp.name }}</option>
+        <section class="admin-leads-frame">
+          <div class="admin-leads-filter-strip">
+            <select class="field-select filter-select-field" [(ngModel)]="selectedAdminLeadSet" (change)="fetchAdminLeads()" aria-label="Lead set filter">
+              <option value="">All Leads</option>
+              <option *ngFor="let set of adminLeadSets" [value]="set">{{ set }}</option>
             </select>
-
-            <!-- Set Filter -->
-            <div style="display: flex; align-items: center; gap: 4px;">
-              <select class="lead-filter-select" [(ngModel)]="selectedAdminLeadSet" (change)="fetchAdminLeads()">
-                <option value="">-- Select Lead Set --</option>
-                <option *ngFor="let set of adminLeadSets" [value]="set">{{ set }}</option>
-              </select>
-              <button *ngIf="selectedAdminLeadSet" class="cta-secondary" style="background: #fee2e2; color: #dc2626; border-color: #fecaca; padding: 0; height: 38px; width: 38px; display: flex; align-items: center; justify-content: center; border-radius: 12px;" 
-                (click)="deleteGlobalLeadSet()" title="Delete this set globally">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-              </button>
-            </div>
-
-            <button class="cta-primary"
-              style="padding: 0.65rem 1.4rem; font-size: 0.85rem; height: 40px; display: flex; align-items: center; gap: 8px; border-radius: 12px;"
-              (click)="fetchAdminLeads()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-                <path d="M21 3v5h-5" />
-              </svg>
-              REFRESH
+            <select class="field-select filter-select-field" [(ngModel)]="adminLeadStatusFilter" aria-label="Status filter">
+              <option value="">All Status</option>
+              <option *ngFor="let st of LEAD_STATUSES" [value]="st">{{ st }}</option>
+            </select>
+            <button class="admin-icon-refresh admin-leads-refresh" type="button" (click)="fetchAdminLeads()" aria-label="Refresh leads">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
+            </button>
+            <button *ngIf="selectedAdminLeadSet" class="toolbar-button admin-leads-delete-set" type="button" (click)="deleteGlobalLeadSet()" aria-label="Delete selected lead set">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18" /><path d="M8 6V4h8v2" /><path d="M19 6l-1 14H6L5 6" /></svg>
             </button>
           </div>
-        </div>
 
-        <div class="leads-container">
-          <!-- Left Sidebar: Lead List -->
-          <div class="leads-sidebar">
-            <div class="leads-sidebar-header">
-              <div style="font-weight: 700; color: var(--text-1); font-size: 0.95rem;">Leads List</div>
-              <div style="font-size: 0.75rem; color: var(--text-3); margin-top: 4px;">{{ filteredLeads.length }} leads
-                found</div>
-            </div>
-            <div class="leads-list" (scroll)="onSidebarScroll($event)">
-              <div *ngFor="let company of displayedLeadCompanies" class="lead-item"
-                [class.active]="selectedLeadCompany === company" (click)="selectLeadCompany(company)">
-                <div class="lead-item-name">{{ company || 'Unnamed Company' }}</div>
-                <div class="lead-item-meta" style="display: flex; flex-direction: column; gap: 2px;">
-                  <span style="font-size: 0.75rem;">{{ getAdminLeadCompanyCount(company) }} contacts</span>
-                  <span *ngIf="getCompanyInteractionCount(company) > 0"
-                    style="color: #4f46e5; font-weight: 600; font-size: 0.7rem;">
-                    {{ getCompanyInteractionCount(company) }} Interactions
-                  </span>
-                </div>
+          <div class="admin-leads-record-frame">
+            <aside class="admin-leads-company-rail">
+              <div class="admin-leads-rail-header">
+                <div class="rail-heading">Companies</div>
+                <div class="rail-total">{{ displayedLeadCompanies.length }} listed</div>
               </div>
-              <div *ngIf="adminLeadCompanyHasMore && !adminLeadCompaniesLoading" 
-                style="padding: 1rem; text-align: center; color: var(--text-3); font-size: 0.75rem; border-top: 1px dashed var(--border);">
-                Scroll to load more leads...
+              <div class="admin-leads-rail-list" (scroll)="onSidebarScroll($event)">
+                <button
+                  type="button"
+                  class="admin-leads-rail-item"
+                  *ngFor="let company of displayedLeadCompanies"
+                  [class.active]="selectedLeadCompany === company"
+                  (click)="selectLeadCompany(company)"
+                >
+                  <span class="rail-item-name">{{ company || 'Unnamed Company' }}</span>
+                  <span class="rail-item-meta">{{ getAdminLeadCompanyCount(company) }} contacts</span>
+                </button>
+                <div *ngIf="adminLeadCompanyHasMore && !adminLeadCompaniesLoading" class="scroll-page-state">Scroll to load more companies</div>
+                <div *ngIf="allLeadsLoading || adminLeadCompaniesLoading" class="scroll-page-state">Loading companies...</div>
+                <div *ngIf="displayedLeadCompanies.length === 0 && !allLeadsLoading" class="empty-state-inline empty-state-inline-minimal">No companies found.</div>
               </div>
-              <div *ngIf="uniqueLeadCompanies.length === 0 && !allLeadsLoading" class="leads-empty-state"
-                style="padding: 2rem;">
-                <ng-container *ngIf="!selectedAdminLeadSet">
-                  Please select a Lead Set from the filter above to view Leads.
-                </ng-container>
-                <ng-container *ngIf="selectedAdminLeadSet">
-                  No companies found in this set.
-                </ng-container>
-              </div>
-              <div *ngIf="allLeadsLoading || adminLeadCompaniesLoading" class="leads-empty-state" style="padding: 2rem;">
-                Loading companies...
-              </div>
-            </div>
-          </div>
+            </aside>
 
-          <!-- Right Content: Professional Card Detail -->
-          <div class="lead-detail-view" (scroll)="onAdminLeadContactsScroll($event)">
-            <div *ngIf="selectedLeadCompany">
-              <div class="customer-detail-header">
-                <div class="cd-header-icon" style="background: #eef2ff; color: #4f46e5;">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                    <path d="M9 22v-4h6v4"></path>
-                    <path d="M8 6h.01"></path>
-                    <path d="M16 6h.01"></path>
-                    <path d="M8 10h.01"></path>
-                    <path d="M16 10h.01"></path>
-                    <path d="M8 14h.01"></path>
-                    <path d="M16 14h.01"></path>
-                  </svg>
-                </div>
-                <div style="display: flex; flex-direction: column;">
-                  <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                    <h3 class="cd-header-title">{{ selectedLeadCompany }}</h3>
-                    <button (click)="openHistory(leadsInSelectedCompany[0])" *ngIf="leadsInSelectedCompany.length > 0"
-                      style="background: #eef2ff; border: none; cursor: pointer; padding: 6px; border-radius: 8px; color: #6366f1; display: flex; align-items: center; transition: all 0.2s;" 
-                      onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='#eef2ff'" title="View Company Audit History">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-                      </svg>
+            <section class="admin-leads-company-pane" (scroll)="onAdminLeadContactsScroll($event)">
+              <ng-container *ngIf="selectedLeadCompany; else adminLeadsEmptyState">
+                <header class="admin-leads-company-header">
+                  <div>
+                    <h3>{{ selectedLeadCompany }}</h3>
+                    <p *ngIf="adminLeadCompanyPreviewLine(selectedLeadCompany)">{{ adminLeadCompanyPreviewLine(selectedLeadCompany) }}</p>
+                  </div>
+                  <div class="admin-leads-pane-actions">
+                    <button class="ai-summary-button admin-ai-summary-button" type="button" *ngIf="leadsInSelectedCompany.length" (click)="openAdminAiSummary($event)">
+                      <span aria-hidden="true">✦</span>
+                      <span>AI Summary</span>
+                    </button>
+                    <button class="toolbar-button invoice-date-filter-button" type="button" *ngIf="leadsInSelectedCompany.length" (click)="openCompanyFullView($event)">
+                      Full View
                     </button>
                   </div>
                 </div>
@@ -3146,140 +3108,128 @@
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                           </svg>
                         </button>
-                        <button (click)="toggleFavourite(lead)" style="background: none; border: none; cursor: pointer; padding: 0; display: flex; align-items: center; color: #ef4444;" title="Good Client">
-                          <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="lead.isFavourite ? '#ef4444' : 'none'" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                          </svg>
+                        <button class="lead-card-icon-action lead-card-favourite-action" type="button" [class.active]="lead.isFavourite" (click)="toggleFavourite(lead)" aria-label="Favourite lead">
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                         </button>
                       </div>
-                      <span class="status-badge" 
-                            [style.background]="(lead.status === 'New' || !lead.status) ? '#ecfdf5' : '#fff7ed'"
-                            [style.color]="(lead.status === 'New' || !lead.status) ? '#10b981' : '#f59e0b'"
-                            style="font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; text-transform: uppercase;">
-                        {{ lead.status || 'New' }}
+                    </div>
+
+                    <div class="lead-record-line">
+                      <span class="lead-record-line-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.29 18a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-7.71A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91A16 16 0 0 0 14 15.82l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
                       </span>
+                      <span>{{ lead.contactNumber || '-' }}</span>
                     </div>
 
-                    <div class="info-row" style="margin-bottom: 8px;">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
-                        </path>
-                      </svg>
-                      <span style="font-size: 0.9rem;">{{ lead.contactNumber }}</span>
+                    <button class="lead-card-invoice-action" type="button" (click)="openQuotationModal(lead)">
+                      <span aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M7 3h7l3 3v15H7z" /><path d="M14 3v4h4" /><path d="M9 12h6" /><path d="M9 16h4" /></svg>
+                      </span>
+                      <span>Generate Quote</span>
+                    </button>
+
+                    <div class="lead-record-line">
+                      <span class="lead-record-line-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M20 10 12 4 4 10l8 6 8-6Z" /><path d="M4 14l8 6 8-6" /></svg>
+                      </span>
+                      <span>{{ lead.setLabel || 'Old Leads' }}</span>
                     </div>
 
-                    <div class="info-row" style="margin-bottom: 1rem;">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                        <polyline points="22,6 12,13 2,6"></polyline>
-                      </svg>
-                      <span style="font-size: 0.9rem;">{{ lead.directorEmailAddress || 'No email provided' }}</span>
+                    <div class="lead-record-line lead-record-email" [title]="lead.directorEmailAddress || ''">
+                      <span class="lead-record-line-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg>
+                      </span>
+                      <span>{{ lead.directorEmailAddress || '-' }}</span>
                     </div>
 
-                    <div *ngIf="lead.mainDivisionDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #4338ca; background: #eef2ff; padding: 4px 10px; border-radius: 6px; font-weight: 600;">
-                      Div: {{ lead.mainDivisionDescription }}
-                    </div>
-
-                    <div *ngIf="lead.companyDescription" style="margin-bottom: 8px; font-size: 0.75rem; color: #475569; background: #f1f5f9; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #cbd5e1;">
-                      <strong>Desc:</strong> {{ lead.companyDescription }}
-                    </div>
-
-                    <div *ngIf="lead.remarks && lead.remarks.length > 0" style="margin-top: 12px; border-top: 1px dashed #e2e8f0; padding-top: 10px;">
-                      <div style="font-size: 0.65rem; font-weight: 800; color: #64748b; margin-bottom: 4px; text-transform: uppercase;">Remarks Log</div>
-                      <div *ngFor="let r of lead.remarks" style="font-size: 0.72rem; color: #b45309; background: #fffbeb; padding: 5px 8px; border-radius: 6px; border: 1px solid #fde68a; margin-bottom: 4px; line-height: 1.3;">
-                        {{ r }}
+                    <div class="lead-card-remarks">
+                      <div class="lead-card-remarks-title">
+                        <span class="lead-record-line-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
+                        </span>
+                        <span>Remarks</span>
+                        <button class="text-action" type="button" (click)="openCompanyRemarkHistory(lead)">History</button>
+                      </div>
+                      <div class="lead-card-remark-list" *ngIf="lead.remarks?.length; else emptyAdminLeadRemarks">
+                        <div class="lead-card-remark-item" *ngFor="let remark of adminLeadRemarkPreviewList(lead)">{{ remark }}</div>
+                      </div>
+                      <ng-template #emptyAdminLeadRemarks>
+                        <div class="lead-card-empty">No remarks added.</div>
+                      </ng-template>
+                      <div class="lead-card-remark-entry">
+                        <input
+                          class="field-input lead-remark-input"
+                          type="text"
+                          [(ngModel)]="leadRemarksInputs[lead._id]"
+                          [attr.list]="'adminRemarkOptions-' + lead._id"
+                          placeholder="Type remark..."
+                          (keyup.enter)="addLeadRemark(lead)"
+                        />
+                        <datalist [id]="'adminRemarkOptions-' + lead._id">
+                          <option *ngFor="let remark of lead.remarks || []" [value]="remark"></option>
+                          <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
+                        </datalist>
+                        <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(lead)" [disabled]="remarkPostingIds.has(lead._id || '')" aria-label="Add remark">
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                        </button>
                       </div>
                     </div>
 
-                    <div class="meta-row" *ngIf="lead.address"
-                      style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.5rem;">
-                      <span class="meta-label" style="font-size: 0.85rem; width: 80px;">Address</span>
-                      <span class="meta-value" style="font-size: 0.85rem;">{{ lead.address }}</span>
+                    <div class="lead-card-actions">
+                      <select class="field-select lead-card-status-select" [ngModel]="lead.status || 'New'" (ngModelChange)="updateLeadStatus(lead, $event)" [disabled]="updatingLeadId===lead._id" aria-label="Lead status">
+                        <option *ngFor="let st of LEAD_STATUSES" [value]="st">{{ st }}</option>
+                      </select>
+                      <button class="lead-card-icon-action" type="button" (click)="openHistory(lead)" aria-label="Open history">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" /></svg>
+                      </button>
+                      <button class="lead-card-icon-action lead-card-favourite-action" type="button" [class.active]="lead.isFavourite" (click)="toggleFavourite(lead)" aria-label="Favourite lead">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                      </button>
                     </div>
-                  </div>
+                  </article>
                 </div>
-              </div>
 
-              <div
-                style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); display: flex; gap: 1rem;">
-                <button *ngIf="adminLeadContactsHasMore" class="pill-btn"
-                  style="background: var(--bg-hover); color: var(--text-1); border: 1px solid var(--border);"
-                  [disabled]="adminLeadContactsLoadingMore"
-                  (click)="loadAdminLeadContacts(true)">
-                  {{ adminLeadContactsLoadingMore ? 'Loading Contacts...' : 'Load More Contacts' }}
-                </button>
-                <button class="pill-btn"
-                  style="background: var(--bg-hover); color: var(--text-1); border: 1px solid var(--border);">Company
-                  Notes</button>
-                <button class="pill-btn" style="background: var(--purple); color: white; border: none;">Export Company
-                  Data</button>
-              </div>
-            </div>
+                <ng-template #noAdminLeadContacts>
+                  <div class="empty-state-inline empty-state-inline-pane">No contacts match the current filters.</div>
+                </ng-template>
 
-            <div *ngIf="!selectedLeadCompany" class="leads-empty-state">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
-                stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.2; margin-bottom: 1rem;">
-                <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
-                <path d="M9 22v-4h6v4"></path>
-                <path d="M8 6h.01"></path>
-                <path d="M16 6h.01"></path>
-                <path d="M8 10h.01"></path>
-                <path d="M16 10h.01"></path>
-                <path d="M8 14h.01"></path>
-                <path d="M16 14h.01"></path>
-              </svg>
-              <h3>No Company Selected</h3>
-              <p>Select a company from the list to view all lead details</p>
-            </div>
+                <div class="scroll-page-state" *ngIf="adminLeadContactsLoadingMore">Loading contacts...</div>
+                <div class="scroll-page-state" *ngIf="!adminLeadContactsLoadingMore && leadsInSelectedCompany.length > 0 && !adminLeadContactsHasMore">End of contacts</div>
+              </ng-container>
+
+              <ng-template #adminLeadsEmptyState>
+                <div class="empty-state-inline empty-state-inline-pane">Select a company from the list to view lead details.</div>
+              </ng-template>
+            </section>
           </div>
-        </div>
+        </section>
       </div>
 
       <!-- ══ REMARKS FILTER TAB ══ -->
-      <div *ngIf="dashTab==='remarks_filter'" class="animate-fade-in">
-
-        <div class="dash-header-row" style="margin-bottom: 1.5rem;">
-          <div>
-            <h2 class="dash-title">Remarks Filter</h2>
-            <p class="dash-subtitle">Browse clients filtered by their product certifications & remarks</p>
-          </div>
-          <div style="display:flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-            <!-- Search -->
-            <div class="search-wrapper">
-              <input type="text" class="lead-filter-input" style="width: 100%; padding-left: 2.5rem;"
-                placeholder="Search company, name, phone..." [(ngModel)]="remarkFilterSearch">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </div>
-            <button class="cta-primary"
-              style="padding: 0.65rem 1.4rem; font-size: 0.85rem; height: 40px; display: flex; align-items: center; gap: 8px; border-radius: 12px;"
-              (click)="fetchAdminLeads()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
-                <path d="M21 3v5h-5" />
-              </svg>
-              REFRESH
-            </button>
-          </div>
-        </div>
+      <div *ngIf="dashTab==='remarks_filter'" class="animate-fade-in admin-remarks-view">
 
         <!-- Remark Pills / Filters -->
-        <div style="margin-bottom: 1.5rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 1.25rem;">
-          <div style="font-size: 0.7rem; font-weight: 800; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem;">Filter by Remark / Certification</div>
-          <div *ngIf="settingsProductRemarks.length === 0" style="color: var(--text-3); font-style: italic; font-size: 0.85rem;">No product remarks configured yet. Add them in App Settings.</div>
-          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-            <button *ngFor="let rem of settingsProductRemarks"
-              (click)="selectRemarkFilter(rem)"
-              style="padding: 6px 16px; border-radius: 20px; font-size: 0.82rem; font-weight: 600; cursor: pointer; border: 1.5px solid; transition: all 0.15s;"
-              [style.background]="selectedRemarkFilter === rem ? '#4f46e5' : 'var(--bg-card-2)'"
-              [style.color]="selectedRemarkFilter === rem ? '#fff' : 'var(--text-1)'"
-              [style.borderColor]="selectedRemarkFilter === rem ? '#4f46e5' : 'var(--border)'">
-              {{ rem }}
+        <div class="admin-filter-panel remarks-command-panel">
+          <div class="remarks-command-row">
+            <div class="remarks-filter-label">Filter by Remark / Certification</div>
+            <div *ngIf="settingsProductRemarks.length === 0" class="remarks-empty-inline">No product remarks configured yet.</div>
+            <div class="remarks-pill-row">
+              <button *ngFor="let rem of settingsProductRemarks"
+                (click)="selectRemarkFilter(rem)"
+                [style.background]="selectedRemarkFilter === rem ? '#4f46e5' : 'var(--bg-card-2)'"
+                [style.color]="selectedRemarkFilter === rem ? '#fff' : 'var(--text-1)'"
+                [style.borderColor]="selectedRemarkFilter === rem ? '#4f46e5' : 'var(--border)'">
+                {{ rem }}
+              </button>
+            </div>
+            <label class="sidebar-search remarks-panel-search">
+              <span class="sidebar-search-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.35-4.35"></path></svg>
+              </span>
+              <input type="text" placeholder="Search features" [(ngModel)]="remarkFilterSearch">
+            </label>
+            <button class="admin-icon-refresh" type="button" (click)="fetchAdminLeads()" aria-label="Refresh remarks">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
             </button>
           </div>
         </div>
@@ -3418,7 +3368,7 @@
 
       <!-- ══ FOLLOW-UPS TAB ══ -->
       <!-- ══ FOLLOW-UPS TAB ══ -->
-      <div *ngIf="dashTab==='followups'" class="animate-fade-in">
+      <div *ngIf="dashTab==='followups'" class="animate-fade-in admin-followups-view">
         <div class="dash-header-row" style="margin-bottom: 2rem;">
           <div>
             <h2 class="dash-title">Global Follow-ups</h2>
@@ -3427,39 +3377,34 @@
         </div>
 
         <!-- Filter Toolbar from Employee UI -->
-        <div class="leads-toolbar" style="margin-bottom: 1.5rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-          <div style="display: flex; gap: 8px;">
-            <button class="filter-chip" [class.active]="followupFilter === 'all'" (click)="followupFilter = 'all'">
+        <div class="leads-toolbar admin-followups-toolbar">
+          <div class="admin-followups-toolbar-group">
+            <button class="toolbar-button admin-followups-filter-chip" [class.active]="followupFilter === 'all'" type="button" (click)="followupFilter = 'all'">
               All Follow-ups
             </button>
-            <button class="filter-chip" [class.active]="followupFilter === 'today'" (click)="followupFilter = 'today'">
+            <button class="toolbar-button admin-followups-filter-chip" [class.active]="followupFilter === 'today'" type="button" (click)="followupFilter = 'today'">
               Today's Tasks
-              <span class="chip-badge" *ngIf="todayGlobalFollowupCount > 0">{{ todayGlobalFollowupCount }}</span>
+              <span class="admin-followups-chip-badge" *ngIf="todayGlobalFollowupCount > 0">{{ todayGlobalFollowupCount }}</span>
             </button>
           </div>
 
-          <div class="date-input-wrap" style="max-width: 200px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
-            <input type="date" [(ngModel)]="selectedFollowupDate" class="date-picker-input">
-            <button *ngIf="selectedFollowupDate" (click)="selectedFollowupDate = ''" 
-              style="background:none; border:none; color:#ef4444; font-weight:800; cursor:pointer; padding:0 4px;">×</button>
-          </div>
+          <label class="sidebar-search admin-followups-date-field">
+            <span class="sidebar-search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </span>
+            <input type="date" [(ngModel)]="selectedFollowupDate" class="admin-followups-date-input">
+            <button *ngIf="selectedFollowupDate" class="admin-inline-clear" type="button" (click)="selectedFollowupDate = ''" aria-label="Clear follow-up date">×</button>
+          </label>
 
-          <div class="search-wrap" style="flex: 1; min-width: 200px;">
-            <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" class="search-input" placeholder="Search across all follow-ups..." [(ngModel)]="followupSearch">
-          </div>
+          <label class="sidebar-search admin-followups-toolbar-search">
+            <span class="sidebar-search-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.35-4.35"></path></svg>
+            </span>
+            <input type="text" placeholder="Search across all follow-ups..." [(ngModel)]="followupSearch">
+          </label>
         </div>
 
-        <div style="display: flex; gap: 2rem; align-items: flex-start; min-height: 600px;">
+        <div class="admin-followups-record-frame" style="display: flex; gap: 2rem; align-items: flex-start; min-height: 600px;">
           
           <!-- Left Sidebar: Companies List -->
           <div style="width: 300px; background: #ffffff; border: 1px solid #edf2f7; border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; flex-shrink: 0; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.04);">
@@ -3581,7 +3526,7 @@
       </div>
 
       <!-- ══ PERIODIC REPORTS TAB ══ -->
-      <div *ngIf="dashTab==='reports'">
+      <div *ngIf="dashTab==='reports'" class="admin-reports-view">
         <div class="dash-header-row" style="margin-bottom: 1rem;">
           <h2 class="dash-title">Periodic Reports</h2>
           <button class="cta-primary" (click)="exportToExcel()"
@@ -3763,7 +3708,7 @@
         </div>
       </div>
 
-      <div *ngIf="dashTab==='company'">
+      <div *ngIf="dashTab==='company'" class="admin-organization-view">
         <div *ngIf="companyProfileLoading" class="dash-loading">Loading company info&hellip;</div>
         <div class="company-tab-container" *ngIf="!companyProfileLoading && companyProfile">
           <div class="company-tab-grid">
@@ -4109,7 +4054,7 @@
       </div>
 
       <!-- ══ SETTINGS TAB ══ -->
-      <div *ngIf="dashTab==='settings'">
+      <div *ngIf="dashTab==='settings'" class="admin-settings-view">
         <div class="dash-header-row" style="margin-bottom: 2rem;">
           <h2 class="dash-title">App Settings</h2>
         </div>
@@ -4498,7 +4443,7 @@
         </div>
       </div>
       <!-- ══ INVOICE SETTINGS TAB ══ -->
-      <div *ngIf="dashTab==='invoice'" style="animation: fadeIn 0.4s ease-out;background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: calc(100vh - 64px);">
+      <div *ngIf="dashTab==='invoice'" class="admin-invoice-settings-view" style="animation: fadeIn 0.4s ease-out;background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); min-height: calc(100vh - 64px);">
         <div class="dash-header-row" style="margin-bottom: 2.5rem; display: flex; justify-content: space-between; align-items: flex-start;">
           <div>
             <h2 class="dash-title" style="font-size: 1.75rem; letter-spacing: -0.03em;">Invoice Management</h2>
@@ -5500,6 +5445,248 @@
         style="flex: 2; padding: 0.8rem; border-radius: 12px; justify-content: center; font-weight: 700;">
         {{ followupSaving ? 'Saving...' : (editingBookmarkId ? 'Update Follow Up' : 'Save Follow Up') }}
       </button>
+    </div>
+  </div>
+</div>
+<!-- ══ ADMIN COMPANY FULL VIEW ══ -->
+<div class="invoice-overlay admin-employee-modal-overlay" *ngIf="companyFullViewOpen" (click)="closeCompanyFullView()">
+  <div class="invoice-modal followup-modal company-full-modal admin-company-full-modal" (click)="$event.stopPropagation()">
+    <div class="followup-modal-head company-full-head">
+      <div class="followup-modal-title">
+        <div class="section-kicker">Company Full View</div>
+        <h3>{{ selectedLeadCompany || selectedRemarksFilterCompany || 'Company details' }}</h3>
+        <p *ngIf="companyFullViewContext()">{{ companyFullViewContext() }}</p>
+      </div>
+      <button class="secondary-action" type="button" (click)="closeCompanyFullView()">Close</button>
+    </div>
+
+    <div class="company-full-body">
+      <section class="company-full-overview" *ngIf="companyFullViewLead() as companyLead">
+        <div class="company-full-stat">
+          <span>Contacts</span>
+          <strong>{{ companyFullViewRows().length }}</strong>
+        </div>
+        <div class="company-full-stat">
+          <span>Set</span>
+          <strong>{{ companyLead.setLabel || '-' }}</strong>
+        </div>
+        <div class="company-full-stat">
+          <span>Latest Update</span>
+          <strong>{{ companyLeadLatestDate(companyLead) }}</strong>
+        </div>
+        <div class="company-full-stat">
+          <span>Primary Status</span>
+          <strong>{{ companyLead.status || 'New' }}</strong>
+        </div>
+      </section>
+
+      <section class="company-full-section" *ngIf="companyFullViewContext()">
+        <div class="company-full-label">Company Context</div>
+        <p>{{ companyFullViewContext() }}</p>
+      </section>
+
+      <section class="company-full-section">
+        <div class="company-full-label">Directors / Contacts</div>
+        <div class="company-director-list" *ngIf="companyFullViewRows().length > 0; else emptyAdminCompanyFullView">
+          <article class="company-director-row" *ngFor="let lead of companyFullViewRows()">
+            <div class="company-director-main">
+              <h4>{{ lead.contactName || 'Primary Contact' }}</h4>
+              <span>{{ lead.contactNumber || 'No phone' }}</span>
+            </div>
+            <div class="company-director-field">
+              <span>Email</span>
+              <strong [title]="lead.directorEmailAddress || ''">{{ lead.directorEmailAddress || '-' }}</strong>
+            </div>
+            <div class="company-director-field">
+              <span>Status</span>
+              <strong>{{ lead.status || 'New' }}</strong>
+            </div>
+            <div class="company-director-actions">
+              <button class="secondary-action company-remarks-button" type="button" (click)="openCompanyRemarkHistory(lead)">
+                Remarks {{ companyRemarkCount(lead) }}
+              </button>
+              <button class="secondary-action company-remarks-button" type="button" (click)="openQuotationModal(lead)">
+                Quote
+              </button>
+            </div>
+          </article>
+        </div>
+        <ng-template #emptyAdminCompanyFullView>
+          <div class="empty-state-inline empty-state-inline-minimal">No contact data loaded for this company.</div>
+        </ng-template>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN REMARK HISTORY ══ -->
+<div class="invoice-overlay company-remarks-overlay" *ngIf="companyRemarkLead" (click)="closeCompanyRemarkHistory()">
+  <div class="invoice-modal followup-modal company-remarks-modal" (click)="$event.stopPropagation()">
+    <div class="followup-modal-head">
+      <div class="followup-modal-title">
+        <div class="section-kicker">Remark History</div>
+        <h3>{{ companyRemarkLead.contactName || 'Primary Contact' }}</h3>
+        <p>{{ companyRemarkLead.leadCompanyName }}</p>
+      </div>
+      <button class="secondary-action" type="button" (click)="closeCompanyRemarkHistory()">Close</button>
+    </div>
+    <div class="company-remarks-list" *ngIf="companyRemarkHistory(companyRemarkLead).length; else emptyCompanyRemarks">
+      <div class="company-remark-row" *ngFor="let remark of companyRemarkHistory(companyRemarkLead)">
+        {{ remark }}
+      </div>
+    </div>
+    <ng-template #emptyCompanyRemarks>
+      <div class="empty-state-inline empty-state-inline-minimal">No remarks recorded for this contact.</div>
+    </ng-template>
+  </div>
+</div>
+
+<!-- ══ ADMIN AI SUMMARY ══ -->
+<div class="invoice-overlay company-remarks-overlay" *ngIf="adminAiSummaryOpen" (click)="closeAdminAiSummary()">
+  <div class="invoice-modal followup-modal company-remarks-modal admin-ai-modal" (click)="$event.stopPropagation()">
+    <div class="followup-modal-head">
+      <div class="followup-modal-title">
+        <div class="section-kicker">AI Summary</div>
+        <h3>{{ selectedLeadCompany || selectedRemarksFilterCompany || 'Company summary' }}</h3>
+        <p *ngIf="companyFullViewContext()">{{ companyFullViewContext() }}</p>
+      </div>
+      <button class="secondary-action" type="button" (click)="closeAdminAiSummary()">Close</button>
+    </div>
+    <div class="company-remarks-list">
+      <div class="company-remark-row">
+        Contacts loaded: {{ companyFullViewRows().length }}
+      </div>
+      <div class="company-remark-row" *ngIf="companyFullViewLead() as lead">
+        Primary contact: {{ lead.contactName || 'Primary Contact' }} · {{ lead.contactNumber || 'No phone' }}
+      </div>
+      <div class="company-remark-row" *ngIf="companyFullViewContext()">
+        Context: {{ companyFullViewContext() }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN QUOTATION BUILDER ══ -->
+<div class="invoice-overlay admin-employee-modal-overlay" *ngIf="showInvoiceModal" (click)="closeInvoiceModal()">
+  <div class="invoice-modal invoice-modal-billing admin-quote-modal" (click)="$event.stopPropagation()">
+    <div class="invoice-builder">
+      <div class="section-header invoice-builder-header">
+        <div>
+          <div class="section-kicker">{{ quoteMode ? 'Quotation Builder' : 'Invoice Builder' }}</div>
+          <h3>{{ quoteMode ? 'Quote' : 'Invoice' }} {{ invoiceNumber() }}</h3>
+        </div>
+        <button class="secondary-action" type="button" (click)="closeInvoiceModal()">Close</button>
+      </div>
+
+      <div class="invoice-form-grid invoice-control-card">
+        <label class="mini-field">
+          <span>Product</span>
+          <select class="field-select" [(ngModel)]="selectedInvoiceProduct" (change)="onProductSelect()">
+            <option [ngValue]="null">Select product</option>
+            <option *ngFor="let product of settingsProducts" [ngValue]="product">{{ product.name }}</option>
+          </select>
+        </label>
+        <label class="mini-field">
+          <span>Price</span>
+          <input class="field-input" type="number" [(ngModel)]="invoicePrice" />
+        </label>
+        <label class="mini-field">
+          <span>Quantity</span>
+          <input class="field-input" type="number" [(ngModel)]="invoiceQuantity" />
+        </label>
+        <button class="primary-action" type="button" (click)="addInvoiceItem()" [disabled]="!selectedInvoiceProduct">Add Item</button>
+      </div>
+
+      <div class="table-scroll invoice-items-card">
+        <table class="data-table compact-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Qty</th>
+              <th>Price</th>
+              <th>Sum</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of invoiceItems; let i = index">
+              <td>{{ item.name }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>{{ formatInvoiceMoney(item.price) }}</td>
+              <td>{{ formatInvoiceMoney(item.price * item.quantity) }}</td>
+              <td><button class="text-action" type="button" (click)="removeInvoiceItem(i)">Remove</button></td>
+            </tr>
+            <tr *ngIf="invoiceItems.length===0">
+              <td colspan="5" class="empty-cell">No {{ quoteMode ? 'quotation' : 'invoice' }} items added yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="invoice-preview" class="invoice-preview quotation-preview">
+        <header class="quotation-hero">
+          <div class="quotation-hero-logo">
+            <img *ngIf="settingsInvoiceLogo; else quotationTextLogo" [src]="settingsInvoiceLogo" alt="Quotation logo" class="quotation-logo">
+            <ng-template #quotationTextLogo>
+              <div class="invoice-text-logo">{{ invoiceCompanyDisplayName() }}</div>
+            </ng-template>
+          </div>
+          <div class="quotation-hero-company">
+            <h2>{{ invoiceCompanyDisplayName() }}</h2>
+            <div>{{ quoteMode ? 'Quotation' : 'Invoice' }}</div>
+            <p *ngIf="invoiceCompanyAddress()">{{ invoiceCompanyAddress() }}</p>
+            <p *ngIf="settingsContactDetails.phone">{{ settingsContactDetails.phone }}</p>
+            <p *ngIf="settingsContactDetails.email">{{ settingsContactDetails.email }}</p>
+            <p *ngIf="settingsContactDetails.website">{{ settingsContactDetails.website }}</p>
+            <p *ngIf="settingsGstNumber">GSTIN: {{ settingsGstNumber }}</p>
+          </div>
+          <div class="quotation-hero-title">
+            <h2>{{ quoteMode ? 'Quotation' : 'Invoice' }}</h2>
+            <span>{{ quoteMode ? 'Quote Number' : 'Invoice Number' }}</span>
+            <strong>{{ invoiceNumber() }}</strong>
+          </div>
+        </header>
+
+        <section class="quotation-letter">
+          <h3>Dear {{ invoiceLead?.contactName || 'Client' }},</h3>
+          <strong>{{ invoiceLead?.leadCompanyName || 'Client Company' }}</strong>
+          <p>Thank you for choosing {{ invoiceCompanyDisplayName() }}. Please find the cost details of our services below.</p>
+        </section>
+
+        <section class="quotation-service-card">
+          <div class="quotation-service-header">
+            <span>Service Description</span>
+            <span>Qty</span>
+            <span>Price</span>
+            <span>Amount</span>
+          </div>
+          <div class="quotation-service-body">
+            <div class="quotation-service-row" *ngFor="let item of invoiceItems">
+              <span>{{ item.name }}</span>
+              <span>{{ item.quantity }}</span>
+              <span>{{ item.price | number:'1.0-0' }}</span>
+              <span>{{ ((item.price || 0) * (item.quantity || 1)) | number:'1.0-0' }}</span>
+            </div>
+            <div class="quotation-total-panel">
+              <div><span>Sub Total</span><strong>{{ invoiceSubtotal | number:'1.0-0' }}</strong></div>
+              <div><span>GST ({{ settingsGstPercentage }}%)</span><strong>{{ invoiceGstAmount | number:'1.0-0' }}</strong></div>
+              <div><span>Grand Total</span><strong>{{ invoiceTotal | number:'1.0-0' }}</strong></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="quotation-kind-note">
+          <strong>Kind Note:</strong>
+          <span>{{ settingsInvoiceFooter || 'We aim to provide high quality service at an affordable cost.' }}</span>
+        </section>
+      </div>
+
+      <div class="action-row">
+        <button class="secondary-action" type="button" (click)="closeInvoiceModal()">Cancel</button>
+        <button class="primary-action" type="button" (click)="printInvoice()" [disabled]="invoiceItems.length===0 || invoiceSaving || quotationSaving">
+          {{ (invoiceSaving || quotationSaving) ? 'Saving...' : (quoteMode ? 'Save & Print Quote' : 'Save & Print Invoice') }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

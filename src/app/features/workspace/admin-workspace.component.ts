@@ -258,6 +258,7 @@ export class AdminWorkspaceComponent implements OnInit {
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
+  employeeSearchQuery = '';
 
   // ── Follow-ups Filters ─────────────────────────────────────
   followupSelectedEmps: string[] = [];
@@ -298,9 +299,27 @@ export class AdminWorkspaceComponent implements OnInit {
     return this.followupSelectedEmps.includes(phone);
   }
 
+  get filteredEmployeesForTable(): Employee[] {
+    const query = this.employeeSearchQuery.trim().toLowerCase();
+    if (!query) return this.employees;
+    return this.employees.filter((emp) => {
+      const tags = Array.isArray(emp.tags) ? emp.tags.join(' ') : '';
+      return [
+        emp.name,
+        emp.mobile,
+        tags,
+        emp.appVersion,
+        emp.lastCallTime,
+        emp.lastSyncTime
+      ].some((value) => String(value || '').toLowerCase().includes(query));
+    });
+  }
+
   readonly LEAD_STATUSES = ['New', 'Contacted', 'Interested', 'Not Interested', 'Converted', 'Follow Up', 'Meeting Scheduled', 'Quotation Sent'];
   updatingLeadId: string | null = null;
   leadRemarksInputs: { [key: string]: string } = {};
+  remarkPostingIds = new Set<string>();
+  adminLeadStatusFilter = '';
   remarkLeads: any[] = [];
   remarkLeadsLoading: boolean = false;
 
@@ -529,6 +548,22 @@ export class AdminWorkspaceComponent implements OnInit {
   invoiceSearch = '';
   invoiceDateFilter: 'all' | 'today' | '7d' | '30d' = 'all';
   invoiceSavingLeadId = '';
+  showInvoiceModal = false;
+  quoteMode = false;
+  viewingSavedDocument = false;
+  invoiceItems: Array<{ product: any; price: number; quantity: number; name: string }> = [];
+  selectedInvoiceProduct: any = null;
+  invoicePrice = 0;
+  invoiceQuantity = 1;
+  invoiceIssuedAt = new Date();
+  quoteNumber = Math.floor(100000 + Math.random() * 900000);
+  currentInvoiceNumber = '';
+  currentQuotationNumber = '';
+  invoiceSaving = false;
+  quotationSaving = false;
+  companyFullViewOpen = false;
+  companyRemarkLead: Lead | null = null;
+  adminAiSummaryOpen = false;
 
 
   filteredBookmarksDepsStr = '';
@@ -1154,6 +1189,71 @@ export class AdminWorkspaceComponent implements OnInit {
       this.fetchSettings();
       this.fetchAdminLeads();
       this.fetchInvoiceRecords();
+    }
+  }
+
+  get adminTopbarTitle(): string {
+    switch (this.dashTab) {
+      case 'overview': return 'Overview';
+      case 'leads': return 'Leads';
+      case 'remarks_filter': return 'Remarks Filter';
+      case 'followups': return 'Follow-ups';
+      case 'employees': return 'Employees';
+      case 'emp_dashboard': return this.selectedEmployee?.name || 'Employee Dashboard';
+      case 'reports': return 'Periodic Reports';
+      case 'company': return 'Company Settings';
+      case 'support': return 'Help & Support';
+      case 'settings': return 'App Settings';
+      case 'invoice': return 'Invoice Settings';
+      default: return 'Dashboard';
+    }
+  }
+
+  get adminSearchPlaceholder(): string {
+    switch (this.dashTab) {
+      case 'leads': return 'Search leads, phone, or company...';
+      case 'remarks_filter': return 'Search companies, contacts, or remarks...';
+      case 'followups': return 'Search follow-ups, phone, or company...';
+      case 'employees': return 'Search employees, phone, or tag...';
+      case 'emp_dashboard': return 'Search assigned leads or follow-ups...';
+      default: return 'Search leads, phone, or company...';
+    }
+  }
+
+  get adminGlobalSearch(): string {
+    if (this.dashTab === 'remarks_filter') return this.remarkFilterSearch;
+    if (this.dashTab === 'followups' || this.dashTab === 'emp_dashboard') return this.followupSearch;
+    if (this.dashTab === 'employees') return this.employeeSearchQuery;
+    return this.leadSearchQuery;
+  }
+
+  set adminGlobalSearch(value: string) {
+    if (this.dashTab === 'remarks_filter') {
+      this.remarkFilterSearch = value;
+      return;
+    }
+    if (this.dashTab === 'followups' || this.dashTab === 'emp_dashboard') {
+      this.followupSearch = value;
+      return;
+    }
+    if (this.dashTab === 'employees') {
+      this.employeeSearchQuery = value;
+      return;
+    }
+    this.leadSearchQuery = value;
+    if (this.dashTab !== 'leads') {
+      this.switchTab('leads');
+    }
+    this.onAdminLeadSearchChange();
+  }
+
+  onAdminGlobalSearchEnter(): void {
+    const query = this.adminGlobalSearch.trim();
+    if (!query) return;
+    if (!['leads', 'remarks_filter', 'followups', 'employees', 'emp_dashboard'].includes(this.dashTab)) {
+      this.leadSearchQuery = query;
+      this.switchTab('leads');
+      this.onAdminLeadSearchChange();
     }
   }
 
@@ -3664,6 +3764,243 @@ Thank You.`;
     })}`;
   }
 
+  openQuotationModal(lead: Lead): void {
+    this.quoteMode = true;
+    this.viewingSavedDocument = false;
+    this.invoiceLead = lead;
+    this.invoiceItems = [];
+    this.selectedInvoiceProduct = null;
+    this.invoicePrice = 0;
+    this.invoiceQuantity = 1;
+    this.invoiceIssuedAt = new Date();
+    this.quoteNumber = Math.floor(100000 + Math.random() * 900000);
+    this.currentQuotationNumber = '';
+    this.showInvoiceModal = true;
+  }
+
+  openAdminInvoiceModal(lead: Lead): void {
+    this.quoteMode = false;
+    this.viewingSavedDocument = false;
+    this.invoiceLead = lead;
+    this.invoiceItems = [];
+    this.selectedInvoiceProduct = null;
+    this.invoicePrice = 0;
+    this.invoiceQuantity = 1;
+    this.invoiceIssuedAt = new Date();
+    this.quoteNumber = Math.floor(100000 + Math.random() * 900000);
+    this.currentInvoiceNumber = '';
+    this.showInvoiceModal = true;
+  }
+
+  closeInvoiceModal(): void {
+    this.showInvoiceModal = false;
+    this.quoteMode = false;
+    this.viewingSavedDocument = false;
+  }
+
+  onProductSelect(): void {
+    if (this.selectedInvoiceProduct) {
+      this.invoicePrice = Number(this.selectedInvoiceProduct.minPrice || 0);
+    }
+  }
+
+  addInvoiceItem(): void {
+    if (!this.selectedInvoiceProduct) return;
+    const minPrice = Number(this.selectedInvoiceProduct.minPrice || 0);
+    if (Number(this.invoicePrice || 0) < minPrice) {
+      alert(`Price cannot be less than the minimum price of ${this.formatInvoiceMoney(minPrice)}`);
+      this.invoicePrice = minPrice;
+      return;
+    }
+
+    this.invoiceItems.push({
+      product: this.selectedInvoiceProduct,
+      price: Number(this.invoicePrice || 0),
+      quantity: Number(this.invoiceQuantity || 1),
+      name: this.selectedInvoiceProduct.name,
+    });
+    this.selectedInvoiceProduct = null;
+    this.invoicePrice = 0;
+    this.invoiceQuantity = 1;
+  }
+
+  removeInvoiceItem(index: number): void {
+    this.invoiceItems.splice(index, 1);
+  }
+
+  get invoiceSubtotal(): number {
+    return this.invoiceItems.reduce((sum, item) => sum + (Number(item.price || 0) * Number(item.quantity || 1)), 0);
+  }
+
+  get invoiceGstAmount(): number {
+    return this.invoiceSubtotal * (Number(this.settingsGstPercentage || 0) / 100);
+  }
+
+  get invoiceTotal(): number {
+    return this.invoiceSubtotal + this.invoiceGstAmount;
+  }
+
+  invoiceNumber(): string {
+    if (this.quoteMode && this.currentQuotationNumber) return this.currentQuotationNumber;
+    if (!this.quoteMode && this.currentInvoiceNumber) return this.currentInvoiceNumber;
+    const issued = this.invoiceIssuedAt || new Date();
+    const yyyy = String(issued.getFullYear());
+    const mm = String(issued.getMonth() + 1).padStart(2, '0');
+    const sequence = String(this.quoteNumber % 1000 || 1).padStart(3, '0');
+    return `${this.quoteMode ? 'Quote' : 'Invoice'}_${yyyy}${mm}${sequence}_v1.pdf`;
+  }
+
+  invoiceCompanyDisplayName(): string {
+    return (this.settingsShowCompanyNameOnInvoice ? (this.settingsCompanyName || this.dashboardCompany) : '') || 'DealVoice';
+  }
+
+  invoiceCompanyAddress(): string {
+    return this.settingsInvoiceRegisteredAddress || this.companyProfile?.companyAddress || '';
+  }
+
+  printInvoice(): void {
+    if (this.invoiceItems.length === 0) {
+      alert(`Please add at least one product to the ${this.quoteMode ? 'quotation' : 'invoice'}.`);
+      return;
+    }
+    if (this.viewingSavedDocument) {
+      setTimeout(() => window.print(), 50);
+      return;
+    }
+    if (this.quoteMode) {
+      this.saveAndPrintQuotation();
+      return;
+    }
+    if (!this.invoiceLead || this.invoiceSaving) return;
+
+    this.invoiceSaving = true;
+    this.api.post<any>('/api/invoices', {
+      companyCode: this.dashboardCode,
+      employeePhone: this.invoiceLead.assignedEmployeePhone,
+      employeeName: this.getEmployeeName(this.invoiceLead.assignedEmployeePhone),
+      createdByRole: 'admin',
+      createdByName: this.dashboardCompany,
+      leadId: this.invoiceLead._id,
+      contactNumber: this.invoiceLead.contactNumber,
+      gstPercentage: this.settingsGstPercentage,
+      invoiceDate: this.invoiceIssuedAt,
+      items: this.invoiceItems.map((item) => ({
+        productId: item.product?._id,
+        name: item.name,
+        rate: item.price,
+        quantity: item.quantity,
+        sacHsn: item.product?.sacHsn || '',
+      })),
+    }).subscribe({
+      next: (res) => {
+        this.invoiceSaving = false;
+        if (!res?.success || !res.invoice) {
+          alert(res?.message || 'Failed to save invoice.');
+          return;
+        }
+        this.currentInvoiceNumber = res.invoice.invoiceNumber;
+        this.fetchInvoiceRecords();
+        setTimeout(() => window.print(), 50);
+      },
+      error: (err) => {
+        this.invoiceSaving = false;
+        alert(err?.error?.message || 'Failed to save invoice.');
+      },
+    });
+  }
+
+  saveAndPrintQuotation(): void {
+    if (!this.invoiceLead || this.quotationSaving) return;
+    this.quotationSaving = true;
+    this.api.post<any>('/api/quotations', {
+      companyCode: this.dashboardCode,
+      employeePhone: this.invoiceLead.assignedEmployeePhone,
+      employeeName: this.getEmployeeName(this.invoiceLead.assignedEmployeePhone),
+      createdByRole: 'admin',
+      createdByName: this.dashboardCompany,
+      leadId: this.invoiceLead._id,
+      contactNumber: this.invoiceLead.contactNumber,
+      gstPercentage: this.settingsGstPercentage,
+      quotationDate: this.invoiceIssuedAt,
+      items: this.invoiceItems.map((item) => ({
+        productId: item.product?._id,
+        name: item.name,
+        rate: item.price,
+        quantity: item.quantity,
+      })),
+    }).subscribe({
+      next: (res) => {
+        this.quotationSaving = false;
+        if (!res?.success || !res.quotation) {
+          alert(res?.message || 'Failed to save quotation.');
+          return;
+        }
+        this.currentQuotationNumber = res.quotation.quotationNumber;
+        setTimeout(() => window.print(), 50);
+      },
+      error: (err) => {
+        this.quotationSaving = false;
+        alert(err?.error?.message || 'Failed to save quotation.');
+      },
+    });
+  }
+
+  openCompanyFullView(event?: Event): void {
+    event?.stopPropagation();
+    this.companyRemarkLead = null;
+    this.adminAiSummaryOpen = false;
+    this.companyFullViewOpen = true;
+  }
+
+  closeCompanyFullView(): void {
+    this.companyFullViewOpen = false;
+    this.companyRemarkLead = null;
+  }
+
+  openCompanyRemarkHistory(lead: Lead): void {
+    this.companyRemarkLead = lead;
+  }
+
+  closeCompanyRemarkHistory(): void {
+    this.companyRemarkLead = null;
+  }
+
+  openAdminAiSummary(event?: Event): void {
+    event?.stopPropagation();
+    this.adminAiSummaryOpen = true;
+  }
+
+  closeAdminAiSummary(): void {
+    this.adminAiSummaryOpen = false;
+  }
+
+  companyFullViewRows(): Lead[] {
+    if (this.dashTab === 'remarks_filter') return this.remarksFilterLeadsInCompany;
+    return this.leadsInSelectedCompany;
+  }
+
+  companyFullViewLead(): Lead | null {
+    return this.companyFullViewRows()[0] || null;
+  }
+
+  companyFullViewContext(): string {
+    const lead = this.companyFullViewLead();
+    return String(lead?.mainDivisionDescription || lead?.companyDescription || '').trim();
+  }
+
+  companyLeadLatestDate(lead: Lead | null): string {
+    const raw = (lead as any)?.updatedAt || (lead as any)?.createdAt || '';
+    return raw ? this.fmtDate(raw) : '-';
+  }
+
+  companyRemarkCount(lead: Lead): number {
+    return (lead.remarks || []).filter(Boolean).length;
+  }
+
+  companyRemarkHistory(lead: Lead | null): string[] {
+    return [...(lead?.remarks || [])].filter(Boolean).reverse();
+  }
+
   createAdminInvoiceForLead(lead: Lead): void {
     if (!lead?._id || this.invoiceSavingLeadId) return;
     const product = this.settingsProducts[0];
@@ -3718,6 +4055,30 @@ Thank You.`;
     });
   }
 
+  addLeadRemark(lead: Lead): void {
+    if (!lead._id) return;
+    const remark = this.leadRemarksInputs[lead._id];
+    if (!remark || !remark.trim() || this.remarkPostingIds.has(lead._id)) return;
+
+    this.remarkPostingIds.add(lead._id);
+    this.leadService.addLeadRemark(lead._id, remark.trim()).subscribe({
+      next: (res: any) => {
+        if (res?.success && res.lead) {
+          const normalized = this.normalizeLead(res.lead);
+          const allIndex = this.allLeads.findIndex((item) => item._id === lead._id);
+          if (allIndex !== -1) this.allLeads[allIndex] = normalized;
+          this.leadRemarksInputs[lead._id!] = '';
+          this.lastAllLeadsRef = null;
+        }
+        this.remarkPostingIds.delete(lead._id!);
+      },
+      error: () => {
+        this.remarkPostingIds.delete(lead._id!);
+        alert('Failed to add remark.');
+      }
+    });
+  }
+
   normalizeLead(lead: any): Lead {
     if (!lead) return lead;
     return {
@@ -3748,10 +4109,20 @@ Thank You.`;
 
   get filteredLeads(): any[] {
     if (this.dashTab === 'leads') {
+      const q = this.leadSearchQuery.toLowerCase();
       return this.allLeads.filter(lead => {
+        const remarks: string[] = Array.isArray(lead.remarks) ? lead.remarks : [];
+        const matchesSearch = !this.leadSearchQuery ||
+          (lead.contactName?.toLowerCase().includes(q)) ||
+          (lead.contactNumber?.includes(this.leadSearchQuery)) ||
+          (lead.leadCompanyName?.toLowerCase().includes(q)) ||
+          (lead.directorEmailAddress?.toLowerCase().includes(q)) ||
+          (remarks.some(r => r.toLowerCase().includes(q)));
         const matchesEmployee = !this.leadEmployeeFilter ||
           lead.assignedEmployeePhone === this.leadEmployeeFilter;
-        return matchesEmployee;
+        const matchesStatus = !this.adminLeadStatusFilter ||
+          (lead.status || 'New') === this.adminLeadStatusFilter;
+        return matchesSearch && matchesEmployee && matchesStatus;
       });
     }
 
@@ -3883,7 +4254,29 @@ Thank You.`;
 
   get leadsInSelectedCompany(): any[] {
     if (!this.selectedLeadCompany) return [];
-    return this.allLeads.filter(l => l.leadCompanyName === this.selectedLeadCompany);
+    return this.allLeads
+      .filter(l => {
+        const companyMatches = l.leadCompanyName === this.selectedLeadCompany;
+        const statusMatches = !this.adminLeadStatusFilter || (l.status || 'New') === this.adminLeadStatusFilter;
+        const employeeMatches = !this.leadEmployeeFilter || l.assignedEmployeePhone === this.leadEmployeeFilter;
+        const q = this.leadSearchQuery.toLowerCase();
+        const remarks: string[] = Array.isArray(l.remarks) ? l.remarks : [];
+        const searchMatches = !this.leadSearchQuery ||
+          l.contactName?.toLowerCase().includes(q) ||
+          l.contactNumber?.includes(this.leadSearchQuery) ||
+          l.directorEmailAddress?.toLowerCase().includes(q) ||
+          remarks.some((remark) => remark.toLowerCase().includes(q));
+        return companyMatches && statusMatches && employeeMatches && searchMatches;
+      });
+  }
+
+  adminLeadCompanyPreviewLine(company: string): string {
+    const lead = this.getLeadsByCompany(company).find((item) => item.mainDivisionDescription || item.companyDescription);
+    return lead?.mainDivisionDescription || lead?.companyDescription || '';
+  }
+
+  adminLeadRemarkPreviewList(lead: Lead): string[] {
+    return [...(lead.remarks || [])].filter(Boolean).reverse().slice(0, 2);
   }
 
   getLeadsByCompany(company: string): any[] {
