@@ -12,6 +12,8 @@ export type AdminPageId =
   | 'emp_dashboard'
   | 'settings'
   | 'invoice'
+  | 'invoice_settings'
+  | 'quotation'
   | 'remarks_filter';
 
 export const ADMIN_PAGES: readonly AdminPageId[] = [
@@ -24,7 +26,7 @@ export const ADMIN_PAGES: readonly AdminPageId[] = [
   'support',
   'emp_dashboard',
   'settings',
-  'invoice',
+  'invoice_settings',
   'remarks_filter',
 ];
 

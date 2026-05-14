@@ -553,13 +553,77 @@ export class AdminWorkspaceComponent implements OnInit {
     return 'status-new';
   }
 
+  leadStatusShortLabel(status: string): string {
+    const normalized = String(status || '').trim();
+    const lower = normalized.toLowerCase();
+    if (!normalized) return 'New';
+    if (lower.includes('follow')) return 'Follow-up';
+    if (lower.includes('not')) return 'Not Connected';
+    if (lower.includes('convert')) return 'Converted';
+    if (lower.includes('interest')) return 'Interested';
+    return normalized;
+  }
+
+  getMatchedLeadForAdminBookmark(bookmark: Bookmark | null | undefined): Lead | null {
+    if (!bookmark) return null;
+    const matchedLead =
+      this.getLeadByPhone(bookmark.contactNumber) ||
+      this.allLeads.find(
+        (lead) => lead.contactNumber === bookmark.contactNumber && lead.leadCompanyName === bookmark.companyName
+      );
+
+    if (matchedLead) return matchedLead;
+
+    return {
+      _id: '',
+      companyCode: bookmark.companyCode,
+      assignedEmployeePhone: bookmark.employeePhone,
+      leadCompanyName: bookmark.companyName,
+      contactName: bookmark.contactName,
+      contactNumber: bookmark.contactNumber,
+      status: 'Follow Up',
+      setLabel: 'Old Leads',
+      directorEmailAddress: '',
+      remarks: [...(bookmark.remarks || [])],
+    } as Lead;
+  }
+
+  followupDescriptionPreview(bookmark: Bookmark): string {
+    return String(bookmark.description || '').trim();
+  }
+
+  followupRemarkPreviewList(bookmark: Bookmark): string[] {
+    return [...(bookmark.remarks || [])].filter(Boolean).slice(-2).reverse();
+  }
+
+  openLeadFromAdminFollowup(bookmark: Bookmark): void {
+    const matchedLead = this.getMatchedLeadForAdminBookmark(bookmark);
+    const company = matchedLead?.leadCompanyName || bookmark.companyName || '';
+    if (!company) return;
+
+    this.dashTab = 'leads';
+    this.sidebarOpen = false;
+    this.leadSearchQuery = '';
+    this.adminLeadStatusFilter = '';
+    this.selectedLeadCompany = company;
+    this.closeAdminLeadPanels();
+    if (!this.adminLeadCompanies.some((item) => item.name === company)) {
+      this.adminLeadCompanies = [{ name: company, count: 0 }, ...this.adminLeadCompanies];
+    }
+    this.loadAdminLeadContacts(false);
+  }
+
   // Invoice Flow Support
   selectedEmployeeForInvoice: any = null;
   invoiceLead: any = null;
   invoiceRecords: any[] = [];
   invoiceRecordsLoading = false;
   invoiceSearch = '';
+  invoiceHistorySearch = '';
   invoiceDateFilter: 'all' | 'today' | '7d' | '30d' = 'all';
+  invoiceDateFilterOpen = false;
+  invoiceDateFrom = '';
+  invoiceDateTo = '';
   invoiceSavingLeadId = '';
   showInvoiceModal = false;
   quoteMode = false;
@@ -574,6 +638,13 @@ export class AdminWorkspaceComponent implements OnInit {
   currentQuotationNumber = '';
   invoiceSaving = false;
   quotationSaving = false;
+  quotationRecords: any[] = [];
+  quotationRecordsLoading = false;
+  quotationSearch = '';
+  quotationHistorySearch = '';
+  quotationDateFilterOpen = false;
+  quotationDateFrom = '';
+  quotationDateTo = '';
   companyFullViewOpen = false;
   companyRemarkLead: Lead | null = null;
   adminAiSummaryOpen = false;
@@ -707,6 +778,19 @@ export class AdminWorkspaceComponent implements OnInit {
     return date ? `Updated ${this.fmtDate(date)}` : 'No interaction recorded';
   }
 
+  followupCompanyPreviewLine(company: string): string {
+    const bookmark = this.filteredBookmarksByGlobalCompany[0] || this.filteredBookmarksFiltered.find((item) => item.companyName === company);
+    if (!bookmark) return '';
+    const matchedLead = this.getMatchedLeadForAdminBookmark(bookmark);
+    return String(
+      matchedLead?.mainDivisionDescription ||
+      matchedLead?.companyDescription ||
+      bookmark.description ||
+      [...(bookmark.remarks || [])].filter(Boolean).slice(-1)[0] ||
+      ''
+    ).trim();
+  }
+
   // ── Support & RM ───────────────────────────────────────────
   rmRequestLoading = false;
   rmRequestMessage = '';
@@ -765,6 +849,25 @@ export class AdminWorkspaceComponent implements OnInit {
     this.updateScrollLock();
   }
 
+  openFollowupModal(lead: Lead): void {
+    this.editingBookmarkId = null;
+    this.followupLead = lead;
+    this.followupForm = {
+      brochuresSent: false,
+      techMeet: false,
+      meetingRemarks: false,
+      quotationSent: false,
+      proposalSent: false,
+      whatsappGrp: false,
+      description: '',
+      remarks: [...(lead.remarks || [])],
+      newRemark: '',
+      reminderDate: ''
+    };
+    this.showFollowupModal = true;
+    this.updateScrollLock();
+  }
+
   closeFollowupModal() {
     this.showFollowupModal = false;
     this.editingBookmarkId = null;
@@ -781,7 +884,7 @@ export class AdminWorkspaceComponent implements OnInit {
   }
 
   async saveFollowup() {
-    if (!this.editingBookmarkId) return;
+    if (!this.editingBookmarkId && !this.followupLead) return;
     this.followupSaving = true;
 
     try {
@@ -796,7 +899,19 @@ export class AdminWorkspaceComponent implements OnInit {
       };
       delete (payload as any).newRemark;
 
-      await this.bookmarkService.updateBookmark(this.editingBookmarkId, payload).toPromise();
+      if (this.editingBookmarkId) {
+        await this.bookmarkService.updateBookmark(this.editingBookmarkId, payload).toPromise();
+      } else {
+        const lead = this.followupLead as Lead;
+        await this.bookmarkService.addBulkBookmarks([{
+          ...payload,
+          companyCode: lead.companyCode || this.dashboardCode,
+          employeePhone: lead.assignedEmployeePhone || this.selectedEmployee?.mobile || '',
+          contactNumber: lead.contactNumber || '',
+          contactName: lead.contactName || 'Primary Contact',
+          companyName: lead.leadCompanyName || 'Unnamed Company'
+        }]).toPromise();
+      }
       
       // Refresh bookmarks
       this.fetchCompanyBookmarks();
@@ -1033,6 +1148,7 @@ export class AdminWorkspaceComponent implements OnInit {
   adminLeadCompanyPage = 1;
   adminLeadCompanyHasMore = false;
   adminLeadCompaniesLoading = false;
+  adminLeadCompanyTotal = 0;
   adminLeadContactsPage = 1;
   adminLeadContactsHasMore = false;
   adminLeadContactsLoadingMore = false;
@@ -1213,13 +1329,14 @@ export class AdminWorkspaceComponent implements OnInit {
     }
 
     // Load settings when navigating to settings or remarks_filter tab
-    if (tab === 'settings' || tab === 'remarks_filter') {
+    if (tab === 'settings' || tab === 'remarks_filter' || tab === 'invoice_settings') {
       this.fetchSettings();
     }
-    if (tab === 'invoice') {
+    if (tab === 'invoice' || tab === 'quotation') {
       this.fetchSettings();
       this.fetchAdminLeads();
       this.fetchInvoiceRecords();
+      if (tab === 'quotation') this.fetchQuotationRecords();
     }
   }
 
@@ -1235,7 +1352,9 @@ export class AdminWorkspaceComponent implements OnInit {
       case 'company': return 'Company Settings';
       case 'support': return 'Help & Support';
       case 'settings': return 'App Settings';
-      case 'invoice': return 'Invoice Settings';
+      case 'invoice': return 'Invoice';
+      case 'invoice_settings': return 'Invoice Settings';
+      case 'quotation': return 'Quotation';
       default: return 'Dashboard';
     }
   }
@@ -1245,6 +1364,8 @@ export class AdminWorkspaceComponent implements OnInit {
       case 'leads': return 'Search leads, phone, or company...';
       case 'remarks_filter': return 'Search companies, contacts, or remarks...';
       case 'followups': return 'Search follow-ups, phone, or company...';
+      case 'quotation': return 'Search quotations, leads, or company...';
+      case 'invoice_settings': return 'Search leads, phone, or company...';
       case 'employees': return 'Search employees, phone, or tag...';
       case 'emp_dashboard': return 'Search assigned leads or follow-ups...';
       default: return 'Search leads, phone, or company...';
@@ -1254,6 +1375,8 @@ export class AdminWorkspaceComponent implements OnInit {
   get adminGlobalSearch(): string {
     if (this.dashTab === 'remarks_filter') return this.remarkFilterSearch;
     if (this.dashTab === 'followups' || this.dashTab === 'emp_dashboard') return this.followupSearch;
+    if (this.dashTab === 'invoice') return this.invoiceSearch;
+    if (this.dashTab === 'quotation') return this.quotationSearch;
     if (this.dashTab === 'employees') return this.employeeSearchQuery;
     return this.leadSearchQuery;
   }
@@ -1265,6 +1388,14 @@ export class AdminWorkspaceComponent implements OnInit {
     }
     if (this.dashTab === 'followups' || this.dashTab === 'emp_dashboard') {
       this.followupSearch = value;
+      return;
+    }
+    if (this.dashTab === 'invoice') {
+      this.invoiceSearch = value;
+      return;
+    }
+    if (this.dashTab === 'quotation') {
+      this.quotationSearch = value;
       return;
     }
     if (this.dashTab === 'employees') {
@@ -1281,7 +1412,7 @@ export class AdminWorkspaceComponent implements OnInit {
   onAdminGlobalSearchEnter(): void {
     const query = this.adminGlobalSearch.trim();
     if (!query) return;
-    if (!['leads', 'remarks_filter', 'followups', 'employees', 'emp_dashboard'].includes(this.dashTab)) {
+    if (!['leads', 'remarks_filter', 'followups', 'employees', 'emp_dashboard', 'invoice', 'quotation'].includes(this.dashTab)) {
       this.leadSearchQuery = query;
       this.switchTab('leads');
       this.onAdminLeadSearchChange();
@@ -3692,10 +3823,14 @@ Thank You.`;
         this.adminLeadCompanies = append ? [...this.adminLeadCompanies, ...companies] : companies;
         this.adminLeadCompanyPage = res?.page || page;
         this.adminLeadCompanyHasMore = !!res?.hasMore;
+<<<<<<< Updated upstream
         const hydratedLeads = this.flattenAdminContactsByCompany(res?.contactsByCompany);
         if (hydratedLeads.length) {
           this.mergeAdminHydratedLeads(hydratedLeads);
         }
+=======
+        this.adminLeadCompanyTotal = Number(res?.totalCompanies || res?.total || res?.count || this.adminLeadCompanies.length) || this.adminLeadCompanies.length;
+>>>>>>> Stashed changes
         this.allLeadsLoading = false;
         if (!append) {
           this.selectedLeadCompany = this.adminLeadCompanies[0]?.name || '';
@@ -3839,8 +3974,24 @@ Thank You.`;
       .slice(0, 200);
   }
 
+  get adminQuotationLeads(): Lead[] {
+    const query = this.quotationSearch.trim().toLowerCase();
+    return this.allLeads
+      .filter((lead) => {
+        if (!query) return true;
+        return [
+          lead.leadCompanyName,
+          lead.contactName,
+          lead.contactNumber,
+          lead.directorEmailAddress,
+          lead.assignedEmployeePhone,
+        ].some((value) => String(value || '').toLowerCase().includes(query));
+      })
+      .slice(0, 200);
+  }
+
   get filteredInvoiceRecords(): any[] {
-    const query = this.invoiceSearch.trim().toLowerCase();
+    const query = this.invoiceHistorySearch.trim().toLowerCase();
     return this.invoiceRecords.filter((invoice) => {
       const matchesSearch = !query || [
         invoice.invoiceNumber,
@@ -3850,7 +4001,22 @@ Thank You.`;
         invoice.employeeName,
         invoice.employeePhone,
       ].join(' ').toLowerCase().includes(query);
-      return matchesSearch && this.matchesAdminInvoiceDateFilter(invoice.invoiceDate || invoice.createdAt);
+      return matchesSearch && this.matchesInvoiceDateRange(invoice.invoiceDate || invoice.createdAt);
+    });
+  }
+
+  get filteredQuotationRecords(): any[] {
+    const query = this.quotationHistorySearch.trim().toLowerCase();
+    return this.quotationRecords.filter((quote) => {
+      const matchesSearch = !query || [
+        quote.quotationNumber,
+        quote.leadCompanyName,
+        quote.contactName,
+        quote.contactNumber,
+        quote.employeeName,
+        quote.employeePhone,
+      ].join(' ').toLowerCase().includes(query);
+      return matchesSearch && this.matchesQuotationDateRange(quote.quotationDate || quote.createdAt);
     });
   }
 
@@ -3864,6 +4030,101 @@ Thank You.`;
     const days = this.invoiceDateFilter === '7d' ? 7 : 30;
     start.setDate(start.getDate() - days + 1);
     return date >= start;
+  }
+
+  matchesInvoiceDateRange(rawDate?: string): boolean {
+    if (!rawDate) return false;
+    const date = new Date(rawDate);
+    if (this.invoiceDateFrom) {
+      const from = new Date(this.invoiceDateFrom);
+      from.setHours(0, 0, 0, 0);
+      if (date < from) return false;
+    }
+    if (this.invoiceDateTo) {
+      const to = new Date(this.invoiceDateTo);
+      to.setHours(23, 59, 59, 999);
+      if (date > to) return false;
+    }
+    return true;
+  }
+
+  matchesQuotationDateRange(rawDate?: string): boolean {
+    if (!rawDate) return false;
+    const date = new Date(rawDate);
+    if (this.quotationDateFrom) {
+      const from = new Date(this.quotationDateFrom);
+      from.setHours(0, 0, 0, 0);
+      if (date < from) return false;
+    }
+    if (this.quotationDateTo) {
+      const to = new Date(this.quotationDateTo);
+      to.setHours(23, 59, 59, 999);
+      if (date > to) return false;
+    }
+    return true;
+  }
+
+  fetchQuotationRecords(): void {
+    if (!this.dashboardCode) return;
+    this.quotationRecordsLoading = true;
+    const params = new URLSearchParams({ companyCode: this.dashboardCode });
+    this.api.get<any>(`/api/quotations?${params.toString()}`).subscribe({
+      next: (res) => {
+        this.quotationRecordsLoading = false;
+        this.quotationRecords = res?.success ? (res.quotations || []) : [];
+      },
+      error: () => {
+        this.quotationRecordsLoading = false;
+      },
+    });
+  }
+
+  openSavedInvoice(record: any): void {
+    this.quoteMode = false;
+    this.viewingSavedDocument = true;
+    this.currentInvoiceNumber = record.invoiceNumber || '';
+    this.invoiceLead = {
+      _id: record.leadId || '',
+      companyCode: this.dashboardCode,
+      assignedEmployeePhone: record.employeePhone || '',
+      leadCompanyName: record.leadCompanyName || '',
+      contactName: record.contactName || '',
+      contactNumber: record.contactNumber || '',
+      directorEmailAddress: record.directorEmailAddress || '',
+      status: '',
+    };
+    this.invoiceIssuedAt = record.invoiceDate ? new Date(record.invoiceDate) : new Date(record.createdAt || Date.now());
+    this.invoiceItems = (record.items || []).map((item: any) => ({
+      product: item.product || { name: item.name, sacHsn: item.sacHsn || '' },
+      name: item.name || item.product?.name || 'Service',
+      price: Number(item.rate ?? item.price ?? 0),
+      quantity: Number(item.quantity || 1),
+    }));
+    this.showInvoiceModal = true;
+  }
+
+  openSavedQuotation(record: any): void {
+    this.quoteMode = true;
+    this.viewingSavedDocument = true;
+    this.currentQuotationNumber = record.quotationNumber || '';
+    this.invoiceLead = {
+      _id: record.leadId || '',
+      companyCode: this.dashboardCode,
+      assignedEmployeePhone: record.employeePhone || '',
+      leadCompanyName: record.leadCompanyName || '',
+      contactName: record.contactName || '',
+      contactNumber: record.contactNumber || '',
+      directorEmailAddress: record.directorEmailAddress || '',
+      status: '',
+    };
+    this.invoiceIssuedAt = record.quotationDate ? new Date(record.quotationDate) : new Date(record.createdAt || Date.now());
+    this.invoiceItems = (record.items || []).map((item: any) => ({
+      product: item.product || { name: item.name, sacHsn: item.sacHsn || '' },
+      name: item.name || item.product?.name || 'Service',
+      price: Number(item.rate ?? item.price ?? 0),
+      quantity: Number(item.quantity || 1),
+    }));
+    this.showInvoiceModal = true;
   }
 
   formatInvoiceMoney(value: number): string {
@@ -3945,8 +4206,28 @@ Thank You.`;
     return this.invoiceSubtotal * (Number(this.settingsGstPercentage || 0) / 100);
   }
 
+  get invoiceCgstAmount(): number {
+    return this.invoiceGstAmount / 2;
+  }
+
+  get invoiceSgstAmount(): number {
+    return this.invoiceGstAmount / 2;
+  }
+
   get invoiceTotal(): number {
     return this.invoiceSubtotal + this.invoiceGstAmount;
+  }
+
+  invoiceItemTaxable(item: { price: number; quantity: number }): number {
+    return Number(item.price || 0) * Number(item.quantity || 1);
+  }
+
+  invoiceItemGst(item: { price: number; quantity: number }): number {
+    return this.invoiceItemTaxable(item) * (Number(this.settingsGstPercentage || 0) / 100);
+  }
+
+  invoiceItemTotal(item: { price: number; quantity: number }): number {
+    return this.invoiceItemTaxable(item) + this.invoiceItemGst(item);
   }
 
   invoiceNumber(): string {
@@ -4045,6 +4326,7 @@ Thank You.`;
           return;
         }
         this.currentQuotationNumber = res.quotation.quotationNumber;
+        this.fetchQuotationRecords();
         setTimeout(() => window.print(), 50);
       },
       error: (err) => {
@@ -4322,6 +4604,11 @@ Thank You.`;
 
   companyFullViewRows(): Lead[] {
     if (this.dashTab === 'remarks_filter') return this.remarksFilterLeadsInCompany;
+    if (this.dashTab === 'followups') {
+      return this.filteredBookmarksByGlobalCompany
+        .map((bookmark) => this.getMatchedLeadForAdminBookmark(bookmark))
+        .filter((lead): lead is Lead => !!lead);
+    }
     return this.leadsInSelectedCompany;
   }
 
@@ -4355,6 +4642,11 @@ Thank You.`;
     if (normalized.includes('follow') || normalized.includes('quotation')) return 'var(--status-warning, #d97706)';
     if (normalized.includes('contact') || normalized.includes('meeting')) return 'var(--status-info, #2563eb)';
     return 'var(--admin-ink, #111827)';
+  }
+
+  normalizedLeadStatus(status: string | null | undefined): string {
+    const value = String(status || '').trim();
+    return this.LEAD_STATUSES.includes(value) ? value : 'New';
   }
 
   createAdminInvoiceForLead(lead: Lead): void {
@@ -4554,6 +4846,11 @@ Thank You.`;
   selectRemarkFilter(remark: string): void {
     this.selectedRemarkFilter = remark;
     this.selectedRemarksFilterCompany = '';
+    this.remarkLeads = [];
+    if (!remark) {
+      this.remarkLeadsLoading = false;
+      return;
+    }
     this.fetchLeadsByRemark(remark);
   }
 
