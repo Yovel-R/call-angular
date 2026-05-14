@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiService } from '../../../services/api.service';
-import { HISTORY_PAGE_SIZE } from '../../../core/config/pagination.config';
+import { OPERATIONAL_PAGE_SIZE } from '../../../core/config/pagination.config';
 import { PageResult } from '../../../shared/types/pagination';
 import { InvoiceRecord } from '../domain/invoice.model';
 import { InvoiceDto } from './invoice.dto';
@@ -26,7 +26,7 @@ export class InvoicesRepository {
     Object.entries({
       ...query,
       page: query.page || 1,
-      pageSize: query.pageSize || HISTORY_PAGE_SIZE,
+      pageSize: query.pageSize || OPERATIONAL_PAGE_SIZE,
       paginated: true,
     }).forEach(([key, value]) => {
       if (value !== undefined && value !== '') params.set(key, String(value));
@@ -35,7 +35,7 @@ export class InvoicesRepository {
     return this.api.get<any>(`/api/invoices?${params.toString()}`).pipe(map((response) => ({
       items: (response?.items || response?.invoices || []).map((dto: InvoiceDto) => mapInvoiceDto(dto)),
       page: Number(response?.page || query.page || 1),
-      pageSize: Number(response?.pageSize || query.pageSize || HISTORY_PAGE_SIZE),
+      pageSize: Number(response?.pageSize || query.pageSize || OPERATIONAL_PAGE_SIZE),
       total: Number(response?.total || 0),
       hasMore: !!response?.hasMore,
     })));

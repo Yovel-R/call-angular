@@ -9,7 +9,9 @@ import { CallLogService, CallStats } from '../../services/calllog.service';
 import { PaymentService } from '../../services/payment.service';
 import { LeadService, Lead } from '../../services/lead.service';
 import { BookmarkService, Bookmark } from '../../services/bookmark.service';
+import { FastCacheService } from '../../services/fast-cache.service';
 import { AdminPageId } from '../../core/layout/admin-pages';
+import { OPERATIONAL_PAGE_SIZE } from '../../core/config/pagination.config';
 import { catchError, from, mergeMap, of } from 'rxjs';
 import * as XLSX from 'xlsx';
 
@@ -502,6 +504,7 @@ export class AdminWorkspaceComponent implements OnInit {
       next: (res) => {
         if (res.success) {
           lead.status = status;
+          this.invalidateLeadCaches();
         }
         this.updatingLeadId = null;
       },
@@ -734,6 +737,7 @@ export class AdminWorkspaceComponent implements OnInit {
       delete (payload as any).newRemark;
 
       await this.bookmarkService.updateBookmark(this.editingBookmarkId, payload).toPromise();
+      this.invalidateLeadCaches();
       
       // Refresh bookmarks
       this.fetchCompanyBookmarks();
@@ -976,6 +980,8 @@ export class AdminWorkspaceComponent implements OnInit {
   private readonly adminLeadHydrationConcurrency = 12;
   private adminLeadRequestRun = 0;
   private adminLeadSearchTimer: ReturnType<typeof setTimeout> | null = null;
+  invoiceConvertedLeads: Lead[] = [];
+  invoiceConvertedLeadsLoading = false;
 
   // Bookmarks (Follow-up)
   allBookmarks: Bookmark[] = [];
@@ -1072,7 +1078,8 @@ export class AdminWorkspaceComponent implements OnInit {
     private paymentService: PaymentService,
     private leadService: LeadService,
     private bookmarkService: BookmarkService,
-    private api: ApiService
+    private api: ApiService,
+    private fastCache: FastCacheService
   ) { }
 
   ngOnInit(): void {
@@ -1154,7 +1161,7 @@ export class AdminWorkspaceComponent implements OnInit {
     }
     if (tab === 'invoice') {
       this.fetchSettings();
-      this.fetchAdminLeads();
+      this.fetchInvoiceConvertedLeads();
       this.fetchInvoiceRecords();
     }
   }
@@ -1319,28 +1326,101 @@ export class AdminWorkspaceComponent implements OnInit {
     return this.periods.find(x => x.key === p)?.label ?? p;
   }
 
+  private cacheKey(...parts: Array<string | number | boolean | null | undefined>): string {
+    return this.fastCache.key(['workspace', this.dashboardCode, ...parts]);
+  }
+
+  private dashboardCacheKey(period: string): string {
+    return this.cacheKey('overview', period);
+  }
+
+  private applyCachedDashboardPeriod(period: string): boolean {
+    const cached = this.fastCache.get<any>(this.dashboardCacheKey(period));
+    if (!cached) return false;
+
+    const target = this.preloadedCache[period];
+    target.summary = cached.summary || null;
+    target.timeline = cached.timeline || [];
+    target.employees = cached.employees || [];
+    target.prevSummary = cached.prevSummary || null;
+    target.summaryLoaded = cached.summaryLoaded ?? !!cached.summary;
+    target.timelineLoaded = cached.timelineLoaded ?? Array.isArray(cached.timeline);
+    target.employeesLoaded = cached.employeesLoaded ?? Array.isArray(cached.employees);
+    target.prevSummaryLoaded = cached.prevSummaryLoaded ?? !!cached.prevSummary;
+
+    if (period === this.selectedPeriod) {
+      this.applyFilterLocally();
+    }
+    return true;
+  }
+
+  private saveDashboardPeriodCache(period: string): void {
+    this.fastCache.set(this.dashboardCacheKey(period), this.preloadedCache[period]);
+  }
+
+  private invalidateLeadCaches(): void {
+    this.fastCache.removeWhere((key) => key.includes(`${encodeURIComponent(this.dashboardCode)}|`) && (
+      key.includes('admin-leads') ||
+      key.includes('emp-leads') ||
+      key.includes('invoice-converted-leads') ||
+      key.includes('bookmarks')
+    ));
+  }
+
   // ── Dashboard loader ──────────────────────────────────────
   _loadDashboard(): void {
     this.companyProfileLoading = true;
     this.fetchCompanyProfile();
     this.fetchEmployees();
     this.fetchPaymentHistory();
+    ['today', 'yesterday', 'lastweek'].forEach((period) => this.applyCachedDashboardPeriod(period));
     // Preload past 7 days data on load to avoid spinners when toggling periods
     this.preloadDashboardData();
+    setTimeout(() => this.preloadFastAccessPages(), 300);
     // Start break notification polling (every 60s)
     this.startBreakNotifPolling();
     // Load Settings data
     this.fetchSettings();
   }
 
+  private preloadFastAccessPages(): void {
+    if (!this.dashboardCode) return;
+    this.fetchInvoiceRecords();
+    this.fetchCompanyBookmarks();
+    this.warmLeadView('interested', this.settingsInterestedPageStatuses?.length ? this.settingsInterestedPageStatuses : ['Interested', 'Follow Up']);
+    this.warmLeadView('not-connected', this.settingsDnpPageStatuses?.length ? this.settingsDnpPageStatuses : ['Not Connected']);
+    this.warmLeadView('converted', this.settingsConvertedPageStatuses?.length ? this.settingsConvertedPageStatuses : ['Converted']);
+    this.warmLeadView('favourite', undefined, true);
+    this.fetchInvoiceConvertedLeads();
+  }
+
+  private warmLeadView(name: string, statuses?: string[], isFavourite?: boolean): void {
+    const cacheKey = this.cacheKey('lead-view', name, statuses?.join(',') || '', !!isFavourite, this.selectedAdminLeadSet, this.leadSearchQuery);
+    if (this.fastCache.hasFresh(cacheKey)) return;
+    this.leadService.getAdminLeadCompanies(this.dashboardCode, {
+      setLabel: this.selectedAdminLeadSet || undefined,
+      search: this.leadSearchQuery || undefined,
+      status: statuses?.join(','),
+      isFavourite,
+      page: 1,
+      pageSize: OPERATIONAL_PAGE_SIZE,
+      paginated: true,
+      includeContacts: true,
+      contactPageSize: OPERATIONAL_PAGE_SIZE,
+    }).subscribe({
+      next: (res: any) => this.fastCache.set(cacheKey, res),
+      error: () => {}
+    });
+  }
+
   preloadDashboardData(): void {
-    this.summaryLoading = true;
-    this.empCallLoading = true;
+    this.summaryLoading = !this.summaryStats;
+    this.empCallLoading = !this.employeeCallRows.length;
 
     const periods = ['today', 'yesterday', 'lastweek'];
-    let loadedCount = 0;
 
     periods.forEach(period => {
+      this.applyCachedDashboardPeriod(period);
       // Fetch summary
       this.callLogService.getSummary(this.dashboardCode, period).subscribe({
         next: (res: any) => {
@@ -1349,10 +1429,12 @@ export class AdminWorkspaceComponent implements OnInit {
             this.preloadedCache[period].summary = res.stats;
             this.fetchPreviousStatsForCache(res.from, res.to, period);
           }
+          this.saveDashboardPeriodCache(period);
           if (period === this.selectedPeriod) this.applyFilterLocally();
         },
         error: () => {
           this.preloadedCache[period].summaryLoaded = true;
+          this.saveDashboardPeriodCache(period);
           if (period === this.selectedPeriod) this.applyFilterLocally();
         }
       });
@@ -1364,10 +1446,12 @@ export class AdminWorkspaceComponent implements OnInit {
           if (res.success) {
             this.preloadedCache[period].timeline = res.timeline;
           }
+          this.saveDashboardPeriodCache(period);
           if (period === this.selectedPeriod) this.applyFilterLocally();
         },
         error: () => {
           this.preloadedCache[period].timelineLoaded = true;
+          this.saveDashboardPeriodCache(period);
           if (period === this.selectedPeriod) this.applyFilterLocally();
         }
       });
@@ -1379,10 +1463,12 @@ export class AdminWorkspaceComponent implements OnInit {
           if (res.success) {
             this.preloadedCache[period].employees = res.employees;
           }
+          this.saveDashboardPeriodCache(period);
           if (period === this.selectedPeriod) this.applyFilterLocally();
         },
         error: () => {
           this.preloadedCache[period].employeesLoaded = true;
+          this.saveDashboardPeriodCache(period);
           if (period === this.selectedPeriod) this.applyFilterLocally();
         }
       });
@@ -1490,10 +1576,12 @@ export class AdminWorkspaceComponent implements OnInit {
         if (res.success && res.stats) {
           this.preloadedCache[period].prevSummary = res.stats;
         }
+        this.saveDashboardPeriodCache(period);
         if (this.selectedPeriod === period) this.applyFilterLocally();
       },
       error: () => {
         this.preloadedCache[period].prevSummaryLoaded = true;
+        this.saveDashboardPeriodCache(period);
         if (this.selectedPeriod === period) this.applyFilterLocally();
       }
     });
@@ -1713,6 +1801,19 @@ export class AdminWorkspaceComponent implements OnInit {
     this.followupSearch = '';
     this.selectedFollowupDate = '';
 
+    const empCacheKey = this.cacheKey('employee-drilldown', emp.mobile, this.selectedPeriod, this.customFrom, this.customTo);
+    const cachedEmp = this.fastCache.get<any>(empCacheKey);
+    if (cachedEmp) {
+      this.selectedEmpStats = cachedEmp.stats || null;
+      this.selectedEmpCalls = cachedEmp.calls || [];
+      this.selectedEmpLoading = false;
+      this.selectedEmpCallsLoading = false;
+      requestAnimationFrame(() => {
+        this.renderChart();
+        this.renderEmpDonutChart();
+      });
+    }
+
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'instant' });
 
@@ -1723,7 +1824,10 @@ export class AdminWorkspaceComponent implements OnInit {
     ).subscribe({
       next: (res: any) => {
         this.selectedEmpLoading = false;
-        if (res.success) this.selectedEmpStats = res.stats;
+        if (res.success) {
+          this.selectedEmpStats = res.stats;
+          this.fastCache.set(empCacheKey, { stats: this.selectedEmpStats, calls: this.selectedEmpCalls });
+        }
       },
       error: () => { this.selectedEmpLoading = false; }
     });
@@ -1737,6 +1841,7 @@ export class AdminWorkspaceComponent implements OnInit {
         this.selectedEmpCallsLoading = false;
         if (res.success) {
           this.selectedEmpCalls = res.calls;
+          this.fastCache.set(empCacheKey, { stats: this.selectedEmpStats, calls: this.selectedEmpCalls });
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               this.renderChart();
@@ -3480,12 +3585,22 @@ Thank You.`;
 
   fetchEmpLeads(): void {
     if (!this.selectedEmployee) return;
-    this.empLeadsLoading = true;
     const setFilter = this.selectedLeadSet || undefined;
+    const cacheKey = this.cacheKey('emp-leads', this.selectedEmployee.mobile, setFilter, this.empLeadSearchQuery);
+    const cached = this.fastCache.get<any>(cacheKey);
+    if (cached?.success) {
+      this.empLeads = cached.leads || [];
+      this.leadSets = cached.sets || [];
+      if (this.empLeads.length > 0 && !this.selectedEmpLeadCompany) {
+        this.selectedEmpLeadCompany = this.empLeads[0].leadCompanyName || 'Unnamed Company';
+      }
+    }
+    this.empLeadsLoading = !cached;
     this.leadService.getEmployeeLeads(this.dashboardCode, this.selectedEmployee.mobile, setFilter).subscribe({
       next: (res: any) => {
         this.empLeadsLoading = false;
         if (res.success) {
+          this.fastCache.set(cacheKey, res);
           this.empLeads = res.leads;
           this.leadSets = res.sets || [];
           if (this.empLeads.length > 0 && !this.selectedEmpLeadCompany) {
@@ -3531,20 +3646,36 @@ Thank You.`;
 
     const run = this.adminLeadRequestRun;
     const page = append ? this.adminLeadCompanyPage + 1 : 1;
-    this.adminLeadCompaniesLoading = true;
+    const cacheKey = this.cacheKey('admin-leads', this.selectedAdminLeadSet, this.leadSearchQuery, page);
+    const cached = !append ? this.fastCache.get<any>(cacheKey) : null;
+    if (cached) {
+      const companies = cached?.companies || [];
+      this.adminLeadCompanies = companies;
+      this.adminLeadCompanyPage = cached?.page || page;
+      this.adminLeadCompanyHasMore = !!cached?.hasMore;
+      const hydratedLeads = this.flattenAdminContactsByCompany(cached?.contactsByCompany);
+      this.allLeads = hydratedLeads;
+      this.allLeadsLoading = false;
+      this.adminLeadCompaniesLoading = false;
+      this.selectedLeadCompany = this.adminLeadCompanies[0]?.name || '';
+      this.adminLeadContactsPage = 1;
+      this.adminLeadContactsHasMore = hydratedLeads.filter((lead) => lead.leadCompanyName === this.selectedLeadCompany).length < (this.adminLeadCompanies[0]?.count || 0);
+    }
+    this.adminLeadCompaniesLoading = !cached;
 
     this.leadService.getAdminLeadCompanies(this.dashboardCode, {
       setLabel: this.selectedAdminLeadSet || undefined,
       search: this.leadSearchQuery || undefined,
       status: undefined,
       page,
-      pageSize: 40,
+      pageSize: OPERATIONAL_PAGE_SIZE,
       paginated: true,
       includeContacts: true,
-      contactPageSize: 40,
+      contactPageSize: OPERATIONAL_PAGE_SIZE,
     }).subscribe({
       next: (res: any) => {
         if (run !== this.adminLeadRequestRun) return;
+        if (!append) this.fastCache.set(cacheKey, res);
         this.adminLeadCompaniesLoading = false;
         const companies = res?.companies || [];
         this.adminLeadCompanies = append ? [...this.adminLeadCompanies, ...companies] : companies;
@@ -3579,20 +3710,30 @@ Thank You.`;
 
     const run = this.adminLeadRequestRun;
     const page = append ? this.adminLeadContactsPage + 1 : 1;
+    const cacheKey = this.cacheKey('admin-lead-contacts', this.selectedAdminLeadSet, this.leadSearchQuery, this.selectedLeadCompany, page);
+    const cached = !append ? this.fastCache.get<any>(cacheKey) : null;
+    if (cached) {
+      const leads = (cached?.leads || cached?.items || []).map((l: any) => this.normalizeLead(l));
+      const otherCompanyLeads = this.allLeads.filter((lead) => lead.leadCompanyName !== this.selectedLeadCompany);
+      this.allLeads = [...otherCompanyLeads, ...leads];
+      this.adminLeadContactsPage = cached?.page || page;
+      this.adminLeadContactsHasMore = !!cached?.hasMore;
+    }
     if (append) this.adminLeadContactsLoadingMore = true;
-    else this.allLeadsLoading = true;
+    else this.allLeadsLoading = !cached;
 
     this.leadService.getAdminLeadPage(this.dashboardCode, {
       setLabel: this.selectedAdminLeadSet || undefined,
       search: this.leadSearchQuery || undefined,
       company: this.selectedLeadCompany,
       page,
-      pageSize: 40,
+      pageSize: OPERATIONAL_PAGE_SIZE,
       paginated: true,
       includeFacets: page === 1,
     } as any).subscribe({
       next: (res: any) => {
         if (run !== this.adminLeadRequestRun) return;
+        if (!append) this.fastCache.set(cacheKey, res);
         this.allLeadsLoading = false;
         this.adminLeadContactsLoadingMore = false;
         const leads = (res?.leads || res?.items || []).map((l: any) => this.normalizeLead(l));
@@ -3628,7 +3769,7 @@ Thank You.`;
           search: this.leadSearchQuery || undefined,
           company,
           page: 1,
-          pageSize: 40,
+          pageSize: OPERATIONAL_PAGE_SIZE,
           paginated: true,
           includeFacets: false,
         } as any).pipe(
@@ -3664,12 +3805,27 @@ Thank You.`;
 
   fetchInvoiceRecords(): void {
     if (!this.dashboardCode) return;
-    this.invoiceRecordsLoading = true;
-    const params = new URLSearchParams({ companyCode: this.dashboardCode });
+    const range = this.getInvoiceDateRange();
+    const cacheKey = this.cacheKey('invoice-records', this.invoiceSearch, this.invoiceDateFilter, range.dateFrom, range.dateTo);
+    const cached = this.fastCache.get<any>(cacheKey);
+    if (cached?.success) {
+      this.invoiceRecords = cached.invoices || cached.items || [];
+    }
+    this.invoiceRecordsLoading = !cached;
+    const params = new URLSearchParams({
+      companyCode: this.dashboardCode,
+      page: '1',
+      pageSize: String(OPERATIONAL_PAGE_SIZE),
+      paginated: 'true',
+    });
+    if (this.invoiceSearch.trim()) params.set('search', this.invoiceSearch.trim());
+    if (range.dateFrom) params.set('dateFrom', range.dateFrom);
+    if (range.dateTo) params.set('dateTo', range.dateTo);
     this.api.get<any>(`/api/invoices?${params.toString()}`).subscribe({
       next: (res) => {
         this.invoiceRecordsLoading = false;
-        this.invoiceRecords = res?.success ? (res.invoices || []) : [];
+        this.invoiceRecords = res?.success ? (res.invoices || res.items || []) : [];
+        if (res?.success) this.fastCache.set(cacheKey, res);
       },
       error: () => {
         this.invoiceRecordsLoading = false;
@@ -3677,11 +3833,59 @@ Thank You.`;
     });
   }
 
+  private getInvoiceDateRange(): { dateFrom?: string; dateTo?: string } {
+    if (this.invoiceDateFilter === 'all') return {};
+    const end = new Date();
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    if (this.invoiceDateFilter === '7d') start.setDate(start.getDate() - 6);
+    if (this.invoiceDateFilter === '30d') start.setDate(start.getDate() - 29);
+    return {
+      dateFrom: start.toISOString().slice(0, 10),
+      dateTo: end.toISOString().slice(0, 10),
+    };
+  }
+
+  fetchInvoiceConvertedLeads(): void {
+    if (!this.dashboardCode) return;
+    const statuses = this.getConvertedInvoiceStatuses();
+    const cacheKey = this.cacheKey('invoice-converted-leads', statuses.join(','), this.invoiceSearch);
+    const cached = this.fastCache.get<any>(cacheKey);
+    if (cached) {
+      this.invoiceConvertedLeads = this.flattenAdminContactsByCompany(cached.contactsByCompany);
+      this.invoiceConvertedLeadsLoading = false;
+    }
+    this.invoiceConvertedLeadsLoading = !cached;
+    this.leadService.getAdminLeadCompanies(this.dashboardCode, {
+      search: this.invoiceSearch || undefined,
+      status: statuses.join(','),
+      page: 1,
+      pageSize: OPERATIONAL_PAGE_SIZE,
+      paginated: true,
+      includeContacts: true,
+      contactPageSize: OPERATIONAL_PAGE_SIZE,
+    }).subscribe({
+      next: (res: any) => {
+        this.invoiceConvertedLeadsLoading = false;
+        this.invoiceConvertedLeads = this.flattenAdminContactsByCompany(res?.contactsByCompany);
+        this.fastCache.set(cacheKey, res);
+      },
+      error: () => {
+        this.invoiceConvertedLeadsLoading = false;
+      }
+    });
+  }
+
+  private getConvertedInvoiceStatuses(): string[] {
+    return this.settingsConvertedPageStatuses?.length ? this.settingsConvertedPageStatuses : ['Converted'];
+  }
+
   get adminConvertedInvoiceLeads(): Lead[] {
-    const statuses = (this.settingsConvertedPageStatuses?.length ? this.settingsConvertedPageStatuses : ['Converted'])
+    const source = this.invoiceConvertedLeads.length ? this.invoiceConvertedLeads : this.allLeads;
+    const statuses = this.getConvertedInvoiceStatuses()
       .map((status) => String(status).toLowerCase());
     const query = this.invoiceSearch.trim().toLowerCase();
-    return this.allLeads
+    return source
       .filter((lead) => statuses.includes(String(lead.status || '').toLowerCase()))
       .filter((lead) => {
         if (!query) return true;
@@ -3760,6 +3964,7 @@ Thank You.`;
           alert(res?.message || 'Failed to save invoice.');
           return;
         }
+        this.fastCache.removeWhere((key) => key.includes('invoice-records'));
         this.fetchInvoiceRecords();
       },
       error: (err) => {
@@ -3804,6 +4009,7 @@ Thank You.`;
     const newValue = !lead.isFavourite;
     lead.isFavourite = newValue;
     this.leadService.updateLeadFlags(lead._id!, { isFavourite: newValue }).subscribe({
+      next: () => this.invalidateLeadCaches(),
       error: () => { lead.isFavourite = !newValue; }
     });
   }
@@ -4004,12 +4210,31 @@ Thank You.`;
   // ── Bookmarks (Follow-up) ──────────────────────────────────
   fetchCompanyBookmarks(): void {
     if (!this.dashboardCode) return;
-    this.allBookmarksLoading = true;
-    this.bookmarkService.getAllCompanyBookmarks(this.dashboardCode).subscribe({
+    const todayOnly = this.followupFilter === 'today';
+    const cacheKey = this.cacheKey('bookmarks', this.selectedEmployee?.mobile || 'all', todayOnly, this.selectedFollowupDate, this.followupSearch, this.followupSearchQuery);
+    const cached = this.fastCache.get<any>(cacheKey);
+    if (cached?.success) {
+      this.allBookmarks = cached.bookmarks || cached.items || [];
+      this.allBookmarksLoading = false;
+      if (!this.selectedEmpFollowupCompany && this.selectedEmpBookmarks.length > 0) {
+        this.selectedEmpFollowupCompany = this.selectedEmpBookmarks[0].companyName || 'Unnamed Company';
+      }
+    }
+    this.allBookmarksLoading = !cached;
+    this.bookmarkService.getAllCompanyBookmarks(this.dashboardCode, {
+      phone: this.selectedEmployee?.mobile || undefined,
+      page: 1,
+      pageSize: OPERATIONAL_PAGE_SIZE,
+      paginated: true,
+      today: todayOnly || undefined,
+      reminderDate: this.selectedFollowupDate || undefined,
+      search: this.followupSearch || this.followupSearchQuery || undefined,
+    }).subscribe({
       next: (res: any) => {
         this.allBookmarksLoading = false;
         if (res.success) {
-          this.allBookmarks = res.bookmarks;
+          this.fastCache.set(cacheKey, res);
+          this.allBookmarks = res.bookmarks || res.items || [];
           this.fetchLeadCallCounts();
           
           if (!this.selectedEmpFollowupCompany && this.selectedEmpBookmarks.length > 0) {
@@ -4099,6 +4324,7 @@ Thank You.`;
       next: (res: any) => {
         if (res.success) {
           this.allBookmarks = this.allBookmarks.filter(b => b._id !== id);
+          this.invalidateLeadCaches();
         }
       }
     });
@@ -4134,6 +4360,7 @@ Thank You.`;
         this.deleteSetLoading = false;
         if (res.success) {
           if (this.selectedLeadSet === setLabel) this.selectedLeadSet = '';
+          this.invalidateLeadCaches();
           this.fetchEmpLeads();
         }
       },
@@ -4173,6 +4400,7 @@ Thank You.`;
         if (res.success) {
           this.addLeadSuccess = 'Lead added successfully!';
           this.newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', status: 'New', companyDescription: '' };
+          this.invalidateLeadCaches();
           this.fetchEmpLeads();
           setTimeout(() => this.addLeadSuccess = '', 3000);
         } else {
@@ -4315,6 +4543,7 @@ Thank You.`;
         if (res.success) {
           this.addLeadSuccess = `Successfully mapped and imported ${res.count} leads!`;
           this.leadUploadStep = 'idle';
+          this.invalidateLeadCaches();
           this.fetchEmpLeads();
           setTimeout(() => this.addLeadSuccess = '', 4000);
         } else {
@@ -4333,7 +4562,10 @@ Thank You.`;
   deleteLead(id: string): void {
     if (confirm('Are you sure you want to remove this lead?')) {
       this.leadService.deleteLead(id).subscribe(res => {
-        if (res.success) this.fetchEmpLeads();
+        if (res.success) {
+          this.invalidateLeadCaches();
+          this.fetchEmpLeads();
+        }
       });
     }
   }
@@ -4345,6 +4577,7 @@ Thank You.`;
         next: (res: any) => {
           if (res.success) {
             this.selectedLeadSet = '';
+            this.invalidateLeadCaches();
             this.fetchEmpLeads();
             alert(`Deleted ${res.deleted} leads from this set.`);
           }
@@ -4520,6 +4753,7 @@ Thank You.`;
         this.followupUploadStep = 'idle';
         if (res.success) {
           alert(`Imported ${res.count} interested clients!`);
+          this.invalidateLeadCaches();
           this.fetchCompanyBookmarks(); // refresh bookmarks
         }
       },
