@@ -38,8 +38,6 @@ export interface LeadListQueryDto {
   search?: string;
   searchMode?: 'phone' | 'text';
   status?: string;
-  isFavourite?: boolean;
-  assignedEmployeePhone?: string;
   company?: string;
   sort?: string;
   page?: number;
@@ -48,5 +46,4 @@ export interface LeadListQueryDto {
   remark?: string;
   includeContacts?: boolean | string;
   contactPageSize?: number;
-  includeFacets?: boolean;
 }

@@ -39,12 +39,8 @@ export class BookmarkService {
   }
 
   // Admin view: fetch all bookmarks for the whole company
-  getAllCompanyBookmarks(companyCode: string, query: Record<string, string | number | boolean | undefined> = {}): Observable<any> {
-    const params = new URLSearchParams({ companyCode });
-    Object.entries(query).forEach(([key, value]) => {
-      if (value !== undefined && value !== '') params.set(key, String(value));
-    });
-    return this.http.get(`${this.baseUrl}/admin?${params.toString()}`);
+  getAllCompanyBookmarks(companyCode: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/admin?companyCode=${companyCode}`);
   }
 
   deleteBookmark(id: string): Observable<any> {

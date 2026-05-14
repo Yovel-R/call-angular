@@ -25,8 +25,6 @@ export interface LeadListQuery {
   search?: string;
   searchMode?: 'phone' | 'text';
   status?: string;
-  isFavourite?: boolean;
-  assignedEmployeePhone?: string;
   company?: string;
   sort?: string;
   page?: number;
@@ -35,7 +33,6 @@ export interface LeadListQuery {
   remark?: string;
   includeContacts?: boolean | string;
   contactPageSize?: number;
-  includeFacets?: boolean;
 }
 
 export interface LeadListResponse {

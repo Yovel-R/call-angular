@@ -2671,10 +2671,10 @@
               <!-- Toolbar from Employee UI -->
               <div class="leads-toolbar" style="margin-bottom: 1.5rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                 <div style="display: flex; gap: 8px;">
-                  <button class="filter-chip" [class.active]="followupFilter === 'all'" (click)="followupFilter = 'all'; fetchCompanyBookmarks()">
+                  <button class="filter-chip" [class.active]="followupFilter === 'all'" (click)="followupFilter = 'all'">
                     All Follow-ups
                   </button>
-                  <button class="filter-chip" [class.active]="followupFilter === 'today'" (click)="followupFilter = 'today'; fetchCompanyBookmarks()">
+                  <button class="filter-chip" [class.active]="followupFilter === 'today'" (click)="followupFilter = 'today'">
                     Today's Tasks
                     <span class="chip-badge" *ngIf="todayFollowupCount > 0">{{ todayFollowupCount }}</span>
                   </button>
@@ -3429,10 +3429,10 @@
         <!-- Filter Toolbar from Employee UI -->
         <div class="leads-toolbar" style="margin-bottom: 1.5rem; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
           <div style="display: flex; gap: 8px;">
-            <button class="filter-chip" [class.active]="followupFilter === 'all'" (click)="followupFilter = 'all'; fetchCompanyBookmarks()">
+            <button class="filter-chip" [class.active]="followupFilter === 'all'" (click)="followupFilter = 'all'">
               All Follow-ups
             </button>
-            <button class="filter-chip" [class.active]="followupFilter === 'today'" (click)="followupFilter = 'today'; fetchCompanyBookmarks()">
+            <button class="filter-chip" [class.active]="followupFilter === 'today'" (click)="followupFilter = 'today'">
               Today's Tasks
               <span class="chip-badge" *ngIf="todayGlobalFollowupCount > 0">{{ todayGlobalFollowupCount }}</span>
             </button>
@@ -4520,8 +4520,8 @@
                 <p style="margin-top:6px; color:#64748b;">{{ adminConvertedInvoiceLeads.length }} eligible leads</p>
               </div>
               <div style="display:flex; gap:.75rem;">
-                <input class="glass-input" style="width:240px;" type="text" placeholder="Search leads or phone" [(ngModel)]="invoiceSearch" (ngModelChange)="fetchInvoiceConvertedLeads(); fetchInvoiceRecords()">
-                <select class="glass-input" style="width:150px;" [(ngModel)]="invoiceDateFilter" (ngModelChange)="fetchInvoiceRecords()">
+                <input class="glass-input" style="width:240px;" type="text" placeholder="Search leads or phone" [(ngModel)]="invoiceSearch">
+                <select class="glass-input" style="width:150px;" [(ngModel)]="invoiceDateFilter">
                   <option value="all">All Dates</option>
                   <option value="today">Today</option>
                   <option value="7d">Last 7 Days</option>
@@ -4586,7 +4586,7 @@
                   <tr *ngIf="!invoiceRecordsLoading && filteredInvoiceRecords.length===0">
                     <td colspan="4" style="padding:32px; text-align:center; color:#94a3b8;">No invoices saved yet.</td>
                   </tr>
-                  <tr *ngIf="invoiceRecordsLoading && filteredInvoiceRecords.length===0">
+                  <tr *ngIf="invoiceRecordsLoading">
                     <td colspan="4" style="padding:32px; text-align:center; color:#94a3b8;">Loading invoices...</td>
                   </tr>
                 </tbody>
