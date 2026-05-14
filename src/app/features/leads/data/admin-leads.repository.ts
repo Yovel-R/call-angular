@@ -15,6 +15,11 @@ export interface LeadPage {
   companies: LeadCompany[];
 }
 
+export interface LeadCompanyPage {
+  companies: LeadCompany[];
+  contactsByCompany: Record<string, Lead[]>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminLeadsRepository {
   constructor(private leadService: LeadService) {}
@@ -25,9 +30,12 @@ export class AdminLeadsRepository {
       .pipe(map((response) => mapLeadListDto(response as LeadListDto)));
   }
 
-  listCompanies(companyCode: string, query: LeadListQueryDto): Observable<LeadCompany[]> {
+  listCompanies(companyCode: string, query: LeadListQueryDto): Observable<LeadCompanyPage> {
     return this.leadService.getAdminLeadCompanies(companyCode, query).pipe(
-      map((response: any) => response?.companies || [])
+      map((response: any) => ({
+        companies: response?.companies || [],
+        contactsByCompany: this.mapContactsByCompany(response?.contactsByCompany),
+      }))
     );
   }
 
@@ -35,5 +43,15 @@ export class AdminLeadsRepository {
     return this.leadService
       .updateLeadStatus(leadId, status)
       .pipe(map((response: any) => mapLeadListDto({ success: true, items: [response.lead] }).items[0]));
+  }
+
+  private mapContactsByCompany(raw: unknown): Record<string, Lead[]> {
+    if (!raw || typeof raw !== 'object') return {};
+    return Object.entries(raw as Record<string, unknown>).reduce<Record<string, Lead[]>>((mapped, [company, leads]) => {
+      mapped[company] = Array.isArray(leads)
+        ? mapLeadListDto({ success: true, items: leads as any[] }).items
+        : [];
+      return mapped;
+    }, {});
   }
 }

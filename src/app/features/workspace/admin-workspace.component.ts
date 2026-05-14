@@ -11,6 +11,7 @@ import { LeadService, Lead } from '../../services/lead.service';
 import { BookmarkService, Bookmark } from '../../services/bookmark.service';
 import { AiBrief, AiBriefService } from '../../services/ai-brief.service';
 import { AdminPageId } from '../../core/layout/admin-pages';
+import { catchError, from, mergeMap, of } from 'rxjs';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -1035,6 +1036,7 @@ export class AdminWorkspaceComponent implements OnInit {
   adminLeadContactsPage = 1;
   adminLeadContactsHasMore = false;
   adminLeadContactsLoadingMore = false;
+  private readonly adminLeadHydrationConcurrency = 12;
   private adminLeadRequestRun = 0;
   private adminLeadSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -3678,8 +3680,10 @@ Thank You.`;
       search: this.leadSearchQuery || undefined,
       status: this.adminLeadStatusFilter || undefined,
       page,
-      pageSize: 20,
+      pageSize: 40,
       paginated: true,
+      includeContacts: true,
+      contactPageSize: 40,
     }).subscribe({
       next: (res: any) => {
         if (run !== this.adminLeadRequestRun) return;
@@ -3688,10 +3692,20 @@ Thank You.`;
         this.adminLeadCompanies = append ? [...this.adminLeadCompanies, ...companies] : companies;
         this.adminLeadCompanyPage = res?.page || page;
         this.adminLeadCompanyHasMore = !!res?.hasMore;
+        const hydratedLeads = this.flattenAdminContactsByCompany(res?.contactsByCompany);
+        if (hydratedLeads.length) {
+          this.mergeAdminHydratedLeads(hydratedLeads);
+        }
         this.allLeadsLoading = false;
         if (!append) {
           this.selectedLeadCompany = this.adminLeadCompanies[0]?.name || '';
-          if (this.selectedLeadCompany) this.loadAdminLeadContacts(false);
+          const selectedHydratedCount = hydratedLeads.filter((lead) => lead.leadCompanyName === this.selectedLeadCompany).length;
+          this.adminLeadContactsPage = 1;
+          this.adminLeadContactsHasMore = selectedHydratedCount < (this.adminLeadCompanies[0]?.count || 0);
+          if (this.selectedLeadCompany && !selectedHydratedCount) this.loadAdminLeadContacts(false);
+        }
+        if (!hydratedLeads.length) {
+          this.prefetchAdminLeadContacts(companies, run, !append);
         }
       },
       error: () => {
@@ -3716,7 +3730,7 @@ Thank You.`;
       status: this.adminLeadStatusFilter || undefined,
       company: this.selectedLeadCompany,
       page,
-      pageSize: 20,
+      pageSize: 40,
       paginated: true,
       includeFacets: page === 1,
     } as any).subscribe({
@@ -3737,6 +3751,58 @@ Thank You.`;
         this.adminLeadContactsLoadingMore = false;
       },
     });
+  }
+
+  private prefetchAdminLeadContacts(
+    companies: Array<{ name: string; count: number }>,
+    run: number,
+    skipSelectedCompany: boolean,
+  ): void {
+    if (!this.dashboardCode) return;
+    const selectedCompany = this.selectedLeadCompany;
+    const targetCompanies = companies
+      .map((company) => company.name)
+      .filter((company) => !!company && (!skipSelectedCompany || company !== selectedCompany));
+
+    from(targetCompanies).pipe(
+      mergeMap((company) => (
+        this.leadService.getAdminLeadPage(this.dashboardCode, {
+          setLabel: this.selectedAdminLeadSet || undefined,
+          search: this.leadSearchQuery || undefined,
+          company,
+          page: 1,
+          pageSize: 40,
+          paginated: true,
+          includeFacets: false,
+        } as any).pipe(
+          catchError(() => of({ leads: [], items: [], company }))
+        )
+      ), this.adminLeadHydrationConcurrency),
+    ).subscribe({
+      next: (res: any) => {
+        if (run !== this.adminLeadRequestRun) return;
+        const leads = (res?.leads || res?.items || []).map((lead: any) => this.normalizeLead(lead));
+        if (!leads.length) return;
+        this.mergeAdminHydratedLeads(leads);
+      },
+    });
+  }
+
+  private flattenAdminContactsByCompany(raw: unknown): Lead[] {
+    if (!raw || typeof raw !== 'object') return [];
+    return Object.values(raw as Record<string, unknown>).flatMap((leads) => (
+      Array.isArray(leads) ? leads.map((lead: any) => this.normalizeLead(lead)) : []
+    ));
+  }
+
+  private mergeAdminHydratedLeads(leads: Lead[]): void {
+    const hydratedCompanies = new Set(leads.map((lead: any) => lead.leadCompanyName).filter(Boolean));
+    const hydratedIds = new Set(leads.map((lead: any) => lead._id).filter(Boolean));
+    const otherLeads = this.allLeads.filter((lead) => {
+      if (hydratedIds.has(lead._id)) return false;
+      return !hydratedCompanies.has(lead.leadCompanyName);
+    });
+    this.allLeads = [...otherLeads, ...leads];
   }
 
   fetchInvoiceRecords(): void {

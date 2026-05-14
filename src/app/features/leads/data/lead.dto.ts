@@ -44,4 +44,6 @@ export interface LeadListQueryDto {
   pageSize?: number;
   paginated?: boolean;
   remark?: string;
+  includeContacts?: boolean | string;
+  contactPageSize?: number;
 }
