@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewEncapsulation, HostListener } from '@angular/core';
-import { NgIf, NgFor, NgClass, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe } from '@angular/common';
+import { NgIf, NgFor, NgClass, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Chart, ChartType, registerables } from 'chart.js';
 import { AuthService, RegisterPayload, LoginPayload } from '../../services/auth.service';
@@ -9,12 +9,13 @@ import { CallLogService, CallStats } from '../../services/calllog.service';
 import { PaymentService } from '../../services/payment.service';
 import { LeadService, Lead } from '../../services/lead.service';
 import { BookmarkService, Bookmark } from '../../services/bookmark.service';
+import { AiBrief, AiBriefService } from '../../services/ai-brief.service';
 import { AdminPageId } from '../../core/layout/admin-pages';
 import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-admin-workspace',
-  imports: [NgIf, NgFor, NgClass, FormsModule, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe],
+  imports: [NgIf, NgFor, NgClass, FormsModule, SlicePipe, DecimalPipe, DatePipe, TitleCasePipe, NgTemplateOutlet],
   templateUrl: './admin-workspace.component.html',
   styleUrl: './admin-workspace.component.css',
   encapsulation: ViewEncapsulation.None
@@ -330,15 +331,26 @@ export class AdminWorkspaceComponent implements OnInit {
   historyLogs: any[] = [];
   historyLoading = false;
   historyLead: Lead | null = null;
+  adminCompanyFullSection: 'details' | 'history' = 'details';
 
   openHistory(lead: Lead): void {
     if (!this.dashboardCode || !lead.contactNumber) return;
+    this.showHistoryModal = true;
+    this.updateScrollLock();
+    this.loadLeadHistoryLogs(lead);
+  }
+
+  openAdminCompanyFullHistory(lead: Lead): void {
+    if (!this.dashboardCode || !lead.contactNumber) return;
+    this.adminCompanyFullSection = 'history';
+    this.showHistoryModal = false;
+    this.loadLeadHistoryLogs(lead);
+  }
+
+  private loadLeadHistoryLogs(lead: Lead): void {
     this.historyLead = lead;
     this.historyLogs = [];
     this.historyLoading = true;
-    this.showHistoryModal = true;
-    this.updateScrollLock();
-
     this.leadService.getLeadHistory(lead.companyCode, lead.leadCompanyName).subscribe({
       next: res => {
         this.historyLoading = false;
@@ -564,6 +576,22 @@ export class AdminWorkspaceComponent implements OnInit {
   companyFullViewOpen = false;
   companyRemarkLead: Lead | null = null;
   adminAiSummaryOpen = false;
+  aiBrief: AiBrief | null = null;
+  aiBriefLoading = false;
+  aiBriefError = '';
+  aiBriefCacheStatus: 'hit' | 'miss' | '' = '';
+  aiBriefCompany = '';
+  aiBriefLeadId = '';
+  private aiBriefRequestSeq = 0;
+  private aiBriefMemoryCache = new Map<
+    string,
+    {
+      insight: AiBrief;
+      cacheStatus: 'hit' | 'miss' | '';
+      companyName: string;
+      leadId: string;
+    }
+  >();
 
 
   filteredBookmarksDepsStr = '';
@@ -1105,6 +1133,7 @@ export class AdminWorkspaceComponent implements OnInit {
     private paymentService: PaymentService,
     private leadService: LeadService,
     private bookmarkService: BookmarkService,
+    private aiBriefService: AiBriefService,
     private api: ApiService
   ) { }
 
@@ -1423,6 +1452,8 @@ export class AdminWorkspaceComponent implements OnInit {
     this.fetchCompanyProfile();
     this.fetchEmployees();
     this.fetchPaymentHistory();
+    this.fetchAdminLeads();
+    this.fetchCompanyBookmarks();
     // Preload past 7 days data on load to avoid spinners when toggling periods
     this.preloadDashboardData();
     // Start break notification polling (every 60s)
@@ -1893,7 +1924,13 @@ export class AdminWorkspaceComponent implements OnInit {
 
   setChartType(type: 'line' | 'pie' | 'bar'): void {
     this.chartType = type;
-    requestAnimationFrame(() => this.renderChart());
+    requestAnimationFrame(() => {
+      if (this.dashTab === 'overview') {
+        this.renderTimelineChart();
+        return;
+      }
+      this.renderChart();
+    });
   }
 
   trackByCallId(index: number, call: any): any {
@@ -1998,23 +2035,27 @@ export class AdminWorkspaceComponent implements OnInit {
       grad.addColorStop(1, 'rgba(61,125,254,0)');
     }
 
+    const isBarView = this.chartType === 'bar';
+
     this.timelineChart = new Chart(canvas, {
-      type: 'line',
+      type: isBarView ? 'bar' : 'line',
       data: {
         labels: labels.length ? labels : ['No data'],
         datasets: [{
           label: 'Total Calls',
           data: totalCalls.length ? totalCalls : [0],
           borderColor: '#3D7DFE',
-          backgroundColor: grad ?? 'rgba(61,125,254,0.1)',
-          fill: true,
-          tension: 0.45,
-          pointRadius: 4,
-          pointHoverRadius: 6,
+          backgroundColor: isBarView ? '#3D7DFE' : (grad ?? 'rgba(61,125,254,0.1)'),
+          fill: !isBarView,
+          tension: isBarView ? 0 : 0.45,
+          pointRadius: isBarView ? 0 : 4,
+          pointHoverRadius: isBarView ? 0 : 6,
           pointBackgroundColor: '#ffffff',
           pointBorderColor: '#3D7DFE',
-          pointBorderWidth: 2,
-          borderWidth: 3
+          pointBorderWidth: isBarView ? 0 : 2,
+          borderWidth: isBarView ? 0 : 3,
+          borderRadius: isBarView ? 8 : 0,
+          barPercentage: isBarView ? 0.55 : undefined,
         }]
       },
       options: {
@@ -3605,6 +3646,7 @@ Thank You.`;
     this.adminLeadCompanies = [];
     this.allLeads = [];
     this.selectedLeadCompany = '';
+    this.closeAdminLeadPanels();
     this.allLeadsLoading = true;
     this.leadService.getAdminLeadSets(this.dashboardCode).subscribe({
       next: (res: any) => {
@@ -3634,7 +3676,7 @@ Thank You.`;
     this.leadService.getAdminLeadCompanies(this.dashboardCode, {
       setLabel: this.selectedAdminLeadSet || undefined,
       search: this.leadSearchQuery || undefined,
-      status: undefined,
+      status: this.adminLeadStatusFilter || undefined,
       page,
       pageSize: 20,
       paginated: true,
@@ -3671,6 +3713,7 @@ Thank You.`;
     this.leadService.getAdminLeadPage(this.dashboardCode, {
       setLabel: this.selectedAdminLeadSet || undefined,
       search: this.leadSearchQuery || undefined,
+      status: this.adminLeadStatusFilter || undefined,
       company: this.selectedLeadCompany,
       page,
       pageSize: 20,
@@ -3949,12 +3992,14 @@ Thank You.`;
     event?.stopPropagation();
     this.companyRemarkLead = null;
     this.adminAiSummaryOpen = false;
+    this.adminCompanyFullSection = 'details';
     this.companyFullViewOpen = true;
   }
 
   closeCompanyFullView(): void {
     this.companyFullViewOpen = false;
     this.companyRemarkLead = null;
+    this.adminCompanyFullSection = 'details';
   }
 
   openCompanyRemarkHistory(lead: Lead): void {
@@ -3967,11 +4012,246 @@ Thank You.`;
 
   openAdminAiSummary(event?: Event): void {
     event?.stopPropagation();
+    this.companyFullViewOpen = false;
     this.adminAiSummaryOpen = true;
+    this.loadAiBriefForLead(this.companyFullViewLead(), this.selectedLeadCompany || this.selectedRemarksFilterCompany);
   }
 
   closeAdminAiSummary(): void {
     this.adminAiSummaryOpen = false;
+  }
+
+  closeAdminLeadPanels(): void {
+    this.adminAiSummaryOpen = false;
+    this.companyFullViewOpen = false;
+  }
+
+  retryAiBrief(): void {
+    const lead = this.findLeadById(this.aiBriefLeadId) || this.companyFullViewLead();
+    this.loadAiBriefForLead(lead, this.aiBriefCompany, true);
+  }
+
+  aiBriefCacheLabel(): string {
+    return this.aiBriefCacheStatus === 'hit' ? 'Cached Brief' : 'Fresh Brief';
+  }
+
+  private aiBriefCacheKeyFor(lead: Lead | null, companyName = ''): string {
+    const normalizedCompany = String(companyName || lead?.leadCompanyName || '')
+      .trim()
+      .toLowerCase();
+
+    return normalizedCompany || String(lead?._id || '').trim();
+  }
+
+  private setAiBriefFromMemoryCache(
+    cacheEntry: {
+      insight: AiBrief;
+      cacheStatus: 'hit' | 'miss' | '';
+      companyName: string;
+      leadId: string;
+    },
+    companyName: string
+  ): void {
+    this.aiBriefLoading = false;
+    this.aiBriefError = '';
+    this.aiBrief = cacheEntry.insight;
+    this.aiBriefCacheStatus = cacheEntry.cacheStatus;
+    this.aiBriefCompany = companyName || cacheEntry.companyName;
+    this.aiBriefLeadId = cacheEntry.leadId;
+  }
+
+  private resetAiBriefState(): void {
+    this.aiBrief = null;
+    this.aiBriefLoading = false;
+    this.aiBriefError = '';
+    this.aiBriefCacheStatus = '';
+    this.aiBriefCompany = '';
+    this.aiBriefLeadId = '';
+  }
+
+  private loadAiBriefForLead(lead: Lead | null, companyName = '', forceRefresh = false): void {
+    if (!lead?._id) {
+      this.resetAiBriefState();
+      this.aiBriefCompany = companyName;
+      this.aiBriefError = 'AI summary needs a lead record for this company.';
+      return;
+    }
+
+    const cacheKey = this.aiBriefCacheKeyFor(lead, companyName);
+    const cached = forceRefresh ? undefined : this.aiBriefMemoryCache.get(cacheKey);
+    if (cached) {
+      this.setAiBriefFromMemoryCache(cached, companyName || lead.leadCompanyName);
+      return;
+    }
+
+    const requestId = ++this.aiBriefRequestSeq;
+    this.aiBriefLoading = true;
+    this.aiBriefError = '';
+    this.aiBrief = null;
+    this.aiBriefCacheStatus = '';
+    this.aiBriefCompany = companyName || lead.leadCompanyName;
+    this.aiBriefLeadId = lead._id;
+
+    this.aiBriefService.getLeadBrief(lead._id).subscribe({
+      next: (res) => {
+        if (requestId !== this.aiBriefRequestSeq) return;
+
+        this.aiBriefLoading = false;
+        if (res.success && res.insight) {
+          this.aiBrief = res.insight;
+          this.aiBriefCacheStatus = res.cacheStatus || '';
+          this.aiBriefError = '';
+          this.aiBriefMemoryCache.set(cacheKey, {
+            insight: res.insight,
+            cacheStatus: res.cacheStatus || '',
+            companyName: companyName || lead.leadCompanyName,
+            leadId: lead._id || '',
+          });
+          return;
+        }
+
+        this.aiBrief = null;
+        this.aiBriefCacheStatus = '';
+        this.aiBriefError = res.message || 'AI brief is unavailable right now.';
+      },
+      error: (err) => {
+        if (requestId !== this.aiBriefRequestSeq) return;
+
+        this.aiBriefLoading = false;
+        this.aiBrief = null;
+        this.aiBriefCacheStatus = '';
+        this.aiBriefError = err.error?.message || 'AI brief is unavailable right now.';
+      },
+    });
+  }
+
+  private findLeadById(leadId: string): Lead | null {
+    if (!leadId) return null;
+    return this.allLeads.find((lead) => lead._id === leadId) || this.remarkLeads.find((lead) => lead._id === leadId) || null;
+  }
+
+  hostnameFromUrl(url: string): string {
+    try {
+      return new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      return url;
+    }
+  }
+
+  private aiBriefOfficialHostname(): string {
+    return this.hostnameFromUrl(this.aiBrief?.officialWebsite || '').toLowerCase();
+  }
+
+  private isOfficialHostnameMatch(url: string): boolean {
+    const officialHostname = this.aiBriefOfficialHostname();
+    if (!officialHostname) return false;
+
+    const sourceHostname = this.hostnameFromUrl(url || '').toLowerCase();
+    return !!sourceHostname && (
+      sourceHostname === officialHostname ||
+      sourceHostname.endsWith(`.${officialHostname}`) ||
+      officialHostname.endsWith(`.${sourceHostname}`)
+    );
+  }
+
+  aiBriefOfficialSources(): Array<AiBrief['sources'][number]> {
+    if (!this.aiBrief) return [];
+
+    const sources = this.aiBrief.sources || [];
+    const officialSources = sources.filter((source) => this.isOfficialHostnameMatch(source.url));
+
+    if (officialSources.length > 0) {
+      return officialSources;
+    }
+
+    if (!this.aiBrief.officialWebsite) {
+      return [];
+    }
+
+    return [
+      {
+        title: this.aiBrief.leadCompanyName || this.hostnameFromUrl(this.aiBrief.officialWebsite),
+        url: this.aiBrief.officialWebsite,
+        sourceType: 'official_website',
+        snippet: '',
+      },
+    ];
+  }
+
+  aiBriefResearchSources(): Array<AiBrief['sources'][number]> {
+    if (!this.aiBrief) return [];
+
+    return (this.aiBrief.sources || []).filter((source) => !this.isOfficialHostnameMatch(source.url));
+  }
+
+  aiBriefSourceMetaLabel(source: AiBrief['sources'][number], category: 'official' | 'research'): string {
+    if (category === 'official') {
+      if (source.sourceType === 'marketplace') return 'Official company storefront';
+      if (source.sourceType === 'social') return 'Official company profile';
+      return 'Official company source';
+    }
+
+    switch (source.sourceType) {
+      case 'regulatory':
+        return 'Regulatory / filing source';
+      case 'marketplace':
+        return 'Marketplace source';
+      case 'directory':
+        return 'Directory source';
+      case 'business_profile':
+        return 'Business profile source';
+      case 'social':
+        return 'Public profile source';
+      case 'official_website':
+        return 'Official website reference';
+      default:
+        return 'Research source';
+    }
+  }
+
+  get adminTotalLeadsCount(): number {
+    const companyTotal = this.adminLeadCompanies.reduce((total, company) => total + (company.count || 0), 0);
+    return companyTotal || this.allLeads.length;
+  }
+
+  get adminOverviewRecentLeads(): Lead[] {
+    return [...this.allLeads]
+      .sort((a, b) => {
+        const aTime = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const bTime = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return bTime - aTime;
+      })
+      .slice(0, 8);
+  }
+
+  get adminOverviewUpcomingFollowups(): Bookmark[] {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    return [...this.allBookmarks]
+      .filter((bookmark) => {
+        if (!bookmark.reminderDate) return false;
+        const date = new Date(bookmark.reminderDate);
+        date.setHours(0, 0, 0, 0);
+        return date >= now;
+      })
+      .sort((a, b) => new Date(a.reminderDate || 0).getTime() - new Date(b.reminderDate || 0).getTime())
+      .slice(0, 8);
+  }
+
+  openOverviewLead(lead: Lead): void {
+    if (!lead?.leadCompanyName) return;
+    this.dashTab = 'leads';
+    this.sidebarOpen = false;
+    this.selectedLeadCompany = lead.leadCompanyName;
+    this.closeAdminLeadPanels();
+    this.loadAdminLeadContacts(false);
+  }
+
+  openOverviewFollowup(bookmark: Bookmark): void {
+    this.dashTab = 'followups';
+    this.sidebarOpen = false;
+    this.selectedGlobalFollowupCompany = bookmark.companyName || '';
   }
 
   companyFullViewRows(): Lead[] {
@@ -3999,6 +4279,16 @@ Thank You.`;
 
   companyRemarkHistory(lead: Lead | null): string[] {
     return [...(lead?.remarks || [])].filter(Boolean).reverse();
+  }
+
+  leadStatusColor(status: string): string {
+    const normalized = String(status || '').toLowerCase();
+    if (normalized.includes('interested')) return 'var(--status-positive, #16a34a)';
+    if (normalized.includes('not')) return 'var(--status-negative, #dc2626)';
+    if (normalized.includes('convert')) return 'var(--status-info, #2563eb)';
+    if (normalized.includes('follow') || normalized.includes('quotation')) return 'var(--status-warning, #d97706)';
+    if (normalized.includes('contact') || normalized.includes('meeting')) return 'var(--status-info, #2563eb)';
+    return 'var(--admin-ink, #111827)';
   }
 
   createAdminInvoiceForLead(lead: Lead): void {
@@ -4289,6 +4579,7 @@ Thank You.`;
 
   selectLeadCompany(company: string): void {
     this.selectedLeadCompany = company;
+    this.closeAdminLeadPanels();
     if (this.dashTab === 'leads') {
       this.loadAdminLeadContacts(false);
     }

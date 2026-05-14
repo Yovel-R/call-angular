@@ -18,6 +18,7 @@ export interface Lead {
   isStarred?: boolean;
   isFavourite?: boolean;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LeadListQuery {
