@@ -593,7 +593,7 @@ export class AdminWorkspaceComponent implements OnInit {
   }
 
   followupRemarkPreviewList(bookmark: Bookmark): string[] {
-    return [...(bookmark.remarks || [])].filter(Boolean).slice(-2).reverse();
+    return [...(bookmark.remarks || [])].filter(Boolean).reverse();
   }
 
   openLeadFromAdminFollowup(bookmark: Bookmark): void {
@@ -3823,14 +3823,11 @@ Thank You.`;
         this.adminLeadCompanies = append ? [...this.adminLeadCompanies, ...companies] : companies;
         this.adminLeadCompanyPage = res?.page || page;
         this.adminLeadCompanyHasMore = !!res?.hasMore;
-<<<<<<< Updated upstream
         const hydratedLeads = this.flattenAdminContactsByCompany(res?.contactsByCompany);
         if (hydratedLeads.length) {
           this.mergeAdminHydratedLeads(hydratedLeads);
         }
-=======
         this.adminLeadCompanyTotal = Number(res?.totalCompanies || res?.total || res?.count || this.adminLeadCompanies.length) || this.adminLeadCompanies.length;
->>>>>>> Stashed changes
         this.allLeadsLoading = false;
         if (!append) {
           this.selectedLeadCompany = this.adminLeadCompanies[0]?.name || '';
@@ -4929,7 +4926,7 @@ Thank You.`;
   }
 
   adminLeadRemarkPreviewList(lead: Lead): string[] {
-    return [...(lead.remarks || [])].filter(Boolean).reverse().slice(0, 2);
+    return [...(lead.remarks || [])].filter(Boolean).reverse();
   }
 
   getLeadsByCompany(company: string): any[] {

@@ -19059,12 +19059,12 @@ svg.search-icon {
 
 .dashboard-wrapper .admin-remarks-company-rail .lead-item-name,
 .dashboard-wrapper .admin-followups-record-frame .rail-item-name {
-  color: var(--crm-ink) !important;
+  color: #1f2937 !important;
   font-size: 14px !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.02em !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
   line-height: 1.32 !important;
-  text-transform: none !important;
+  text-transform: uppercase !important;
 }
 
 .dashboard-wrapper .admin-remarks-view .lead-item-name,
@@ -19184,4 +19184,292 @@ svg.search-icon {
   align-items: center !important;
   min-height: 64px !important;
   margin: 0 !important;
+}
+
+/* Scrollable remark histories for admin lead and follow-up cards. */
+.dashboard-wrapper .admin-lead-record-card .lead-card-remarks,
+.dashboard-wrapper .admin-remarks-contact-card .lead-card-remarks,
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remarks {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  min-height: 178px !important;
+}
+
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remarks,
+.dashboard-wrapper .employee-followup-record-card .lead-card-remarks {
+  grid-template-rows: auto minmax(0, 1fr) !important;
+  min-height: 118px !important;
+}
+
+.dashboard-wrapper .admin-lead-record-card .lead-card-remark-list,
+.dashboard-wrapper .admin-remarks-contact-card .lead-card-remark-list,
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remark-list,
+.dashboard-wrapper .employee-followup-record-card .lead-card-remark-list {
+  display: grid !important;
+  align-content: start !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  max-height: 78px !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  overscroll-behavior: contain !important;
+  padding-right: 6px !important;
+  scrollbar-color: #cbd5e1 transparent !important;
+  scrollbar-gutter: stable !important;
+  scrollbar-width: thin !important;
+}
+
+.dashboard-wrapper .admin-lead-record-card .lead-card-remark-list::-webkit-scrollbar,
+.dashboard-wrapper .admin-remarks-contact-card .lead-card-remark-list::-webkit-scrollbar,
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remark-list::-webkit-scrollbar,
+.dashboard-wrapper .employee-followup-record-card .lead-card-remark-list::-webkit-scrollbar {
+  width: 6px !important;
+}
+
+.dashboard-wrapper .admin-lead-record-card .lead-card-remark-list::-webkit-scrollbar-track,
+.dashboard-wrapper .admin-remarks-contact-card .lead-card-remark-list::-webkit-scrollbar-track,
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remark-list::-webkit-scrollbar-track,
+.dashboard-wrapper .employee-followup-record-card .lead-card-remark-list::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.dashboard-wrapper .admin-lead-record-card .lead-card-remark-list::-webkit-scrollbar-thumb,
+.dashboard-wrapper .admin-remarks-contact-card .lead-card-remark-list::-webkit-scrollbar-thumb,
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remark-list::-webkit-scrollbar-thumb,
+.dashboard-wrapper .employee-followup-record-card .lead-card-remark-list::-webkit-scrollbar-thumb {
+  border-radius: 999px !important;
+  background: #cbd5e1 !important;
+}
+
+.dashboard-wrapper .admin-lead-record-card .lead-card-remark-item,
+.dashboard-wrapper .admin-remarks-contact-card .lead-card-remark-item,
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remark-item,
+.dashboard-wrapper .employee-followup-record-card .lead-card-remark-item {
+  overflow-wrap: anywhere !important;
+}
+
+.dashboard-wrapper .admin-lead-record-card .lead-card-empty,
+.dashboard-wrapper .admin-remarks-contact-card .lead-card-empty,
+.dashboard-wrapper .admin-followup-contact-card .lead-card-empty,
+.dashboard-wrapper .employee-followup-record-card .lead-card-empty {
+  min-height: 78px !important;
+}
+
+/* Quote builder modal action alignment shared by Leads, Remarks, Follow-ups, and Employee detail entry points. */
+.admin-employee-modal-overlay .admin-quote-modal {
+  overflow: hidden !important;
+}
+
+.admin-quote-modal .invoice-builder {
+  max-height: calc(100vh - 48px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  scrollbar-color: #cbd5e1 transparent !important;
+  scrollbar-gutter: stable !important;
+  scrollbar-width: thin !important;
+}
+
+.admin-quote-modal .invoice-builder::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+.admin-quote-modal .invoice-builder::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.admin-quote-modal .invoice-builder::-webkit-scrollbar-thumb {
+  border-radius: 999px !important;
+  background: #cbd5e1 !important;
+}
+
+.admin-quote-modal .invoice-builder-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+.admin-quote-modal .invoice-builder-header .secondary-action,
+.admin-quote-modal .invoice-form-grid .primary-action,
+.admin-quote-modal .invoice-builder-actions .secondary-action,
+.admin-quote-modal .invoice-builder-actions .primary-action {
+  appearance: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 44px !important;
+  padding: 0 16px !important;
+  border: 1px solid #d8dee8 !important;
+  border-radius: 0 !important;
+  background: #ffffff !important;
+  color: #111827 !important;
+  box-shadow: none !important;
+  font-family: var(--font-body, Inter, system-ui, sans-serif) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+}
+
+.admin-quote-modal .invoice-form-grid .primary-action {
+  align-self: end !important;
+  min-width: 112px !important;
+  height: 48px !important;
+}
+
+.admin-quote-modal .invoice-builder-actions .primary-action {
+  min-width: 190px !important;
+}
+
+.admin-quote-modal .invoice-builder-actions {
+  position: sticky !important;
+  bottom: -24px !important;
+  z-index: 4 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  margin: 0 -24px -24px !important;
+  padding: 16px 24px !important;
+  border-top: 1px solid #e4e7ec !important;
+  background: #ffffff !important;
+}
+
+.admin-quote-modal .invoice-form-grid .primary-action:not(:disabled),
+.admin-quote-modal .invoice-builder-actions .primary-action:not(:disabled) {
+  border-color: #3157c8 !important;
+  background: #3157c8 !important;
+  color: #ffffff !important;
+}
+
+.admin-quote-modal .invoice-form-grid .primary-action:not(:disabled) {
+  min-width: 112px !important;
+}
+
+.admin-quote-modal .invoice-builder-header .secondary-action:hover:not(:disabled),
+.admin-quote-modal .invoice-builder-actions .secondary-action:hover:not(:disabled) {
+  border-color: #111827 !important;
+  background: #f8fafc !important;
+  color: #111827 !important;
+}
+
+.admin-quote-modal .invoice-form-grid .primary-action:hover:not(:disabled),
+.admin-quote-modal .invoice-builder-actions .primary-action:hover:not(:disabled) {
+  border-color: #2449ad !important;
+  background: #2449ad !important;
+  color: #ffffff !important;
+}
+
+.admin-quote-modal .invoice-form-grid .primary-action:disabled,
+.admin-quote-modal .invoice-builder-actions .primary-action:disabled,
+.admin-quote-modal .invoice-builder-actions .secondary-action:disabled {
+  border-color: #d8dee8 !important;
+  background: #f3f4f6 !important;
+  color: #98a2b3 !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+}
+
+@media (max-width: 900px) {
+  .admin-quote-modal .invoice-builder {
+    max-height: calc(100vh - 32px) !important;
+    padding: 16px !important;
+  }
+
+  .admin-quote-modal .invoice-builder-header,
+  .admin-quote-modal .invoice-builder-actions {
+    align-items: stretch !important;
+  }
+
+  .admin-quote-modal .invoice-builder-actions {
+    bottom: -16px !important;
+    margin: 0 -16px -16px !important;
+    padding: 14px 16px !important;
+  }
+
+  .admin-quote-modal .invoice-builder-header .secondary-action,
+  .admin-quote-modal .invoice-form-grid .primary-action,
+  .admin-quote-modal .invoice-builder-actions .secondary-action,
+  .admin-quote-modal .invoice-builder-actions .primary-action {
+    width: 100% !important;
+  }
+}
+
+/* Center full-panel empty states so no-data views do not sit at the rail edge. */
+.dashboard-wrapper .rail-list > .empty-state-inline {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 100% !important;
+  padding: 32px 24px !important;
+  color: #667085 !important;
+  text-align: center !important;
+  line-height: 1.45 !important;
+}
+
+.dashboard-wrapper .lead-company-pane > .empty-state-inline-pane,
+.dashboard-wrapper .lead-company-pane-scroll > .empty-state-inline-pane,
+.dashboard-wrapper .admin-employee-company-pane > .empty-state-inline-pane,
+.dashboard-wrapper .admin-followups-company-pane > .empty-state-inline-pane {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 360px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 32px !important;
+  border: 0 !important;
+  background: #ffffff !important;
+  color: #667085 !important;
+  text-align: center !important;
+  line-height: 1.45 !important;
+}
+
+.dashboard-wrapper .lead-company-pane-scroll > .empty-state-inline-pane {
+  min-height: 100% !important;
+}
+
+/* Follow-up cards use the same anatomy as the standard lead cards. */
+.dashboard-wrapper .admin-followup-contact-card,
+.dashboard-wrapper .employee-followup-record-card {
+  grid-template-rows: auto auto auto auto auto minmax(178px, auto) auto !important;
+}
+
+.dashboard-wrapper .admin-followup-contact-card .lead-record-card-head,
+.dashboard-wrapper .employee-followup-record-card .lead-record-card-head {
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+}
+
+.dashboard-wrapper .admin-followup-contact-card .lead-card-remarks,
+.dashboard-wrapper .employee-followup-record-card .lead-card-remarks {
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  min-height: 178px !important;
+}
+
+.dashboard-wrapper .admin-followup-contact-card .lead-card-actions,
+.dashboard-wrapper .employee-followup-record-card .lead-card-actions {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 44px 44px !important;
+  gap: 10px !important;
+  align-items: center !important;
+}
+
+/* Employee detail owns its own scroll; prevent the document from scrolling into blank space. */
+html:has(.dashboard-wrapper .admin-employee-fullview),
+body:has(.dashboard-wrapper .admin-employee-fullview) {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+.dashboard-wrapper .dash-main:has(.admin-employee-fullview) {
+  height: 100vh !important;
+  max-height: 100vh !important;
+  overflow: hidden !important;
+}
+
+.dashboard-wrapper .admin-employee-fullview-scroll {
+  overscroll-behavior: contain !important;
+  scrollbar-gutter: stable !important;
 }
