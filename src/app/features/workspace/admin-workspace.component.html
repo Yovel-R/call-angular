@@ -3830,7 +3830,7 @@
                   </span>
                 </button>
                 <div *ngIf="adminLeadCompanyHasMore && !adminLeadCompaniesLoading" class="scroll-page-state">Scroll to load more companies</div>
-                <div *ngIf="allLeadsLoading || adminLeadCompaniesLoading" class="scroll-page-state">Loading companies...</div>
+                <div *ngIf="allLeadsLoading || adminLeadCompaniesLoading" class="scroll-page-state companies-loading-state">Loading companies...</div>
                 <div *ngIf="displayedLeadCompanies.length === 0 && !allLeadsLoading" class="empty-state-inline empty-state-inline-minimal">No companies found.</div>
               </div>
             </aside>
