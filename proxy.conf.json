@@ -1,8 +1,0 @@
-{
-  "/api": {
-    "target": "https://softrate-call.onrender.com",
-    "secure": false,
-    "changeOrigin": true,
-    "logLevel": "warn"
-  }
-}

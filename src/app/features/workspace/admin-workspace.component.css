@@ -13570,15 +13570,6 @@ svg.search-icon {
   text-align: center;
 }
 
-.admin-leads-company-pane .companies-loading-state {
-  display: grid;
-  place-items: center;
-  min-height: 240px;
-  flex: 1 1 auto;
-  border-top: 0;
-  width: 100%;
-}
-
 @media (max-width: 1280px) {
   .admin-leads-card-grid {
     grid-template-columns: 1fr;
