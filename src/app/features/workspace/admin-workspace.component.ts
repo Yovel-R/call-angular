@@ -11,8 +11,32 @@ import { LeadService, Lead } from '../../services/lead.service';
 import { BookmarkService, Bookmark } from '../../services/bookmark.service';
 import { AiBrief, AiBriefService } from '../../services/ai-brief.service';
 import { AdminPageId } from '../../core/layout/admin-pages';
+import { DashboardCacheService } from '../../core/cache/dashboard-cache.service';
+import { OPERATIONAL_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from '../../core/config/pagination.config';
 import { catchError, from, mergeMap, of } from 'rxjs';
 import * as XLSX from 'xlsx';
+
+interface AdminLeadCompanyCachePayload {
+  companies: Array<{ name: string; count: number }>;
+  leads: Lead[];
+  page: number;
+  hasMore: boolean;
+  total: number;
+}
+
+interface AdminLeadContactCachePayload {
+  leads: Lead[];
+  page: number;
+  hasMore: boolean;
+}
+
+interface AdminFollowupCompanyCachePayload {
+  companies: Array<{ company: string; count: number }>;
+  bookmarks: Bookmark[];
+  page: number;
+  hasMore: boolean;
+  total: number;
+}
 
 @Component({
   selector: 'app-admin-workspace',
@@ -532,6 +556,7 @@ export class AdminWorkspaceComponent implements OnInit {
     this.leadService.updateLeadStatus(lead._id, status).subscribe({
       next: (res) => {
         if (res.success) {
+          this.invalidateAdminDashboardCaches();
           lead.status = status;
         }
         this.updatingLeadId = null;
@@ -740,6 +765,8 @@ export class AdminWorkspaceComponent implements OnInit {
   groupedAllBookmarksCache: { company: string, count: number }[] = [];
 
   get groupedAllBookmarks(): { company: string, count: number }[] {
+    if (this.dashTab === 'followups') return this.adminFollowupCompanies;
+
     if (this.lastFilteredBookmarksFilteredRefForGrouped !== this.filteredBookmarksFiltered) {
       const groups: { [key: string]: number } = {};
       this.filteredBookmarksFiltered.forEach(b => {
@@ -913,8 +940,8 @@ export class AdminWorkspaceComponent implements OnInit {
         }]).toPromise();
       }
       
-      // Refresh bookmarks
-      this.fetchCompanyBookmarks();
+      this.invalidateAdminDashboardCaches();
+      this.fetchCompanyBookmarks(true);
       
       this.closeFollowupModal();
       // Optional: show toast/alert
@@ -1152,6 +1179,11 @@ export class AdminWorkspaceComponent implements OnInit {
   adminLeadContactsPage = 1;
   adminLeadContactsHasMore = false;
   adminLeadContactsLoadingMore = false;
+  private readonly adminDashboardCacheTtlMs = 24 * 60 * 60 * 1000;
+  private readonly adminDashboardRefreshAfterMs = 5 * 60 * 1000;
+  private readonly adminLeadCompanyCachePrefix = 'admin-lead-companies|';
+  private readonly adminLeadContactCachePrefix = 'admin-lead-contacts|';
+  private readonly adminLeadSetsCachePrefix = 'admin-lead-sets|';
   private readonly adminLeadHydrationConcurrency = 12;
   private adminLeadRequestRun = 0;
   private adminLeadSearchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -1159,6 +1191,14 @@ export class AdminWorkspaceComponent implements OnInit {
   // Bookmarks (Follow-up)
   allBookmarks: Bookmark[] = [];
   allBookmarksLoading = false;
+  adminFollowupCompanies: Array<{ company: string; count: number }> = [];
+  adminFollowupCompanyPage = 1;
+  adminFollowupCompanyHasMore = false;
+  adminFollowupCompanyTotal = 0;
+  adminFollowupCompaniesLoading = false;
+  private readonly adminFollowupCompanyCachePrefix = 'admin-followup-companies|';
+  private adminFollowupRequestRun = 0;
+  private followupSearchTimer: ReturnType<typeof setTimeout> | null = null;
   leadCallCounts: { [number: string]: number } = {};
   showAllRemarksModal: boolean = false;
   selectedBookmarkForRemarks: any = null;
@@ -1178,6 +1218,12 @@ export class AdminWorkspaceComponent implements OnInit {
   timelineChart: Chart | null = null;
   donutChart: Chart | null = null;
   timelineData: any[] = [];
+  readonly dashboardPalette = {
+    incoming: '#4f8fe7',
+    outgoing: '#f28c38',
+    missed: '#f4c542',
+    rejected: '#e46f61'
+  };
 
   // ── Preloaded Data Caches ───────────────────────────────────
   preloadedCache: Record<string, { summary: any, timeline: any, employees: any, prevSummary: any, summaryLoaded: boolean, timelineLoaded: boolean, employeesLoaded: boolean, prevSummaryLoaded: boolean }> = {
@@ -1252,7 +1298,8 @@ export class AdminWorkspaceComponent implements OnInit {
     private leadService: LeadService,
     private bookmarkService: BookmarkService,
     private aiBriefService: AiBriefService,
-    private api: ApiService
+    private api: ApiService,
+    private dashboardCache: DashboardCacheService
   ) { }
 
   ngOnInit(): void {
@@ -1493,10 +1540,10 @@ export class AdminWorkspaceComponent implements OnInit {
 
     return [
       'conic-gradient(',
-      `#3b82f6 0deg ${incomingEnd}deg, `,
-      `#22c55e ${incomingEnd}deg ${outgoingEnd}deg, `,
-      `#f87171 ${outgoingEnd}deg ${missedEnd}deg, `,
-      `#f59e0b ${missedEnd}deg 360deg`,
+      `${this.dashboardPalette.incoming} 0deg ${incomingEnd}deg, `,
+      `${this.dashboardPalette.outgoing} ${incomingEnd}deg ${outgoingEnd}deg, `,
+      `${this.dashboardPalette.missed} ${outgoingEnd}deg ${missedEnd}deg, `,
+      `${this.dashboardPalette.rejected} ${missedEnd}deg 360deg`,
       ')'
     ].join('');
   }
@@ -2030,7 +2077,12 @@ export class AdminWorkspaceComponent implements OnInit {
         labels: ['Incoming', 'Outgoing', 'Missed', 'Rejected'],
         datasets: [{
           data: [s.incoming || 0, s.outgoing || 0, s.missed || 0, s.rejected || 0],
-          backgroundColor: ['#3b82f6', '#22c55e', '#f87171', '#f59e0b'],
+          backgroundColor: [
+            this.dashboardPalette.incoming,
+            this.dashboardPalette.outgoing,
+            this.dashboardPalette.missed,
+            this.dashboardPalette.rejected
+          ],
           borderWidth: 2,
           borderColor: '#ffffff',
           hoverOffset: 6
@@ -2103,7 +2155,12 @@ export class AdminWorkspaceComponent implements OnInit {
       datasets: [{
         label: 'Call Count',
         data: [counts.incoming, counts.outgoing, counts.missed, counts.rejected],
-        backgroundColor: ['#22c55e', '#f97316', '#ef4444', '#ec4899'],
+        backgroundColor: [
+          this.dashboardPalette.incoming,
+          this.dashboardPalette.outgoing,
+          this.dashboardPalette.missed,
+          this.dashboardPalette.rejected
+        ],
         borderWidth: this.overviewChartType === 'pie' ? 2 : 0,
         borderColor: '#ffffff',
         borderRadius: this.overviewChartType === 'bar' ? 6 : 0,
@@ -2164,8 +2221,8 @@ export class AdminWorkspaceComponent implements OnInit {
     const ctx = canvas.getContext('2d');
     const grad = ctx ? ctx.createLinearGradient(0, 0, 0, 260) : null;
     if (grad) {
-      grad.addColorStop(0, 'rgba(61,125,254,0.18)');
-      grad.addColorStop(1, 'rgba(61,125,254,0)');
+      grad.addColorStop(0, 'rgba(79,143,231,0.18)');
+      grad.addColorStop(1, 'rgba(79,143,231,0)');
     }
 
     const isBarView = this.chartType === 'bar';
@@ -2177,14 +2234,14 @@ export class AdminWorkspaceComponent implements OnInit {
         datasets: [{
           label: 'Total Calls',
           data: totalCalls.length ? totalCalls : [0],
-          borderColor: '#3D7DFE',
-          backgroundColor: isBarView ? '#3D7DFE' : (grad ?? 'rgba(61,125,254,0.1)'),
+          borderColor: this.dashboardPalette.incoming,
+          backgroundColor: isBarView ? this.dashboardPalette.incoming : (grad ?? 'rgba(79,143,231,0.1)'),
           fill: !isBarView,
           tension: isBarView ? 0 : 0.45,
           pointRadius: isBarView ? 0 : 4,
           pointHoverRadius: isBarView ? 0 : 6,
           pointBackgroundColor: '#ffffff',
-          pointBorderColor: '#3D7DFE',
+          pointBorderColor: this.dashboardPalette.incoming,
           pointBorderWidth: isBarView ? 0 : 2,
           borderWidth: isBarView ? 0 : 3,
           borderRadius: isBarView ? 8 : 0,
@@ -2246,7 +2303,12 @@ export class AdminWorkspaceComponent implements OnInit {
         labels: ['Incoming', 'Outgoing', 'Missed', 'Rejected'],
         datasets: [{
           data: [s.incoming || 0, s.outgoing || 0, s.missed || 0, s.rejected || 0],
-          backgroundColor: ['#3b82f6', '#22c55e', '#f87171', '#f59e0b'],
+          backgroundColor: [
+            this.dashboardPalette.incoming,
+            this.dashboardPalette.outgoing,
+            this.dashboardPalette.missed,
+            this.dashboardPalette.rejected
+          ],
           borderWidth: 2,
           borderColor: '#ffffff',
           hoverOffset: 6
@@ -2292,7 +2354,12 @@ export class AdminWorkspaceComponent implements OnInit {
         labels: ['Outgoing', 'Incoming', 'Missed', 'Rejected'],
         datasets: [{
           data: [counts.outgoing, counts.incoming, counts.missed, counts.rejected],
-          backgroundColor: ['#22c55e', '#3b82f6', '#ef4444', '#f97316'],
+          backgroundColor: [
+            this.dashboardPalette.outgoing,
+            this.dashboardPalette.incoming,
+            this.dashboardPalette.missed,
+            this.dashboardPalette.rejected
+          ],
           borderWidth: 3,
           borderColor: '#ffffff',
           hoverOffset: 4
@@ -2346,7 +2413,12 @@ export class AdminWorkspaceComponent implements OnInit {
         datasets: [{
           label: 'Call Count',
           data: [counts.incoming, counts.outgoing, counts.missed, counts.rejected],
-          backgroundColor: ['#3b82f6', '#22c55e', '#ef4444', '#f97316'],
+          backgroundColor: [
+            this.dashboardPalette.incoming,
+            this.dashboardPalette.outgoing,
+            this.dashboardPalette.missed,
+            this.dashboardPalette.rejected
+          ],
           borderWidth: 0,
           borderRadius: 8,
           barPercentage: 0.55
@@ -2381,8 +2453,8 @@ export class AdminWorkspaceComponent implements OnInit {
       let gradient: any = 'rgba(99,102,241,0.2)';
       if (ctx) {
         gradient = ctx.createLinearGradient(0, 0, 0, 260);
-        gradient.addColorStop(0, 'rgba(99,102,241,0.35)');
-        gradient.addColorStop(1, 'rgba(99,102,241,0.0)');
+        gradient.addColorStop(0, 'rgba(79,143,231,0.35)');
+        gradient.addColorStop(1, 'rgba(79,143,231,0.0)');
       }
 
       data = {
@@ -2390,10 +2462,10 @@ export class AdminWorkspaceComponent implements OnInit {
         datasets: [{
           label: 'Calls Made/Received',
           data: Array.from(map.values()),
-          borderColor: '#6366f1',
+          borderColor: this.dashboardPalette.incoming,
           backgroundColor: gradient,
           fill: true, tension: 0.4,
-          pointBackgroundColor: '#6366f1',
+          pointBackgroundColor: this.dashboardPalette.incoming,
           pointBorderColor: '#fff', pointBorderWidth: 2,
           pointRadius: 4, pointHoverRadius: 6, borderWidth: 3
         }]
@@ -3771,20 +3843,29 @@ Thank You.`;
     });
   }
 
-  fetchAdminLeads(): void {
+  fetchAdminLeads(forceRefresh = false): void {
     if (!this.dashboardCode) return;
     this.adminLeadRequestRun++;
     this.adminLeadCompanyPage = 1;
     this.adminLeadCompanyHasMore = false;
-    this.adminLeadCompanies = [];
-    this.allLeads = [];
-    this.selectedLeadCompany = '';
+    if (forceRefresh || !this.restoreCachedAdminLeadCompanyPage(1)) {
+      this.adminLeadCompanies = [];
+      this.allLeads = [];
+      this.selectedLeadCompany = '';
+      this.allLeadsLoading = true;
+    }
     this.closeAdminLeadPanels();
-    this.allLeadsLoading = true;
+    const setsKey = this.adminLeadSetsCacheKey();
+    const cachedSets = !forceRefresh ? this.dashboardCache.get<string[]>(setsKey) : null;
+    if (cachedSets) this.adminLeadSets = cachedSets;
+
     this.leadService.getAdminLeadSets(this.dashboardCode).subscribe({
       next: (res: any) => {
-        if (res?.success) this.adminLeadSets = res.sets || [];
-        this.loadAdminLeadCompanies(false);
+        if (res?.success) {
+          this.adminLeadSets = res.sets || [];
+          this.dashboardCache.set(setsKey, this.adminLeadSets, { ttlMs: this.adminDashboardCacheTtlMs });
+        }
+        this.loadAdminLeadCompanies(false, forceRefresh);
       },
       error: () => {
         this.allLeadsLoading = false;
@@ -3795,15 +3876,18 @@ Thank You.`;
 
   onAdminLeadSearchChange(): void {
     if (this.adminLeadSearchTimer) clearTimeout(this.adminLeadSearchTimer);
-    this.adminLeadSearchTimer = setTimeout(() => this.fetchAdminLeads(), 300);
+    this.adminLeadSearchTimer = setTimeout(() => this.fetchAdminLeads(), SEARCH_DEBOUNCE_MS);
   }
 
-  loadAdminLeadCompanies(append: boolean): void {
+  loadAdminLeadCompanies(append: boolean, forceRefresh = false): void {
     if (!this.dashboardCode) return;
     if (append && (this.adminLeadCompaniesLoading || !this.adminLeadCompanyHasMore)) return;
 
     const run = this.adminLeadRequestRun;
     const page = append ? this.adminLeadCompanyPage + 1 : 1;
+    if (!forceRefresh && this.restoreCachedAdminLeadCompanyPage(page, append)) {
+      if (!this.isAdminDashboardCacheRefreshDue(this.adminLeadCompanyCacheKey(page))) return;
+    }
     this.adminLeadCompaniesLoading = true;
 
     this.leadService.getAdminLeadCompanies(this.dashboardCode, {
@@ -3811,16 +3895,16 @@ Thank You.`;
       search: this.leadSearchQuery || undefined,
       status: this.adminLeadStatusFilter || undefined,
       page,
-      pageSize: 40,
+      pageSize: OPERATIONAL_PAGE_SIZE,
       paginated: true,
       includeContacts: true,
-      contactPageSize: 40,
+      contactPageSize: OPERATIONAL_PAGE_SIZE,
     }).subscribe({
       next: (res: any) => {
         if (run !== this.adminLeadRequestRun) return;
         this.adminLeadCompaniesLoading = false;
         const companies = res?.companies || [];
-        this.adminLeadCompanies = append ? [...this.adminLeadCompanies, ...companies] : companies;
+        this.adminLeadCompanies = append ? this.mergeAdminLeadCompanies(this.adminLeadCompanies, companies) : companies;
         this.adminLeadCompanyPage = res?.page || page;
         this.adminLeadCompanyHasMore = !!res?.hasMore;
         const hydratedLeads = this.flattenAdminContactsByCompany(res?.contactsByCompany);
@@ -3839,6 +3923,13 @@ Thank You.`;
         if (!hydratedLeads.length) {
           this.prefetchAdminLeadContacts(companies, run, !append);
         }
+        this.dashboardCache.set(this.adminLeadCompanyCacheKey(page), {
+          companies,
+          leads: hydratedLeads,
+          page: this.adminLeadCompanyPage,
+          hasMore: this.adminLeadCompanyHasMore,
+          total: this.adminLeadCompanyTotal,
+        } satisfies AdminLeadCompanyCachePayload, { ttlMs: this.adminDashboardCacheTtlMs });
       },
       error: () => {
         this.adminLeadCompaniesLoading = false;
@@ -3847,12 +3938,15 @@ Thank You.`;
     });
   }
 
-  loadAdminLeadContacts(append: boolean): void {
+  loadAdminLeadContacts(append: boolean, forceRefresh = false): void {
     if (!this.dashboardCode || !this.selectedLeadCompany) return;
     if (append && (this.adminLeadContactsLoadingMore || !this.adminLeadContactsHasMore)) return;
 
     const run = this.adminLeadRequestRun;
     const page = append ? this.adminLeadContactsPage + 1 : 1;
+    if (!forceRefresh && this.restoreCachedAdminLeadContactPage(page, append)) {
+      if (!this.isAdminDashboardCacheRefreshDue(this.adminLeadContactCacheKey(page))) return;
+    }
     if (append) this.adminLeadContactsLoadingMore = true;
     else this.allLeadsLoading = true;
 
@@ -3862,7 +3956,7 @@ Thank You.`;
       status: this.adminLeadStatusFilter || undefined,
       company: this.selectedLeadCompany,
       page,
-      pageSize: 40,
+      pageSize: OPERATIONAL_PAGE_SIZE,
       paginated: true,
       includeFacets: page === 1,
     } as any).subscribe({
@@ -3876,6 +3970,11 @@ Thank You.`;
         this.allLeads = [...otherCompanyLeads, ...selectedCompanyLeads];
         this.adminLeadContactsPage = res?.page || page;
         this.adminLeadContactsHasMore = !!res?.hasMore;
+        this.dashboardCache.set(this.adminLeadContactCacheKey(page), {
+          leads,
+          page: this.adminLeadContactsPage,
+          hasMore: this.adminLeadContactsHasMore,
+        } satisfies AdminLeadContactCachePayload, { ttlMs: this.adminDashboardCacheTtlMs });
         this.fetchLeadCallCounts();
       },
       error: () => {
@@ -3903,7 +4002,7 @@ Thank You.`;
           search: this.leadSearchQuery || undefined,
           company,
           page: 1,
-          pageSize: 40,
+          pageSize: OPERATIONAL_PAGE_SIZE,
           paginated: true,
           includeFacets: false,
         } as any).pipe(
@@ -3916,6 +4015,14 @@ Thank You.`;
         const leads = (res?.leads || res?.items || []).map((lead: any) => this.normalizeLead(lead));
         if (!leads.length) return;
         this.mergeAdminHydratedLeads(leads);
+        const company = leads[0]?.leadCompanyName || res?.company;
+        if (company) {
+          this.dashboardCache.set(this.adminLeadContactCacheKey(1, company), {
+            leads,
+            page: 1,
+            hasMore: leads.length >= OPERATIONAL_PAGE_SIZE,
+          } satisfies AdminLeadContactCachePayload, { ttlMs: this.adminDashboardCacheTtlMs });
+        }
       },
     });
   }
@@ -3935,6 +4042,88 @@ Thank You.`;
       return !hydratedCompanies.has(lead.leadCompanyName);
     });
     this.allLeads = [...otherLeads, ...leads];
+  }
+
+  private adminLeadSetsCacheKey(): string {
+    return `${this.adminLeadSetsCachePrefix}${this.dashboardCode}`;
+  }
+
+  private adminLeadCompanyCacheKey(page: number): string {
+    return [
+      this.adminLeadCompanyCachePrefix,
+      this.dashboardCode,
+      this.selectedAdminLeadSet || 'all',
+      this.adminLeadStatusFilter || 'all',
+      this.leadSearchQuery.trim().toLowerCase() || 'all',
+      `page:${page}`,
+    ].join('|');
+  }
+
+  private adminLeadContactCacheKey(page: number, company = this.selectedLeadCompany): string {
+    return [
+      this.adminLeadContactCachePrefix,
+      this.dashboardCode,
+      this.selectedAdminLeadSet || 'all',
+      this.adminLeadStatusFilter || 'all',
+      this.leadSearchQuery.trim().toLowerCase() || 'all',
+      company || 'none',
+      `page:${page}`,
+    ].join('|');
+  }
+
+  private restoreCachedAdminLeadCompanyPage(page: number, append = false): boolean {
+    const payload = this.dashboardCache.get<AdminLeadCompanyCachePayload>(this.adminLeadCompanyCacheKey(page));
+    if (!payload) return false;
+    this.adminLeadCompanies = append ? this.mergeAdminLeadCompanies(this.adminLeadCompanies, payload.companies) : payload.companies;
+    this.adminLeadCompanyPage = payload.page;
+    this.adminLeadCompanyHasMore = payload.hasMore;
+    this.adminLeadCompanyTotal = payload.total;
+    if (payload.leads.length) this.mergeAdminHydratedLeads(payload.leads);
+    this.allLeadsLoading = false;
+    this.adminLeadCompaniesLoading = false;
+    if (!append && !this.selectedLeadCompany) {
+      this.selectedLeadCompany = payload.companies[0]?.name || '';
+      this.adminLeadContactsPage = 1;
+      this.adminLeadContactsHasMore = (payload.leads || []).filter((lead) => lead.leadCompanyName === this.selectedLeadCompany).length < (payload.companies[0]?.count || 0);
+    }
+    return true;
+  }
+
+  private restoreCachedAdminLeadContactPage(page: number, append = false): boolean {
+    const payload = this.dashboardCache.get<AdminLeadContactCachePayload>(this.adminLeadContactCacheKey(page));
+    if (!payload) return false;
+    const otherCompanyLeads = this.allLeads.filter((lead) => lead.leadCompanyName !== this.selectedLeadCompany);
+    const selectedCompanyLeads = append ? [...this.leadsInSelectedCompany, ...payload.leads] : payload.leads;
+    this.allLeads = [...otherCompanyLeads, ...selectedCompanyLeads];
+    this.adminLeadContactsPage = payload.page;
+    this.adminLeadContactsHasMore = payload.hasMore;
+    this.allLeadsLoading = false;
+    this.adminLeadContactsLoadingMore = false;
+    return true;
+  }
+
+  private mergeAdminLeadCompanies(
+    existing: Array<{ name: string; count: number }>,
+    incoming: Array<{ name: string; count: number }>,
+  ): Array<{ name: string; count: number }> {
+    const byName = new Map<string, { name: string; count: number }>();
+    [...existing, ...incoming].forEach((company) => {
+      if (!company?.name) return;
+      byName.set(company.name, company);
+    });
+    return Array.from(byName.values());
+  }
+
+  private isAdminDashboardCacheRefreshDue(key: string): boolean {
+    const metadata = this.dashboardCache.getMetadata(key);
+    return !metadata || Date.now() - metadata.cachedAt >= this.adminDashboardRefreshAfterMs;
+  }
+
+  private invalidateAdminDashboardCaches(): void {
+    this.dashboardCache.removeByPrefix(this.adminLeadCompanyCachePrefix);
+    this.dashboardCache.removeByPrefix(this.adminLeadContactCachePrefix);
+    this.dashboardCache.removeByPrefix(this.adminLeadSetsCachePrefix);
+    this.dashboardCache.removeByPrefix(this.adminFollowupCompanyCachePrefix);
   }
 
   fetchInvoiceRecords(): void {
@@ -4690,6 +4879,7 @@ Thank You.`;
     this.api.delete(`/api/leads/${lead._id}/remarks/${index}`).subscribe({
       next: (res: any) => {
         if (res.success) {
+          this.invalidateAdminDashboardCaches();
           const idx = this.allLeads.findIndex(l => l._id === lead._id);
           if (idx !== -1) {
             this.allLeads[idx] = this.normalizeLead(res.lead);
@@ -4714,6 +4904,7 @@ Thank You.`;
           if (allIndex !== -1) this.allLeads[allIndex] = normalized;
           this.leadRemarksInputs[lead._id!] = '';
           this.lastAllLeadsRef = null;
+          this.invalidateAdminDashboardCaches();
         }
         this.remarkPostingIds.delete(lead._id!);
       },
@@ -4736,6 +4927,7 @@ Thank You.`;
     const newValue = !lead.isStarred;
     lead.isStarred = newValue;
     this.leadService.updateLeadFlags(lead._id!, { isStarred: newValue }).subscribe({
+      next: () => this.invalidateAdminDashboardCaches(),
       error: () => { lead.isStarred = !newValue; }
     });
   }
@@ -4744,6 +4936,7 @@ Thank You.`;
     const newValue = !lead.isFavourite;
     lead.isFavourite = newValue;
     this.leadService.updateLeadFlags(lead._id!, { isFavourite: newValue }).subscribe({
+      next: () => this.invalidateAdminDashboardCaches(),
       error: () => { lead.isFavourite = !newValue; }
     });
   }
@@ -4980,14 +5173,49 @@ Thank You.`;
   }
 
   // ── Bookmarks (Follow-up) ──────────────────────────────────
-  fetchCompanyBookmarks(): void {
+  fetchCompanyBookmarks(forceRefresh = false, append = false): void {
     if (!this.dashboardCode) return;
-    this.allBookmarksLoading = true;
-    this.bookmarkService.getAllCompanyBookmarks(this.dashboardCode).subscribe({
+
+    if (append && (this.adminFollowupCompaniesLoading || !this.adminFollowupCompanyHasMore)) return;
+    this.adminFollowupRequestRun++;
+    const run = this.adminFollowupRequestRun;
+    const page = append ? this.adminFollowupCompanyPage + 1 : 1;
+
+    if (!forceRefresh && this.restoreCachedAdminFollowupCompanyPage(page, append)) {
+      if (!this.isAdminDashboardCacheRefreshDue(this.adminFollowupCompanyCacheKey(page))) return;
+    } else if (!append) {
+      this.allBookmarks = [];
+      this.adminFollowupCompanies = [];
+      this.selectedGlobalFollowupCompany = '';
+    }
+
+    this.allBookmarksLoading = !append && !this.allBookmarks.length;
+    this.adminFollowupCompaniesLoading = true;
+    this.bookmarkService.getAllCompanyBookmarks(this.dashboardCode, {
+      page,
+      pageSize: OPERATIONAL_PAGE_SIZE,
+      paginated: true,
+      search: this.followupSearch || undefined,
+      filter: this.followupFilter !== 'all' ? this.followupFilter : undefined,
+      reminderDate: this.selectedFollowupDate || undefined,
+    }).subscribe({
       next: (res: any) => {
+        if (run !== this.adminFollowupRequestRun) return;
         this.allBookmarksLoading = false;
+        this.adminFollowupCompaniesLoading = false;
         if (res.success) {
-          this.allBookmarks = res.bookmarks;
+          const payload: AdminFollowupCompanyCachePayload = {
+            companies: (res.companies || []).map((item: any) => ({
+              company: item.company || item.name || 'Unnamed Company',
+              count: Number(item.count || 0),
+            })),
+            bookmarks: res.bookmarks || [],
+            page: res.page || page,
+            hasMore: !!res.hasMore,
+            total: Number(res.total || 0),
+          };
+          this.applyAdminFollowupPagePayload(payload, append);
+          this.dashboardCache.set(this.adminFollowupCompanyCacheKey(page), payload, { ttlMs: this.adminDashboardCacheTtlMs });
           this.fetchLeadCallCounts();
           
           if (!this.selectedEmpFollowupCompany && this.selectedEmpBookmarks.length > 0) {
@@ -4997,8 +5225,77 @@ Thank You.`;
       },
       error: () => {
         this.allBookmarksLoading = false;
+        this.adminFollowupCompaniesLoading = false;
       }
     });
+  }
+
+  onFollowupFiltersChange(): void {
+    if (this.followupSearchTimer) clearTimeout(this.followupSearchTimer);
+    this.followupSearchTimer = setTimeout(() => this.fetchCompanyBookmarks(), SEARCH_DEBOUNCE_MS);
+  }
+
+  onAdminFollowupSidebarScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+    if (element.scrollHeight - element.scrollTop <= element.clientHeight + 100) {
+      this.fetchCompanyBookmarks(false, true);
+    }
+  }
+
+  private adminFollowupCompanyCacheKey(page: number): string {
+    return [
+      this.adminFollowupCompanyCachePrefix,
+      this.dashboardCode,
+      this.followupFilter || 'all',
+      this.selectedFollowupDate || 'all',
+      this.followupSearch.trim().toLowerCase() || 'all',
+      `page:${page}`,
+    ].join('|');
+  }
+
+  private restoreCachedAdminFollowupCompanyPage(page: number, append = false): boolean {
+    const payload = this.dashboardCache.get<AdminFollowupCompanyCachePayload>(this.adminFollowupCompanyCacheKey(page));
+    if (!payload) return false;
+    this.applyAdminFollowupPagePayload(payload, append);
+    this.allBookmarksLoading = false;
+    this.adminFollowupCompaniesLoading = false;
+    return true;
+  }
+
+  private applyAdminFollowupPagePayload(payload: AdminFollowupCompanyCachePayload, append: boolean): void {
+    this.adminFollowupCompanies = append
+      ? this.mergeAdminFollowupCompanies(this.adminFollowupCompanies, payload.companies)
+      : payload.companies;
+    this.allBookmarks = append
+      ? this.mergeBookmarks(this.allBookmarks, payload.bookmarks)
+      : payload.bookmarks;
+    this.adminFollowupCompanyPage = payload.page;
+    this.adminFollowupCompanyHasMore = payload.hasMore;
+    this.adminFollowupCompanyTotal = payload.total;
+    if (!append) {
+      this.selectedGlobalFollowupCompany = payload.companies[0]?.company || '';
+    }
+  }
+
+  private mergeAdminFollowupCompanies(
+    existing: Array<{ company: string; count: number }>,
+    incoming: Array<{ company: string; count: number }>,
+  ): Array<{ company: string; count: number }> {
+    const byName = new Map<string, { company: string; count: number }>();
+    [...existing, ...incoming].forEach((company) => {
+      if (!company?.company) return;
+      byName.set(company.company, company);
+    });
+    return Array.from(byName.values());
+  }
+
+  private mergeBookmarks(existing: Bookmark[], incoming: Bookmark[]): Bookmark[] {
+    const byKey = new Map<string, Bookmark>();
+    [...existing, ...incoming].forEach((bookmark) => {
+      const key = bookmark._id || `${bookmark.companyName || ''}:${bookmark.employeePhone || ''}:${bookmark.contactNumber || ''}`;
+      byKey.set(key, bookmark);
+    });
+    return Array.from(byKey.values());
   }
 
   fetchLeadCallCounts(): void {
@@ -5076,7 +5373,11 @@ Thank You.`;
     this.bookmarkService.deleteBookmark(id).subscribe({
       next: (res: any) => {
         if (res.success) {
+          this.invalidateAdminDashboardCaches();
           this.allBookmarks = this.allBookmarks.filter(b => b._id !== id);
+          this.adminFollowupCompanies = this.adminFollowupCompanies
+            .map((company) => ({ ...company, count: this.allBookmarks.filter((bookmark) => (bookmark.companyName || 'Unnamed Company') === company.company).length }))
+            .filter((company) => company.count > 0);
         }
       }
     });
@@ -5149,6 +5450,7 @@ Thank You.`;
       next: (res: any) => {
         this.addLeadLoading = false;
         if (res.success) {
+          this.invalidateAdminDashboardCaches();
           this.addLeadSuccess = 'Lead added successfully!';
           this.newSingleLead = { firstName: '', lastName: '', contactNumber: '', leadCompanyName: '', mainDivisionDescription: '', directorEmailAddress: '', remarks: '', status: 'New', companyDescription: '' };
           this.fetchEmpLeads();
@@ -5291,6 +5593,7 @@ Thank You.`;
       next: (res: any) => {
         this.addLeadLoading = false;
         if (res.success) {
+          this.invalidateAdminDashboardCaches();
           this.addLeadSuccess = `Successfully mapped and imported ${res.count} leads!`;
           this.leadUploadStep = 'idle';
           this.fetchEmpLeads();
@@ -5311,7 +5614,10 @@ Thank You.`;
   deleteLead(id: string): void {
     if (confirm('Are you sure you want to remove this lead?')) {
       this.leadService.deleteLead(id).subscribe(res => {
-        if (res.success) this.fetchEmpLeads();
+        if (res.success) {
+          this.invalidateAdminDashboardCaches();
+          this.fetchEmpLeads();
+        }
       });
     }
   }
@@ -5338,8 +5644,9 @@ Thank You.`;
       this.leadService.deleteAdminLeadSet(this.dashboardCode, this.selectedAdminLeadSet).subscribe({
         next: (res: any) => {
           if (res.success) {
+            this.invalidateAdminDashboardCaches();
             this.selectedAdminLeadSet = '';
-            this.fetchAdminLeads();
+            this.fetchAdminLeads(true);
             alert(`Deleted ${res.deleted} leads from this global set.`);
           }
         },
@@ -5498,7 +5805,8 @@ Thank You.`;
         this.followupUploadStep = 'idle';
         if (res.success) {
           alert(`Imported ${res.count} interested clients!`);
-          this.fetchCompanyBookmarks(); // refresh bookmarks
+          this.invalidateAdminDashboardCaches();
+          this.fetchCompanyBookmarks(true);
         }
       },
       error: () => {

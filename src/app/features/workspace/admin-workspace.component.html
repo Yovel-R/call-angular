@@ -1912,36 +1912,36 @@
                   </div>
                 </div>
                 <div class="donut-legend-grid">
-                  <div class="legend-item"><span class="lg-dot" style="background:#3b82f6;"></span><span
+                  <div class="legend-item"><span class="lg-dot" [style.background]="dashboardPalette.incoming"></span><span
                       class="lg-label">In</span><span class="lg-val">{{ summaryStats.incoming }}</span></div>
-                  <div class="legend-item"><span class="lg-dot" style="background:#22c55e;"></span><span
+                  <div class="legend-item"><span class="lg-dot" [style.background]="dashboardPalette.outgoing"></span><span
                       class="lg-label">Out</span><span class="lg-val">{{ summaryStats.outgoing }}</span></div>
-                  <div class="legend-item"><span class="lg-dot" style="background:#f87171;"></span><span
+                  <div class="legend-item"><span class="lg-dot" [style.background]="dashboardPalette.missed"></span><span
                       class="lg-label">Missed</span><span class="lg-val">{{ summaryStats.missed }}</span></div>
-                  <div class="legend-item"><span class="lg-dot" style="background:#f59e0b;"></span><span
+                  <div class="legend-item"><span class="lg-dot" [style.background]="dashboardPalette.rejected"></span><span
                       class="lg-label">Rej</span><span class="lg-val">{{ summaryStats.rejected }}</span></div>
                 </div>
               </div>
 
               <div class="admin-stats-bars" *ngIf="adminStatsView === 'bars'">
                 <div class="admin-stats-bars-row">
-                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#3b82f6;"></span>Incoming</div>
-                  <div class="admin-stats-bars-track"><i style="background:#3b82f6;" [style.width.%]="adminIncomingShare"></i></div>
+                  <div class="admin-stats-bars-label"><span class="lg-dot" [style.background]="dashboardPalette.incoming"></span>Incoming</div>
+                  <div class="admin-stats-bars-track"><i [style.background]="dashboardPalette.incoming" [style.width.%]="adminIncomingShare"></i></div>
                   <div class="admin-stats-bars-value">{{ summaryStats.incoming }}</div>
                 </div>
                 <div class="admin-stats-bars-row">
-                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#22c55e;"></span>Outgoing</div>
-                  <div class="admin-stats-bars-track"><i style="background:#22c55e;" [style.width.%]="adminOutboundShare"></i></div>
+                  <div class="admin-stats-bars-label"><span class="lg-dot" [style.background]="dashboardPalette.outgoing"></span>Outgoing</div>
+                  <div class="admin-stats-bars-track"><i [style.background]="dashboardPalette.outgoing" [style.width.%]="adminOutboundShare"></i></div>
                   <div class="admin-stats-bars-value">{{ summaryStats.outgoing }}</div>
                 </div>
                 <div class="admin-stats-bars-row">
-                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#f87171;"></span>Missed</div>
-                  <div class="admin-stats-bars-track"><i style="background:#f87171;" [style.width.%]="adminMissedRate"></i></div>
+                  <div class="admin-stats-bars-label"><span class="lg-dot" [style.background]="dashboardPalette.missed"></span>Missed</div>
+                  <div class="admin-stats-bars-track"><i [style.background]="dashboardPalette.missed" [style.width.%]="adminMissedRate"></i></div>
                   <div class="admin-stats-bars-value">{{ summaryStats.missed }}</div>
                 </div>
                 <div class="admin-stats-bars-row">
-                  <div class="admin-stats-bars-label"><span class="lg-dot" style="background:#f59e0b;"></span>Rejected</div>
-                  <div class="admin-stats-bars-track"><i style="background:#f59e0b;" [style.width.%]="adminRejectedRate"></i></div>
+                  <div class="admin-stats-bars-label"><span class="lg-dot" [style.background]="dashboardPalette.rejected"></span>Rejected</div>
+                  <div class="admin-stats-bars-track"><i [style.background]="dashboardPalette.rejected" [style.width.%]="adminRejectedRate"></i></div>
                   <div class="admin-stats-bars-value">{{ summaryStats.rejected }}</div>
                 </div>
               </div>
@@ -3801,7 +3801,7 @@
                 </select>
               </label>
 
-              <button class="toolbar-button admin-leads-refresh" type="button" (click)="fetchAdminLeads()" aria-label="Refresh leads" title="Refresh">
+              <button class="toolbar-button admin-leads-refresh" type="button" (click)="fetchAdminLeads(true)" aria-label="Refresh leads" title="Refresh">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
               </button>
               <button *ngIf="selectedAdminLeadSet" class="toolbar-button admin-leads-delete-set" type="button" (click)="deleteGlobalLeadSet()" aria-label="Delete selected lead set">
@@ -3994,7 +3994,7 @@
               </span>
               <input type="text" placeholder="Search companies" [(ngModel)]="remarkFilterSearch">
             </label>
-            <button class="admin-icon-refresh" type="button" (click)="fetchAdminLeads()" aria-label="Refresh remarks">
+            <button class="admin-icon-refresh" type="button" (click)="fetchAdminLeads(true)" aria-label="Refresh remarks">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" /><path d="M21 3v6h-6" /></svg>
             </button>
           </div>
@@ -4178,210 +4178,213 @@
             <p class="dash-subtitle">Company-wide follow-ups and interaction history</p>
           </div>
         </div>
-
-        <!-- Filter Toolbar from Employee UI -->
-        <div class="workspace-header lead-workspace-header workspace-header-filters-only admin-followups-toolbar">
-          <div class="workspace-controls workspace-controls-stack">
-            <label class="mini-field admin-followups-mode-field">
-              <span>Follow-up Filter</span>
-              <select class="field-select filter-select-field admin-followups-mode-select" [(ngModel)]="followupFilter" aria-label="Follow-up filter">
-                <option value="all">All Follow-ups</option>
-                <option value="today">Today's Tasks</option>
-              </select>
-            </label>
-            <label class="mini-field admin-followups-date-control">
-              <span>Date</span>
-              <input class="field-input admin-followups-date-input" type="date" [(ngModel)]="selectedFollowupDate" />
-            </label>
-            <label class="topbar-search admin-followups-toolbar-search" for="adminFollowupSearch">
-              <span class="topbar-search-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.35-4.35"></path></svg>
-              </span>
-              <input id="adminFollowupSearch" class="topbar-input" type="text" placeholder="Search all follow-ups..." [(ngModel)]="followupSearch">
-            </label>
-          </div>
-        </div>
-
-        <div class="record-frame lead-record-frame followup-record-frame admin-followups-record-frame">
-          
-          <!-- Left Sidebar: Companies List -->
-          <aside class="company-rail lead-company-rail followup-company-rail">
-            <div class="rail-header">
-              <div class="rail-heading">Companies</div>
-              <div class="rail-total">{{ groupedAllBookmarks.length }} listed</div>
-            </div>
-            
-            <div class="rail-list">
-              <button
-                class="rail-item"
-                type="button"
-                *ngFor="let group of groupedAllBookmarks" 
-                [class.active]="selectedGlobalFollowupCompany === group.company"
-                (click)="selectedGlobalFollowupCompany = group.company"
-              >
-                <span class="rail-item-copy">
-                  <span class="rail-item-name">{{ group.company }}</span>
-                  <span class="rail-item-meta">{{ group.count }} contacts</span>
+        <section class="workspace record-workspace lead-workspace admin-leads-frame admin-followups-frame">
+          <!-- Filter Toolbar from Employee UI -->
+          <div class="workspace-header lead-workspace-header workspace-header-filters-only admin-followups-toolbar">
+            <div class="workspace-controls workspace-controls-stack">
+              <label class="mini-field admin-followups-mode-field">
+                <span>Follow-up Filter</span>
+                <select class="field-select filter-select-field admin-followups-mode-select" [(ngModel)]="followupFilter" (ngModelChange)="onFollowupFiltersChange()" aria-label="Follow-up filter">
+                  <option value="all">All Follow-ups</option>
+                  <option value="today">Today's Tasks</option>
+                </select>
+              </label>
+              <label class="mini-field admin-followups-date-control">
+                <span>Date</span>
+                <input class="field-input admin-followups-date-input" type="date" [(ngModel)]="selectedFollowupDate" (ngModelChange)="onFollowupFiltersChange()" />
+              </label>
+              <label class="topbar-search admin-followups-toolbar-search" for="adminFollowupSearch">
+                <span class="topbar-search-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"></circle><path d="m20 20-4.35-4.35"></path></svg>
                 </span>
-              </button>
-              <div *ngIf="groupedAllBookmarks.length === 0" class="empty-state-inline empty-state-inline-minimal">
-                No matching follow-ups.
-              </div>
+                <input id="adminFollowupSearch" class="topbar-input" type="text" placeholder="Search all follow-ups..." [(ngModel)]="followupSearch" (ngModelChange)="onFollowupFiltersChange()">
+              </label>
             </div>
-          </aside>
+          </div>
 
-          <!-- Main Content: Selected Company Details -->
-          <section class="record-table-pane lead-table-pane lead-table-pane-full lead-company-pane admin-followups-company-pane">
+          <div class="record-frame lead-record-frame followup-record-frame admin-followups-record-frame">
+          
+            <!-- Left Sidebar: Companies List -->
+            <aside class="company-rail lead-company-rail followup-company-rail">
+              <div class="rail-header">
+                <div class="rail-heading">Companies</div>
+                <div class="rail-total">{{ adminFollowupCompanyTotal || groupedAllBookmarks.length }} listed</div>
+              </div>
+              
+              <div class="rail-list" (scroll)="onAdminFollowupSidebarScroll($event)">
+                <button
+                  class="rail-item"
+                  type="button"
+                  *ngFor="let group of groupedAllBookmarks" 
+                  [class.active]="selectedGlobalFollowupCompany === group.company"
+                  (click)="selectedGlobalFollowupCompany = group.company"
+                >
+                  <span class="rail-item-copy">
+                    <span class="rail-item-name">{{ group.company }}</span>
+                    <span class="rail-item-meta">{{ group.count }} contacts</span>
+                  </span>
+                </button>
+                <div *ngIf="groupedAllBookmarks.length === 0" class="empty-state-inline empty-state-inline-minimal">
+                  No matching follow-ups.
+                </div>
+                <div *ngIf="adminFollowupCompanyHasMore && !adminFollowupCompaniesLoading" class="scroll-page-state">Scroll to load more companies</div>
+                <div *ngIf="adminFollowupCompaniesLoading" class="scroll-page-state">Loading companies...</div>
+              </div>
+            </aside>
+
+            <!-- Main Content: Selected Company Details -->
+            <section class="record-table-pane lead-table-pane lead-table-pane-full lead-company-pane admin-followups-company-pane">
             
-            <div *ngIf="selectedGlobalFollowupCompany" class="table-pane-header lead-company-pane-header admin-leads-company-header admin-followups-company-header">
-              <div>
-                <h3>{{ selectedGlobalFollowupCompany }}</h3>
-                <div class="lead-company-pane-subtitle" *ngIf="followupCompanyPreviewLine(selectedGlobalFollowupCompany)">{{ followupCompanyPreviewLine(selectedGlobalFollowupCompany) }}</div>
-              </div>
-              <div class="admin-leads-pane-actions">
-                <button class="ai-summary-button ai-summary-anchor admin-ai-summary-button" type="button" (click)="openAdminAiSummary($event)">
-                  <span aria-hidden="true">✦</span>
-                  <span>AI Summary</span>
-                </button>
-                <button class="toolbar-button invoice-date-filter-button" type="button" (click)="openCompanyFullView($event)">
-                  Full View
-                </button>
-              </div>
-            </div>
-
-            <div *ngIf="!selectedGlobalFollowupCompany" class="empty-state-inline empty-state-inline-pane">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.2; margin-bottom: 1rem;">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              </svg>
-              Select a company to view details.
-            </div>
-
-            <!-- Lead Cards Grid -->
-            <div *ngIf="selectedGlobalFollowupCompany" class="lead-card-grid admin-leads-card-grid admin-followup-card-grid">
-              <article *ngFor="let b of filteredBookmarksByGlobalCompany" class="lead-record-card admin-lead-record-card followup-record-card admin-followup-contact-card">
-                <ng-container *ngIf="getMatchedLeadForAdminBookmark(b) as matchedLead">
-                  <div class="lead-record-card-head admin-lead-card-head">
-                    <div class="lead-record-title-row">
-                      <h4>{{ b.contactName || matchedLead.contactName || 'Follow-up Contact' }}</h4>
-                      <ng-container *ngIf="matchedLead._id; else adminFollowupEditAction">
-                        <button
-                          class="lead-card-star"
-                          type="button"
-                          [class.active]="matchedLead.isStarred"
-                          [attr.aria-label]="matchedLead.isStarred ? 'Unstar lead' : 'Star lead'"
-                          (click)="toggleStar(matchedLead)"
-                        >
-                          <svg viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="m12 4 2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16l-4.7 2.45.9-5.23-3.8-3.7 5.25-.76Z" />
-                          </svg>
-                        </button>
-                      </ng-container>
-                      <ng-template #adminFollowupEditAction>
-                        <button class="followup-card-edit" type="button" (click)="openEditFollowupModal(b)" aria-label="Edit follow-up">
-                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
-                        </button>
-                      </ng-template>
-                    </div>
-                  </div>
-
-                  <div class="lead-record-line">
-                    <span class="lead-record-line-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.29 18a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91A16 16 0 0 0 14 15.82l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
-                    </span>
-                    <span>{{ b.contactNumber || matchedLead.contactNumber || '—' }}</span>
-                  </div>
-
-                  <button class="lead-card-invoice-action" type="button" *ngIf="matchedLead._id" (click)="openQuotationModal(matchedLead)">
-                    <span aria-hidden="true">
-                      <svg viewBox="0 0 24 24"><path d="M7 3h7l3 3v15H7z" /><path d="M14 3v4h4" /><path d="M9 12h6" /><path d="M9 16h4" /></svg>
-                    </span>
-                    <span>Generate Quote</span>
+              <div *ngIf="selectedGlobalFollowupCompany" class="table-pane-header lead-company-pane-header admin-leads-company-header admin-followups-company-header">
+                <div>
+                  <h3>{{ selectedGlobalFollowupCompany }}</h3>
+                  <div class="lead-company-pane-subtitle" *ngIf="followupCompanyPreviewLine(selectedGlobalFollowupCompany)">{{ followupCompanyPreviewLine(selectedGlobalFollowupCompany) }}</div>
+                </div>
+                <div class="admin-leads-pane-actions">
+                  <button class="ai-summary-button ai-summary-anchor admin-ai-summary-button" type="button" (click)="openAdminAiSummary($event)">
+                    <span aria-hidden="true">✦</span>
+                    <span>AI Summary</span>
                   </button>
+                  <button class="toolbar-button invoice-date-filter-button" type="button" (click)="openCompanyFullView($event)">
+                    Full View
+                  </button>
+                </div>
+              </div>
 
-                  <div class="lead-record-line">
-                    <span class="lead-record-line-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24"><path d="M20 10 12 4 4 10l8 6 8-6Z" /><path d="M4 14l8 6 8-6" /></svg>
-                    </span>
-                    <span>{{ matchedLead.setLabel || 'Old Leads' }}</span>
-                  </div>
+              <div *ngIf="!selectedGlobalFollowupCompany" class="empty-state-inline empty-state-inline-pane">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.2; margin-bottom: 1rem;">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Select a company to view details.
+              </div>
 
-                  <div class="lead-record-line lead-record-email" [title]="matchedLead.directorEmailAddress || ''">
-                    <span class="lead-record-line-icon" aria-hidden="true">
-                      <svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg>
-                    </span>
-                    <span>{{ matchedLead.directorEmailAddress || '—' }}</span>
-                  </div>
+              <!-- Lead Cards Grid -->
+              <div *ngIf="selectedGlobalFollowupCompany" class="lead-card-grid admin-leads-card-grid admin-followup-card-grid">
+                <article *ngFor="let b of filteredBookmarksByGlobalCompany" class="lead-record-card admin-lead-record-card followup-record-card admin-followup-contact-card">
+                  <ng-container *ngIf="getMatchedLeadForAdminBookmark(b) as matchedLead">
+                    <div class="lead-record-card-head admin-lead-card-head">
+                      <div class="lead-record-title-row">
+                        <h4>{{ b.contactName || matchedLead.contactName || 'Follow-up Contact' }}</h4>
+                        <ng-container *ngIf="matchedLead._id; else adminFollowupEditAction">
+                          <button
+                            class="lead-card-star"
+                            type="button"
+                            [class.active]="matchedLead.isStarred"
+                            [attr.aria-label]="matchedLead.isStarred ? 'Unstar lead' : 'Star lead'"
+                            (click)="toggleStar(matchedLead)"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                              <path d="m12 4 2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16l-4.7 2.45.9-5.23-3.8-3.7 5.25-.76Z" />
+                            </svg>
+                          </button>
+                        </ng-container>
+                        <ng-template #adminFollowupEditAction>
+                          <button class="followup-card-edit" type="button" (click)="openEditFollowupModal(b)" aria-label="Edit follow-up">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                          </button>
+                        </ng-template>
+                      </div>
+                    </div>
 
-                  <div class="lead-card-remarks">
-                    <div class="lead-card-remarks-title">
+                    <div class="lead-record-line">
                       <span class="lead-record-line-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
+                        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.29 18a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91A16 16 0 0 0 14 15.82l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
                       </span>
-                      <span>Remarks</span>
-                      <button class="text-action" type="button" *ngIf="matchedLead._id" (click)="openCompanyRemarkHistory(matchedLead)">History</button>
+                      <span>{{ b.contactNumber || matchedLead.contactNumber || '—' }}</span>
                     </div>
-                    <div class="lead-card-remark-list" *ngIf="followupDescriptionPreview(b) || followupRemarkPreviewList(b).length; else emptyAdminFollowupRemarks">
-                      <div class="lead-card-remark-item" *ngIf="followupDescriptionPreview(b)">{{ followupDescriptionPreview(b) }}</div>
-                      <div class="lead-card-remark-item" *ngFor="let remark of followupRemarkPreviewList(b)">{{ remark }}</div>
+
+                    <button class="lead-card-invoice-action" type="button" *ngIf="matchedLead._id" (click)="openQuotationModal(matchedLead)">
+                      <span aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M7 3h7l3 3v15H7z" /><path d="M14 3v4h4" /><path d="M9 12h6" /><path d="M9 16h4" /></svg>
+                      </span>
+                      <span>Generate Quote</span>
+                    </button>
+
+                    <div class="lead-record-line">
+                      <span class="lead-record-line-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M20 10 12 4 4 10l8 6 8-6Z" /><path d="M4 14l8 6 8-6" /></svg>
+                      </span>
+                      <span>{{ matchedLead.setLabel || 'Old Leads' }}</span>
                     </div>
-                    <ng-template #emptyAdminFollowupRemarks>
-                      <div class="lead-card-empty">No remarks added.</div>
-                    </ng-template>
-                    <div class="lead-card-remark-entry" *ngIf="matchedLead._id">
-                      <input
-                        class="field-input lead-remark-input"
-                        type="text"
-                        [(ngModel)]="leadRemarksInputs[matchedLead._id]"
-                        [attr.list]="'adminFollowupRemarkOptions-' + b._id"
-                        autocomplete="off"
-                        placeholder="Type remark..."
-                        (keyup.enter)="addLeadRemark(matchedLead)"
-                      />
-                      <datalist [id]="'adminFollowupRemarkOptions-' + b._id">
-                        <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
-                      </datalist>
-                      <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(matchedLead)" [disabled]="remarkPostingIds.has(matchedLead._id || '')" aria-label="Add remark">
-                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+
+                    <div class="lead-record-line lead-record-email" [title]="matchedLead.directorEmailAddress || ''">
+                      <span class="lead-record-line-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg>
+                      </span>
+                      <span>{{ matchedLead.directorEmailAddress || '—' }}</span>
+                    </div>
+
+                    <div class="lead-card-remarks">
+                      <div class="lead-card-remarks-title">
+                        <span class="lead-record-line-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
+                        </span>
+                        <span>Remarks</span>
+                        <button class="text-action" type="button" *ngIf="matchedLead._id" (click)="openCompanyRemarkHistory(matchedLead)">History</button>
+                      </div>
+                      <div class="lead-card-remark-list" *ngIf="followupDescriptionPreview(b) || followupRemarkPreviewList(b).length; else emptyAdminFollowupRemarks">
+                        <div class="lead-card-remark-item" *ngIf="followupDescriptionPreview(b)">{{ followupDescriptionPreview(b) }}</div>
+                        <div class="lead-card-remark-item" *ngFor="let remark of followupRemarkPreviewList(b)">{{ remark }}</div>
+                      </div>
+                      <ng-template #emptyAdminFollowupRemarks>
+                        <div class="lead-card-empty">No remarks added.</div>
+                      </ng-template>
+                      <div class="lead-card-remark-entry" *ngIf="matchedLead._id">
+                        <input
+                          class="field-input lead-remark-input"
+                          type="text"
+                          [(ngModel)]="leadRemarksInputs[matchedLead._id]"
+                          [attr.list]="'adminFollowupRemarkOptions-' + b._id"
+                          autocomplete="off"
+                          placeholder="Type remark..."
+                          (keyup.enter)="addLeadRemark(matchedLead)"
+                        />
+                        <datalist [id]="'adminFollowupRemarkOptions-' + b._id">
+                          <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
+                        </datalist>
+                        <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(matchedLead)" [disabled]="remarkPostingIds.has(matchedLead._id || '')" aria-label="Add remark">
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="lead-card-actions" *ngIf="matchedLead._id; else adminFollowupOnlyActions">
+                      <select
+                        class="field-select lead-card-status-select"
+                        [ngModel]="matchedLead.status || 'New'"
+                        (ngModelChange)="updateLeadStatus(matchedLead, $event)"
+                        [style.color]="leadStatusColor(matchedLead.status || 'New')"
+                        [disabled]="!matchedLead._id || updatingLeadId===matchedLead._id"
+                        aria-label="Lead status"
+                      >
+                        <option *ngFor="let st of LEAD_STATUSES" [value]="st" [style.color]="leadStatusColor(st)">{{ st }}</option>
+                      </select>
+                      <button class="lead-card-icon-action lead-card-followup-action" type="button" (click)="openEditFollowupModal(b)" aria-label="Edit follow-up">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></svg>
+                      </button>
+                      <button
+                        class="lead-card-icon-action lead-card-favourite-action"
+                        type="button"
+                        [class.active]="matchedLead.isFavourite"
+                        [attr.aria-label]="matchedLead.isFavourite ? 'Remove from Favourite' : 'Add to Favourite'"
+                        (click)="toggleFavourite(matchedLead)"
+                      >
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                       </button>
                     </div>
-                  </div>
+                    <ng-template #adminFollowupOnlyActions>
+                      <div class="lead-card-actions followup-only-card-actions">
+                        <button class="secondary-action followup-card-details" type="button" (click)="openEditFollowupModal(b)">Edit Follow-up</button>
+                      </div>
+                    </ng-template>
+                  </ng-container>
+                </article>
+              </div>
 
-                  <div class="lead-card-actions" *ngIf="matchedLead._id; else adminFollowupOnlyActions">
-                    <select
-                      class="field-select lead-card-status-select"
-                      [ngModel]="matchedLead.status || 'New'"
-                      (ngModelChange)="updateLeadStatus(matchedLead, $event)"
-                      [style.color]="leadStatusColor(matchedLead.status || 'New')"
-                      [disabled]="!matchedLead._id || updatingLeadId===matchedLead._id"
-                      aria-label="Lead status"
-                    >
-                      <option *ngFor="let st of LEAD_STATUSES" [value]="st" [style.color]="leadStatusColor(st)">{{ st }}</option>
-                    </select>
-                    <button class="lead-card-icon-action lead-card-followup-action" type="button" (click)="openEditFollowupModal(b)" aria-label="Edit follow-up">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></svg>
-                    </button>
-                    <button
-                      class="lead-card-icon-action lead-card-favourite-action"
-                      type="button"
-                      [class.active]="matchedLead.isFavourite"
-                      [attr.aria-label]="matchedLead.isFavourite ? 'Remove from Favourite' : 'Add to Favourite'"
-                      (click)="toggleFavourite(matchedLead)"
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                    </button>
-                  </div>
-                  <ng-template #adminFollowupOnlyActions>
-                    <div class="lead-card-actions followup-only-card-actions">
-                      <button class="secondary-action followup-card-details" type="button" (click)="openEditFollowupModal(b)">Edit Follow-up</button>
-                    </div>
-                  </ng-template>
-                </ng-container>
-              </article>
-            </div>
+            </section>
 
-          </section>
-
-        </div>
+          </div>
+        </section>
       </div>
 
       <!-- ══ PERIODIC REPORTS TAB ══ -->
@@ -6279,42 +6282,25 @@
   </div>
 </div>
 <!-- ========== ALL REMARKS MODAL ========== -->
-<div class="modal-overlay" [class.open]="showAllRemarksModal" (click)="closeAllRemarksModal()">
-  <div class="modal" (click)="$event.stopPropagation()" style="max-width: 500px; width: 90%;">
-    <button class="modal-close" (click)="closeAllRemarksModal()">&#x2715;</button>
-    <div class="modal-brand" style="justify-content: flex-start; margin-bottom: 1.5rem;">
-      <div
-        style="background: #eef2ff; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-        </svg>
+<div class="invoice-overlay company-remarks-overlay" *ngIf="showAllRemarksModal && selectedBookmarkForRemarks"
+  (click)="closeAllRemarksModal()">
+  <div class="invoice-modal followup-modal company-remarks-modal" (click)="$event.stopPropagation()">
+    <div class="followup-modal-head">
+      <div class="followup-modal-title">
+        <div class="section-kicker">Remark History</div>
+        <h3>{{ selectedBookmarkForRemarks?.contactName || 'Primary Contact' }}</h3>
+        <p>{{ selectedBookmarkForRemarks?.companyName || selectedBookmarkForRemarks?.leadCompanyName || 'Unnamed Company' }}</p>
       </div>
-      <div>
-        <h2 class="modal-title" style="margin: 0; font-size: 1.25rem;">Interaction History</h2>
-        <p style="margin: 4px 0 0; font-size: 0.85rem; color: var(--text-3);">{{ selectedBookmarkForRemarks?.contactName
-          }}</p>
+      <button class="secondary-action" type="button" (click)="closeAllRemarksModal()">Close</button>
+    </div>
+    <div class="company-remarks-list" *ngIf="companyRemarkHistory(selectedBookmarkForRemarks).length; else emptyBookmarkRemarks">
+      <div class="company-remark-row" *ngFor="let remark of companyRemarkHistory(selectedBookmarkForRemarks)">
+        {{ remark }}
       </div>
     </div>
-
-    <div style="max-height: 400px; overflow-y: auto; padding-right: 8px;" class="custom-scroll">
-      <div *ngFor="let r of selectedBookmarkForRemarks?.remarks; let i = index"
-        style="padding: 1rem; background: #f8fafc; border-radius: 12px; margin-bottom: 12px; border: 1px solid #edf2f7;">
-        <div style="display: flex; gap: 12px;">
-          <div style="color: #6366f1; font-weight: 700; font-size: 0.85rem;">#{{ i + 1 }}</div>
-          <div style="font-size: 0.9rem; color: #1e293b; line-height: 1.5;">{{ r }}</div>
-        </div>
-      </div>
-      <div *ngIf="!selectedBookmarkForRemarks?.remarks?.length"
-        style="text-align: center; padding: 2rem; color: var(--text-3);">
-        No interaction history found.
-      </div>
-    </div>
-
-    <div style="margin-top: 2rem;">
-      <button class="cta-primary" (click)="closeAllRemarksModal()"
-        style="width: 100%; border-radius: 12px; padding: 0.8rem;">Close History</button>
-    </div>
+    <ng-template #emptyBookmarkRemarks>
+      <div class="empty-state-inline empty-state-inline-minimal">No remarks recorded for this contact.</div>
+    </ng-template>
   </div>
 </div>
 
@@ -6698,26 +6684,14 @@
       </div>
       <button class="secondary-action" type="button" (click)="closeCompanyRemarkHistory()">Close</button>
     </div>
-    <div class="lead-detail-panel company-remarks-history-panel">
-      <div class="lead-detail-section lead-remarks-section">
-        <div class="lead-detail-section-title">Remarks</div>
-        <div class="lead-remarks-list">
-          <div class="lead-remarks-row" *ngFor="let remark of companyRemarkLead.remarks || []; let i = index">
-            <span>{{ remark }}</span>
-            <button class="text-action" type="button" (click)="deleteLeadRemark(companyRemarkLead, i)">Delete</button>
-          </div>
-          <div *ngIf="!companyRemarkLead.remarks || companyRemarkLead.remarks.length===0" class="empty-state-inline empty-state-inline-minimal">No remarks recorded for this contact.</div>
-        </div>
-
-        <div class="remark-composer lead-remark-composer" *ngIf="companyRemarkLead._id as remarkLeadId">
-          <input class="field-input" type="text" [(ngModel)]="leadRemarksInputs[remarkLeadId]" placeholder="Add remark" (keyup.enter)="addLeadRemark(companyRemarkLead)" />
-          <button class="primary-action" type="button" (click)="addLeadRemark(companyRemarkLead)" [disabled]="remarkPostingIds.has(remarkLeadId)">
-            <span *ngIf="!remarkPostingIds.has(remarkLeadId)">Add</span>
-            <span *ngIf="remarkPostingIds.has(remarkLeadId)" class="button-spinner"></span>
-          </button>
-        </div>
+    <div class="company-remarks-list" *ngIf="companyRemarkHistory(companyRemarkLead).length; else emptyCompanyLeadRemarks">
+      <div class="company-remark-row" *ngFor="let remark of companyRemarkHistory(companyRemarkLead)">
+        {{ remark }}
       </div>
     </div>
+    <ng-template #emptyCompanyLeadRemarks>
+      <div class="empty-state-inline empty-state-inline-minimal">No remarks recorded for this contact.</div>
+    </ng-template>
   </div>
 </div>
 
