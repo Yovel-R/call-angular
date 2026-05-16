@@ -534,6 +534,15 @@ export class AdminWorkspaceComponent implements OnInit {
     return this.groupedEmpBookmarksCache;
   }
 
+  private ensureSelectedEmpFollowupCompany(): void {
+    if (!this.selectedEmployee) return;
+    const groups = this.groupedEmpBookmarks;
+    const selectedStillVisible = groups.some((group) => group.company === this.selectedEmpFollowupCompany);
+    if (!selectedStillVisible) {
+      this.selectedEmpFollowupCompany = groups[0]?.company || '';
+    }
+  }
+
   leadMapCache: { [phone: string]: Lead } | null = null;
   lastAllLeadsRef: any[] | null = null;
 
@@ -542,12 +551,19 @@ export class AdminWorkspaceComponent implements OnInit {
       this.leadMapCache = {};
       for (const l of this.allLeads) {
         if (l.contactNumber) {
-          this.leadMapCache[l.contactNumber] = l;
+          this.leadMapCache[String(l.contactNumber).trim()] = l;
         }
       }
       this.lastAllLeadsRef = this.allLeads;
     }
-    return this.leadMapCache![phone];
+    return this.leadMapCache![String(phone || '').trim()];
+  }
+
+  private resetAdminLeadDerivedCaches(): void {
+    this.leadMapCache = null;
+    this.lastAllLeadsRef = null;
+    this.lastAllLeadsRefForFiltered = null;
+    this.lastFilteredLeadsRefForUnique = null;
   }
 
   updateLeadStatus(lead: Lead, status: string): void {
@@ -589,13 +605,25 @@ export class AdminWorkspaceComponent implements OnInit {
     return normalized;
   }
 
+  private findLeadRecordForAdminBookmark(bookmark: Bookmark | null | undefined): Lead | undefined {
+    if (!bookmark) return undefined;
+    const bookmarkPhone = String(bookmark.contactNumber || '').trim();
+    const bookmarkCompany = String(bookmark.companyName || '').trim();
+    const sameCompanyLead = bookmarkPhone ? this.allLeads.find((lead) => (
+      String(lead.contactNumber || '').trim() === bookmarkPhone &&
+      String(lead.leadCompanyName || '').trim() === bookmarkCompany
+    )) : undefined;
+    const phoneLead = bookmarkPhone ? this.getLeadByPhone(bookmarkPhone) : undefined;
+    const matchedLead =
+      sameCompanyLead ||
+      (phoneLead && (!bookmarkCompany || String(phoneLead.leadCompanyName || '').trim() === bookmarkCompany) ? phoneLead : undefined);
+
+    return matchedLead;
+  }
+
   getMatchedLeadForAdminBookmark(bookmark: Bookmark | null | undefined): Lead | null {
     if (!bookmark) return null;
-    const matchedLead =
-      this.getLeadByPhone(bookmark.contactNumber) ||
-      this.allLeads.find(
-        (lead) => lead.contactNumber === bookmark.contactNumber && lead.leadCompanyName === bookmark.companyName
-      );
+    const matchedLead = this.findLeadRecordForAdminBookmark(bookmark);
 
     if (matchedLead) return matchedLead;
 
@@ -795,6 +823,73 @@ export class AdminWorkspaceComponent implements OnInit {
       this.filteredBookmarksByGlobalCompanyDepsStr = depsStr;
     }
     return this.filteredBookmarksByGlobalCompanyCache;
+  }
+
+  selectGlobalFollowupCompany(company: string): void {
+    this.selectedGlobalFollowupCompany = company;
+    this.ensureAdminFollowupLeadHydration(company);
+  }
+
+  private ensureAdminFollowupLeadHydration(company: string): void {
+    if (!this.dashboardCode || !company) return;
+
+    const bookmarks = this.filteredBookmarksFiltered.filter((bookmark) => (
+      (bookmark.companyName || 'Unnamed Company') === company
+    ));
+    const bookmarksNeedingLeads = bookmarks.filter((bookmark) => !this.findLeadRecordForAdminBookmark(bookmark));
+    if (!bookmarksNeedingLeads.length) return;
+
+    const missingPhones = Array.from(new Set(
+      bookmarksNeedingLeads
+        .map((bookmark) => String(bookmark.contactNumber || '').trim())
+        .filter(Boolean)
+    ));
+    const hydrationKey = [
+      company,
+      missingPhones.join(',') || 'company',
+      this.followupFilter || 'all',
+      this.selectedFollowupDate || 'all',
+      this.followupSearch.trim().toLowerCase() || 'all',
+    ].join('|');
+
+    if (
+      this.adminFollowupLeadHydrationKeys.has(hydrationKey) ||
+      this.adminFollowupLeadHydrationLoadingKeys.has(hydrationKey)
+    ) {
+      return;
+    }
+
+    this.adminFollowupLeadHydrationLoadingKeys.add(hydrationKey);
+    const phoneQueries = missingPhones.length ? missingPhones : [''];
+
+    from(phoneQueries).pipe(
+      mergeMap((phone) => this.leadService.getAdminLeadPage(this.dashboardCode, {
+        company,
+        search: phone || undefined,
+        searchMode: phone ? 'phone' : undefined,
+        page: 1,
+        pageSize: phone ? 5 : OPERATIONAL_PAGE_SIZE,
+        paginated: true,
+        includeFacets: false,
+      } as any).pipe(
+        catchError(() => of({ leads: [], items: [] }))
+      ), 4),
+    ).subscribe({
+      next: (res: any) => {
+        const leads = (res?.leads || res?.items || [])
+          .map((lead: any) => this.normalizeLead(lead))
+          .filter((lead: Lead) => String(lead.leadCompanyName || '').trim() === company);
+        if (!leads.length) return;
+        this.upsertAdminHydratedLeadRecords(leads);
+      },
+      error: () => {
+        this.adminFollowupLeadHydrationLoadingKeys.delete(hydrationKey);
+      },
+      complete: () => {
+        this.adminFollowupLeadHydrationLoadingKeys.delete(hydrationKey);
+        this.adminFollowupLeadHydrationKeys.add(hydrationKey);
+      },
+    });
   }
 
   followupLastInteraction(bookmark: Bookmark): string {
@@ -1198,6 +1293,8 @@ export class AdminWorkspaceComponent implements OnInit {
   adminFollowupCompaniesLoading = false;
   private readonly adminFollowupCompanyCachePrefix = 'admin-followup-companies|';
   private adminFollowupRequestRun = 0;
+  private adminFollowupLeadHydrationKeys = new Set<string>();
+  private adminFollowupLeadHydrationLoadingKeys = new Set<string>();
   private followupSearchTimer: ReturnType<typeof setTimeout> | null = null;
   leadCallCounts: { [number: string]: number } = {};
   showAllRemarksModal: boolean = false;
@@ -2017,6 +2114,7 @@ export class AdminWorkspaceComponent implements OnInit {
     this.selectedEmpCallsLoading = true;
     this.drilldownTab = 'stats';
     this.dashTab = 'emp_dashboard';
+    this.selectedEmpLeadCompany = '';
     this.selectedEmpFollowupCompany = '';
     this.followupFilter = 'all';
     this.followupSearch = '';
@@ -3832,8 +3930,9 @@ Thank You.`;
         if (res.success) {
           this.empLeads = res.leads;
           this.leadSets = res.sets || [];
-          if (this.empLeads.length > 0 && !this.selectedEmpLeadCompany) {
-            this.selectedEmpLeadCompany = this.empLeads[0].leadCompanyName || 'Unnamed Company';
+          const companies = Array.from(new Set(this.empLeads.map((lead) => lead.leadCompanyName || 'Unnamed Company')));
+          if (!this.selectedEmpLeadCompany || !companies.includes(this.selectedEmpLeadCompany)) {
+            this.selectedEmpLeadCompany = companies[0] || '';
           }
         }
       },
@@ -4042,6 +4141,26 @@ Thank You.`;
       return !hydratedCompanies.has(lead.leadCompanyName);
     });
     this.allLeads = [...otherLeads, ...leads];
+    this.resetAdminLeadDerivedCaches();
+  }
+
+  private upsertAdminHydratedLeadRecords(leads: Lead[]): void {
+    if (!leads.length) return;
+    const byKey = new Map<string, Lead>();
+    const leadKey = (lead: Lead): string => {
+      const id = String(lead._id || '').trim();
+      if (id) return `id:${id}`;
+      return [
+        'contact',
+        String(lead.leadCompanyName || '').trim(),
+        String(lead.contactNumber || '').trim(),
+      ].join('|');
+    };
+
+    this.allLeads.forEach((lead) => byKey.set(leadKey(lead), lead));
+    leads.forEach((lead) => byKey.set(leadKey(lead), lead));
+    this.allLeads = Array.from(byKey.values());
+    this.resetAdminLeadDerivedCaches();
   }
 
   private adminLeadSetsCacheKey(): string {
@@ -4785,7 +4904,7 @@ Thank You.`;
   openOverviewFollowup(bookmark: Bookmark): void {
     this.dashTab = 'followups';
     this.sidebarOpen = false;
-    this.selectedGlobalFollowupCompany = bookmark.companyName || '';
+    this.selectGlobalFollowupCompany(bookmark.companyName || '');
   }
 
   companyFullViewRows(): Lead[] {
@@ -5052,6 +5171,14 @@ Thank You.`;
         this.remarkLeadsLoading = false;
         if (res.success) {
           this.remarkLeads = (res.leads || []).map((l: any) => this.normalizeLead(l));
+          const companies = Array.from(new Set(
+            this.remarkLeads
+              .map((lead: any) => lead.leadCompanyName)
+              .filter((company: string) => !!company)
+          ));
+          if (!this.selectedRemarksFilterCompany || !companies.includes(this.selectedRemarksFilterCompany)) {
+            this.selectedRemarksFilterCompany = companies[0] || '';
+          }
         }
       },
       error: () => {
@@ -5182,6 +5309,7 @@ Thank You.`;
     const page = append ? this.adminFollowupCompanyPage + 1 : 1;
 
     if (!forceRefresh && this.restoreCachedAdminFollowupCompanyPage(page, append)) {
+      this.ensureSelectedEmpFollowupCompany();
       if (!this.isAdminDashboardCacheRefreshDue(this.adminFollowupCompanyCacheKey(page))) return;
     } else if (!append) {
       this.allBookmarks = [];
@@ -5205,22 +5333,16 @@ Thank You.`;
         this.adminFollowupCompaniesLoading = false;
         if (res.success) {
           const payload: AdminFollowupCompanyCachePayload = {
-            companies: (res.companies || []).map((item: any) => ({
-              company: item.company || item.name || 'Unnamed Company',
-              count: Number(item.count || 0),
-            })),
+            companies: this.normalizeAdminFollowupCompanies(res.companies, res.bookmarks || []),
             bookmarks: res.bookmarks || [],
             page: res.page || page,
             hasMore: !!res.hasMore,
-            total: Number(res.total || 0),
+            total: Number(res.total || res.totalCompanies || 0),
           };
           this.applyAdminFollowupPagePayload(payload, append);
           this.dashboardCache.set(this.adminFollowupCompanyCacheKey(page), payload, { ttlMs: this.adminDashboardCacheTtlMs });
           this.fetchLeadCallCounts();
-          
-          if (!this.selectedEmpFollowupCompany && this.selectedEmpBookmarks.length > 0) {
-            this.selectedEmpFollowupCompany = this.selectedEmpBookmarks[0].companyName || 'Unnamed Company';
-          }
+          this.ensureSelectedEmpFollowupCompany();
         }
       },
       error: () => {
@@ -5263,18 +5385,45 @@ Thank You.`;
   }
 
   private applyAdminFollowupPagePayload(payload: AdminFollowupCompanyCachePayload, append: boolean): void {
+    const companies = payload.companies?.length
+      ? payload.companies
+      : this.normalizeAdminFollowupCompanies(undefined, payload.bookmarks || []);
+
     this.adminFollowupCompanies = append
-      ? this.mergeAdminFollowupCompanies(this.adminFollowupCompanies, payload.companies)
-      : payload.companies;
+      ? this.mergeAdminFollowupCompanies(this.adminFollowupCompanies, companies)
+      : companies;
     this.allBookmarks = append
       ? this.mergeBookmarks(this.allBookmarks, payload.bookmarks)
       : payload.bookmarks;
     this.adminFollowupCompanyPage = payload.page;
     this.adminFollowupCompanyHasMore = payload.hasMore;
-    this.adminFollowupCompanyTotal = payload.total;
+    this.adminFollowupCompanyTotal = payload.total || this.adminFollowupCompanies.length;
     if (!append) {
-      this.selectedGlobalFollowupCompany = payload.companies[0]?.company || '';
+      const selectedStillVisible = this.adminFollowupCompanies.some((company) => company.company === this.selectedGlobalFollowupCompany);
+      if (!selectedStillVisible) this.selectedGlobalFollowupCompany = this.adminFollowupCompanies[0]?.company || '';
     }
+    if (this.selectedGlobalFollowupCompany) {
+      this.ensureAdminFollowupLeadHydration(this.selectedGlobalFollowupCompany);
+    }
+  }
+
+  private normalizeAdminFollowupCompanies(rawCompanies: any[] | undefined, bookmarks: Bookmark[]): Array<{ company: string; count: number }> {
+    if (Array.isArray(rawCompanies) && rawCompanies.length) {
+      return rawCompanies.map((item: any) => ({
+        company: item.company || item.name || 'Unnamed Company',
+        count: Number(item.count || 0),
+      }));
+    }
+
+    const counts = new Map<string, number>();
+    bookmarks.forEach((bookmark) => {
+      const company = bookmark.companyName || 'Unnamed Company';
+      counts.set(company, (counts.get(company) || 0) + 1);
+    });
+
+    return Array.from(counts.entries())
+      .map(([company, count]) => ({ company, count }))
+      .sort((a, b) => a.company.localeCompare(b.company));
   }
 
   private mergeAdminFollowupCompanies(

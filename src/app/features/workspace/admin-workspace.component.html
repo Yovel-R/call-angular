@@ -2359,8 +2359,8 @@
                     <div class="table-pane-meta">{{ filteredEmpLeads.length }} leads</div>
                   </div>
 
-                  <div class="lead-card-grid admin-leads-card-grid admin-employee-card-grid" *ngIf="selectedEmpLeadCompany; else noEmployeeLeadCompany">
-                    <article class="lead-record-card admin-lead-record-card" *ngFor="let lead of leadsInSelectedEmpCompanyFiltered">
+                  <div class="lead-card-grid admin-leads-card-grid admin-employee-card-grid admin-employee-style-grid" *ngIf="selectedEmpLeadCompany; else noEmployeeLeadCompany">
+                    <article class="lead-record-card admin-lead-record-card admin-employee-style-card" *ngFor="let lead of leadsInSelectedEmpCompanyFiltered">
                       <div class="lead-record-card-head admin-lead-card-head">
                         <div class="lead-record-title-row">
                           <h4>{{ lead.contactName || 'Primary Contact' }}</h4>
@@ -2417,7 +2417,7 @@
                           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" /></svg>
                         </button>
                         <button class="lead-card-icon-action lead-card-favourite-action" type="button" [class.active]="lead.isFavourite" (click)="toggleFavourite(lead)" aria-label="Favourite lead">
-                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                         </button>
                       </div>
                     </article>
@@ -2484,8 +2484,8 @@
                     <div class="table-pane-meta">{{ selectedEmpBookmarks.length }} active</div>
                   </div>
 
-                  <div class="lead-card-grid admin-leads-card-grid admin-employee-card-grid employee-followup-card-grid" *ngIf="selectedEmpFollowupCompany; else noEmployeeFollowupCompany">
-                    <article class="lead-record-card admin-lead-record-card employee-followup-record-card" *ngFor="let b of selectedEmpBookmarksByCompany">
+                  <div class="lead-card-grid admin-leads-card-grid admin-employee-card-grid employee-followup-card-grid admin-employee-style-grid" *ngIf="selectedEmpFollowupCompany; else noEmployeeFollowupCompany">
+                    <article class="lead-record-card admin-lead-record-card employee-followup-record-card admin-employee-style-card" *ngFor="let b of selectedEmpBookmarksByCompany">
                       <div class="lead-record-card-head admin-lead-card-head">
                         <div class="lead-record-title-row">
                           <h4>{{ b.contactName || b.contactNumber || 'Follow-up Contact' }}</h4>
@@ -3857,8 +3857,8 @@
 
                 <ng-template #adminLeadCardsContent>
               <div class="lead-company-pane-scroll admin-leads-card-scroll" (scroll)="onAdminLeadContactsScroll($event)">
-              <div class="lead-card-grid admin-leads-card-grid" *ngIf="leadsInSelectedCompany.length > 0; else noAdminLeadContacts">
-                <article *ngFor="let lead of leadsInSelectedCompany" class="lead-record-card admin-lead-record-card">
+              <div class="lead-card-grid admin-leads-card-grid admin-employee-style-grid" *ngIf="leadsInSelectedCompany.length > 0; else noAdminLeadContacts">
+                <article *ngFor="let lead of leadsInSelectedCompany" class="lead-record-card admin-lead-record-card admin-employee-style-card">
 
                   <div class="admin-lead-call-count" *ngIf="getLeadInteractionCount(lead.contactNumber) > 0">
                     {{ getLeadInteractionCount(lead.contactNumber) }} calls
@@ -4060,8 +4060,8 @@
                 </div>
               </div>
 
-              <div class="lead-card-grid admin-leads-card-grid admin-remarks-card-grid">
-                <article *ngFor="let lead of remarksFilterLeadsInCompany" class="lead-record-card admin-lead-record-card admin-remarks-contact-card">
+              <div class="lead-card-grid admin-leads-card-grid admin-remarks-card-grid admin-employee-style-grid">
+                <article *ngFor="let lead of remarksFilterLeadsInCompany" class="lead-record-card admin-lead-record-card admin-remarks-contact-card admin-employee-style-card">
                   <div class="lead-record-card-head admin-lead-card-head">
                     <div class="lead-record-title-row">
                       <h4>{{ lead.contactName || 'Primary Contact' }}</h4>
@@ -4217,7 +4217,7 @@
                   type="button"
                   *ngFor="let group of groupedAllBookmarks" 
                   [class.active]="selectedGlobalFollowupCompany === group.company"
-                  (click)="selectedGlobalFollowupCompany = group.company"
+                  (click)="selectGlobalFollowupCompany(group.company)"
                 >
                   <span class="rail-item-copy">
                     <span class="rail-item-name">{{ group.company }}</span>
@@ -4259,30 +4259,24 @@
               </div>
 
               <!-- Lead Cards Grid -->
-              <div *ngIf="selectedGlobalFollowupCompany" class="lead-card-grid admin-leads-card-grid admin-followup-card-grid">
-                <article *ngFor="let b of filteredBookmarksByGlobalCompany" class="lead-record-card admin-lead-record-card followup-record-card admin-followup-contact-card">
+              <div *ngIf="selectedGlobalFollowupCompany" class="lead-card-grid admin-leads-card-grid admin-followup-card-grid admin-employee-style-grid">
+                <article *ngFor="let b of filteredBookmarksByGlobalCompany" class="lead-record-card admin-lead-record-card followup-record-card admin-followup-contact-card admin-employee-style-card">
                   <ng-container *ngIf="getMatchedLeadForAdminBookmark(b) as matchedLead">
                     <div class="lead-record-card-head admin-lead-card-head">
                       <div class="lead-record-title-row">
                         <h4>{{ b.contactName || matchedLead.contactName || 'Follow-up Contact' }}</h4>
-                        <ng-container *ngIf="matchedLead._id; else adminFollowupEditAction">
-                          <button
-                            class="lead-card-star"
-                            type="button"
-                            [class.active]="matchedLead.isStarred"
-                            [attr.aria-label]="matchedLead.isStarred ? 'Unstar lead' : 'Star lead'"
-                            (click)="toggleStar(matchedLead)"
-                          >
-                            <svg viewBox="0 0 24 24" aria-hidden="true">
-                              <path d="m12 4 2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16l-4.7 2.45.9-5.23-3.8-3.7 5.25-.76Z" />
-                            </svg>
-                          </button>
-                        </ng-container>
-                        <ng-template #adminFollowupEditAction>
-                          <button class="followup-card-edit" type="button" (click)="openEditFollowupModal(b)" aria-label="Edit follow-up">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
-                          </button>
-                        </ng-template>
+                        <button
+                          class="lead-card-star"
+                          type="button"
+                          [class.active]="matchedLead.isStarred"
+                          [disabled]="!matchedLead._id"
+                          [attr.aria-label]="matchedLead.isStarred ? 'Unstar lead' : 'Star lead'"
+                          (click)="matchedLead._id && toggleStar(matchedLead)"
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="m12 4 2.35 4.76 5.25.76-3.8 3.7.9 5.23L12 16l-4.7 2.45.9-5.23-3.8-3.7 5.25-.76Z" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
 
@@ -4293,7 +4287,7 @@
                       <span>{{ b.contactNumber || matchedLead.contactNumber || '—' }}</span>
                     </div>
 
-                    <button class="lead-card-invoice-action" type="button" *ngIf="matchedLead._id" (click)="openQuotationModal(matchedLead)">
+                    <button class="lead-card-invoice-action" type="button" [disabled]="!matchedLead._id" (click)="matchedLead._id && openQuotationModal(matchedLead)">
                       <span aria-hidden="true">
                         <svg viewBox="0 0 24 24"><path d="M7 3h7l3 3v15H7z" /><path d="M14 3v4h4" /><path d="M9 12h6" /><path d="M9 16h4" /></svg>
                       </span>
@@ -4320,7 +4314,7 @@
                           <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" /></svg>
                         </span>
                         <span>Remarks</span>
-                        <button class="text-action" type="button" *ngIf="matchedLead._id" (click)="openCompanyRemarkHistory(matchedLead)">History</button>
+                        <button class="text-action" type="button" [disabled]="!matchedLead._id" (click)="matchedLead._id && openCompanyRemarkHistory(matchedLead)">History</button>
                       </div>
                       <div class="lead-card-remark-list" *ngIf="followupDescriptionPreview(b) || followupRemarkPreviewList(b).length; else emptyAdminFollowupRemarks">
                         <div class="lead-card-remark-item" *ngIf="followupDescriptionPreview(b)">{{ followupDescriptionPreview(b) }}</div>
@@ -4329,30 +4323,32 @@
                       <ng-template #emptyAdminFollowupRemarks>
                         <div class="lead-card-empty">No remarks added.</div>
                       </ng-template>
-                      <div class="lead-card-remark-entry" *ngIf="matchedLead._id">
+                      <div class="lead-card-remark-entry">
                         <input
                           class="field-input lead-remark-input"
                           type="text"
-                          [(ngModel)]="leadRemarksInputs[matchedLead._id]"
+                          [ngModel]="leadRemarksInputs[matchedLead._id || b._id || ''] || ''"
+                          (ngModelChange)="leadRemarksInputs[matchedLead._id || b._id || ''] = $event"
                           [attr.list]="'adminFollowupRemarkOptions-' + b._id"
                           autocomplete="off"
+                          [disabled]="!matchedLead._id"
                           placeholder="Type remark..."
-                          (keyup.enter)="addLeadRemark(matchedLead)"
+                          (keyup.enter)="matchedLead._id && addLeadRemark(matchedLead)"
                         />
                         <datalist [id]="'adminFollowupRemarkOptions-' + b._id">
                           <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
                         </datalist>
-                        <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(matchedLead)" [disabled]="remarkPostingIds.has(matchedLead._id || '')" aria-label="Add remark">
+                        <button class="lead-card-add-remark" type="button" (click)="matchedLead._id && addLeadRemark(matchedLead)" [disabled]="!matchedLead._id || remarkPostingIds.has(matchedLead._id || '')" aria-label="Add remark">
                           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
                         </button>
                       </div>
                     </div>
 
-                    <div class="lead-card-actions" *ngIf="matchedLead._id; else adminFollowupOnlyActions">
+                    <div class="lead-card-actions">
                       <select
                         class="field-select lead-card-status-select"
                         [ngModel]="matchedLead.status || 'New'"
-                        (ngModelChange)="updateLeadStatus(matchedLead, $event)"
+                        (ngModelChange)="matchedLead._id && updateLeadStatus(matchedLead, $event)"
                         [style.color]="leadStatusColor(matchedLead.status || 'New')"
                         [disabled]="!matchedLead._id || updatingLeadId===matchedLead._id"
                         aria-label="Lead status"
@@ -4367,16 +4363,12 @@
                         type="button"
                         [class.active]="matchedLead.isFavourite"
                         [attr.aria-label]="matchedLead.isFavourite ? 'Remove from Favourite' : 'Add to Favourite'"
-                        (click)="toggleFavourite(matchedLead)"
+                        [disabled]="!matchedLead._id"
+                        (click)="matchedLead._id && toggleFavourite(matchedLead)"
                       >
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                       </button>
                     </div>
-                    <ng-template #adminFollowupOnlyActions>
-                      <div class="lead-card-actions followup-only-card-actions">
-                        <button class="secondary-action followup-card-details" type="button" (click)="openEditFollowupModal(b)">Edit Follow-up</button>
-                      </div>
-                    </ng-template>
                   </ng-container>
                 </article>
               </div>
