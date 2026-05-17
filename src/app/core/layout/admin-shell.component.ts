@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AdminWorkspaceComponent } from '../../features/workspace/admin-workspace.component';
+import { AdminWorkspaceComponent } from '../../features/admin-workspace/admin-workspace.component';
 
 @Component({
   selector: 'app-root',

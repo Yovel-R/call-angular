@@ -1,0 +1,7 @@
+/*
+  Temporary global compatibility layer.
+
+  Keep selectors here only when they still affect multiple feature pages,
+  shell/topbar/sidebar layout, workspace-level modals, or order-sensitive
+  overrides that have not yet been assigned to a single feature stylesheet.
+*/
