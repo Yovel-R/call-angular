@@ -816,8 +816,9 @@
 .admin-quote-modal .quotation-hero {
   position: relative !important;
   display: grid !important;
-  grid-template-columns: 170px minmax(0, 1fr) 260px !important;
+  grid-template-columns: 170px 260px !important;
   align-items: start !important;
+  justify-content: space-between !important;
   gap: 0 !important;
   min-height: 282px !important;
   padding: 44px 56px !important;
@@ -1054,4 +1055,3 @@
     text-align: left !important;
   }
 }
-

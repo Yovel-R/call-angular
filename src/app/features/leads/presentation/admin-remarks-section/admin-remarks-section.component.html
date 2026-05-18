@@ -3,7 +3,6 @@
         <!-- Remark Filters -->
         <div class="admin-filter-panel remarks-command-panel">
           <div class="remarks-command-row">
-            <div class="remarks-filter-label">Filter by Remark / Certification</div>
             <div *ngIf="settingsProductRemarks.length === 0" class="remarks-empty-inline">No product remarks configured yet.</div>
             <label class="mini-field remarks-filter-select-field">
               <span>Remark / Certification</span>
@@ -146,18 +145,38 @@
                       <div class="lead-card-empty">No remarks added.</div>
                     </ng-template>
                     <div class="lead-card-remark-entry" *ngIf="lead._id as remarkLeadId">
-                      <input
-                        class="field-input lead-remark-input"
-                        type="text"
-                        [(ngModel)]="leadRemarksInputs[remarkLeadId]"
-                        [attr.list]="'remarksFilterRemarkOptions-' + remarkLeadId"
-                        autocomplete="off"
-                        placeholder="Type remark..."
-                        (keyup.enter)="addLeadRemark(lead)"
-                      />
-                      <datalist [id]="'remarksFilterRemarkOptions-' + remarkLeadId">
-                        <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
-                      </datalist>
+                      <div class="lead-card-remark-combobox">
+                        <input
+                          class="field-input lead-remark-input lead-card-remark-input"
+                          type="text"
+                          [(ngModel)]="leadRemarksInputs[remarkLeadId]"
+                          (focus)="openAdminRemarkMenu(remarkLeadId)"
+                          (blur)="queueCloseAdminRemarkMenu(remarkLeadId)"
+                          autocomplete="off"
+                          placeholder="Type remark..."
+                          (keyup.enter)="addLeadRemark(lead)"
+                        />
+                        <button
+                          class="lead-card-remark-toggle"
+                          type="button"
+                          aria-label="Show remark options"
+                          (mousedown)="$event.preventDefault()"
+                          (click)="toggleAdminRemarkMenu(remarkLeadId)"
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                        </button>
+                        <div class="lead-card-remark-options" *ngIf="isAdminRemarkMenuOpen(remarkLeadId) && filteredAdminRemarkOptions(leadRemarksInputs[remarkLeadId]).length > 0">
+                          <button
+                            class="lead-card-remark-option"
+                            type="button"
+                            *ngFor="let remark of filteredAdminRemarkOptions(leadRemarksInputs[remarkLeadId])"
+                            (mousedown)="$event.preventDefault()"
+                            (click)="selectAdminRemark(remarkLeadId, remark)"
+                          >
+                            {{ remark }}
+                          </button>
+                        </div>
+                      </div>
                       <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(lead)" [disabled]="remarkPostingIds.has(remarkLeadId)" aria-label="Add remark">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
                       </button>

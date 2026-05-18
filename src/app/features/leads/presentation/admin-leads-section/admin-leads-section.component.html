@@ -149,18 +149,38 @@
                         <div class="lead-card-empty">No remarks added.</div>
                       </ng-template>
                       <div class="lead-card-remark-entry">
-                        <input
-                          class="field-input lead-remark-input"
-                          type="text"
-                          [(ngModel)]="leadRemarksInputs[lead._id]"
-                          [attr.list]="'adminRemarkOptions-' + lead._id"
-                          autocomplete="off"
-                          placeholder="Type remark..."
-                          (keyup.enter)="addLeadRemark(lead)"
-                        />
-                        <datalist [id]="'adminRemarkOptions-' + lead._id">
-                          <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
-                        </datalist>
+                        <div class="lead-card-remark-combobox">
+                          <input
+                            class="field-input lead-remark-input lead-card-remark-input"
+                            type="text"
+                            [(ngModel)]="leadRemarksInputs[lead._id]"
+                            (focus)="openAdminRemarkMenu(lead._id || '')"
+                            (blur)="queueCloseAdminRemarkMenu(lead._id || '')"
+                            autocomplete="off"
+                            placeholder="Type remark..."
+                            (keyup.enter)="addLeadRemark(lead)"
+                          />
+                          <button
+                            class="lead-card-remark-toggle"
+                            type="button"
+                            aria-label="Show remark options"
+                            (mousedown)="$event.preventDefault()"
+                            (click)="toggleAdminRemarkMenu(lead._id || '')"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                          </button>
+                          <div class="lead-card-remark-options" *ngIf="isAdminRemarkMenuOpen(lead._id || '') && filteredAdminRemarkOptions(leadRemarksInputs[lead._id]).length > 0">
+                            <button
+                              class="lead-card-remark-option"
+                              type="button"
+                              *ngFor="let remark of filteredAdminRemarkOptions(leadRemarksInputs[lead._id])"
+                              (mousedown)="$event.preventDefault()"
+                              (click)="selectAdminRemark(lead._id || '', remark)"
+                            >
+                              {{ remark }}
+                            </button>
+                          </div>
+                        </div>
                         <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(lead)" [disabled]="remarkPostingIds.has(lead._id || '')" aria-label="Add remark">
                           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
                         </button>
@@ -168,7 +188,7 @@
                     </div>
 
                     <div class="lead-card-actions">
-                      <select class="field-select lead-card-status-select" [ngModel]="lead.status || 'New'" (ngModelChange)="updateLeadStatus(lead, $event)" [style.color]="leadStatusColor(lead.status || 'New')" [disabled]="updatingLeadId===lead._id" aria-label="Lead status">
+                      <select class="field-select lead-card-status-select" [ngModel]="normalizedLeadStatus(lead.status)" (ngModelChange)="updateLeadStatus(lead, $event)" [style.color]="leadStatusColor(normalizedLeadStatus(lead.status))" [disabled]="updatingLeadId===lead._id" aria-label="Lead status">
                         <option *ngFor="let st of LEAD_STATUSES" [value]="st" [style.color]="leadStatusColor(st)">{{ st }}</option>
                       </select>
                       <button class="lead-card-icon-action" type="button" (click)="openHistory(lead)" aria-label="Open history">

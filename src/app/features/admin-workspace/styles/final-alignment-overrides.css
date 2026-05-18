@@ -40,6 +40,9 @@
 
 .dashboard-wrapper .admin-employee-card-grid {
   align-content: start !important;
+  gap: 28px !important;
+  row-gap: 32px !important;
+  grid-auto-rows: auto !important;
 }
 
 .dashboard-wrapper .followup-only-card-actions {
@@ -57,22 +60,55 @@
 }
 
 .dashboard-wrapper .admin-employee-followups-frame {
-  height: auto !important;
-  min-height: 520px !important;
-  overflow: visible !important;
+  height: min(760px, calc(100vh - 180px)) !important;
+  min-height: 680px !important;
+  overflow: hidden !important;
 }
 
 .dashboard-wrapper .admin-employee-followups-section .admin-employee-company-pane {
-  height: auto !important;
-  overflow: visible !important;
+  height: 100% !important;
+  overflow: hidden !important;
 }
 
 .dashboard-wrapper .employee-followup-card-grid {
-  overflow: visible !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  align-content: start !important;
+  gap: 28px !important;
+  row-gap: 32px !important;
+  grid-auto-rows: auto !important;
+  padding-bottom: 48px !important;
 }
 
 .dashboard-wrapper .employee-followup-record-card {
-  min-height: 0 !important;
+  min-height: 516px !important;
+}
+
+.dashboard-wrapper .admin-employee-assigned-frame {
+  height: min(760px, calc(100vh - 180px)) !important;
+  min-height: 680px !important;
+  overflow: hidden !important;
+}
+
+.dashboard-wrapper .admin-employee-assigned-frame .admin-employee-company-pane {
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+.dashboard-wrapper .admin-employee-assigned-frame .admin-employee-card-grid {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  align-content: start !important;
+  gap: 28px !important;
+  row-gap: 32px !important;
+  grid-auto-rows: auto !important;
+  padding-bottom: 48px !important;
+}
+
+.dashboard-wrapper .admin-employee-assigned-frame .admin-employee-style-card {
+  min-height: 456px !important;
+  height: auto !important;
+  overflow: visible !important;
 }
 
 .dashboard-wrapper .employee-followup-record-card .followup-card-edit {
@@ -638,9 +674,12 @@
 .dashboard-wrapper .lead-company-pane-scroll > .empty-state-inline-pane,
 .dashboard-wrapper .admin-employee-company-pane > .empty-state-inline-pane,
 .dashboard-wrapper .admin-followups-company-pane > .empty-state-inline-pane {
-  display: grid !important;
-  place-items: center !important;
-  min-height: 360px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+  min-height: 100% !important;
+  height: 100% !important;
   width: 100% !important;
   margin: 0 !important;
   padding: 32px !important;
@@ -653,6 +692,18 @@
 
 .dashboard-wrapper .lead-company-pane-scroll > .empty-state-inline-pane {
   min-height: 100% !important;
+}
+
+.dashboard-wrapper .admin-remarks-view .lead-detail-view > .leads-empty-state {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-direction: column !important;
+  min-height: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 32px !important;
+  text-align: center !important;
 }
 
 .dashboard-wrapper .admin-followups-view {
@@ -1353,8 +1404,9 @@ body:has(.dashboard-wrapper .admin-employee-fullview) {
 
 .dashboard-wrapper .admin-employee-style-card.admin-followup-contact-card .lead-card-remarks,
 .dashboard-wrapper .admin-employee-style-card.employee-followup-record-card .lead-card-remarks {
-  grid-template-rows: auto minmax(0, auto) auto !important;
-  min-height: 0 !important;
+  grid-template-rows: 24px minmax(0, 1fr) 42px !important;
+  min-height: 168px !important;
+  max-height: 168px !important;
 }
 
 .dashboard-wrapper .admin-employee-style-card .lead-card-remarks-title {
@@ -1548,16 +1600,17 @@ body:has(.dashboard-wrapper .admin-employee-fullview) {
 }
 
 .dashboard-wrapper .admin-employee-style-card .followup-only-card-actions {
-  display: block !important;
+  display: grid !important;
+  grid-template-columns: 1fr !important;
 }
 
 .dashboard-wrapper .admin-employee-style-card .followup-only-card-actions .followup-card-details {
   width: 100% !important;
-  min-height: 36px !important;
+  min-height: 44px !important;
   justify-content: center !important;
-  border-radius: 10px !important;
-  font-size: 0.8rem !important;
-  font-weight: 700 !important;
+  border-radius: 12px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
 }
 
 .dashboard-wrapper .admin-employee-style-card .fu-reminder,

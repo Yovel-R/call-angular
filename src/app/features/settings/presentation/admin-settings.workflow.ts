@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { formatSeconds } from '../../reports/domain/call-formatters';
 
+const DEFAULT_INVOICE_LOGO = '/assets/icon/softrate-transparent-logo.png';
+
 @Injectable({ providedIn: 'root' })
 export class AdminSettingsWorkflow {
   constructor(private authService: AuthService) {}
@@ -166,7 +168,7 @@ export class AdminSettingsWorkflow {
           vm.settingsDnpPageStatuses = res.settings.dnpPageStatuses || [];
           vm.settingsConvertedPageStatuses = res.settings.convertedPageStatuses || [];
           vm.settingsCompanyName = res.settings.companyName || '';
-          vm.settingsInvoiceLogo = res.settings.invoiceLogo || '';
+          vm.settingsInvoiceLogo = res.settings.invoiceLogo || DEFAULT_INVOICE_LOGO;
           vm.settingsShowCompanyNameOnInvoice = res.settings.showCompanyNameOnInvoice ?? true;
           vm.settingsGstNumber = res.settings.gstNumber || '';
           vm.settingsGstPercentage = res.settings.gstPercentage ?? 18;

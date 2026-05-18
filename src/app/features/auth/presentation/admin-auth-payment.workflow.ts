@@ -645,6 +645,7 @@ export class AdminAuthPaymentWorkflow {
           vm.dashboardCompany = res.user.companyName || 'Your Company';
           vm.dashboardCode = res.user.companyCode || 'N/A';
           vm.dashboardTeamSize = parseInt(res.user.teamSize) || 0;
+          vm.loadAdminProfilePhoto?.();
           localStorage.setItem('tracecall_user', JSON.stringify(res.user));
           setTimeout(() => window.scrollTo(0, 0), 0);
           vm._loadDashboard();
@@ -679,6 +680,8 @@ export class AdminAuthPaymentWorkflow {
     vm.loggedIn = false;
     vm.dashboardCompany = '';
     vm.dashboardCode = '';
+    vm.adminProfilePhoto = '';
+    vm.profileMenuOpen = false;
     vm.employees = [];
     vm.summaryStats = null;
     vm.selectedEmployee = null;

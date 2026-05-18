@@ -194,6 +194,7 @@ export abstract class AdminWorkspaceController implements OnInit {
 
   // ── Dashboard tabs ─────────────────────────────────────────
   dashTab: AdminPageId = 'overview';
+  sidebarFeatureSearch = '';
   showShareModal = false;
   shareMessage = '';
   isLogoutConfirmOpen = false;
@@ -224,6 +225,8 @@ export abstract class AdminWorkspaceController implements OnInit {
   updatingLeadId: string | null = null;
   leadRemarksInputs: { [key: string]: string } = {};
   remarkPostingIds = new Set<string>();
+  adminRemarkMenuOpenKey = '';
+  private adminRemarkMenuCloseTimer: ReturnType<typeof setTimeout> | null = null;
   adminLeadStatusFilter = '';
   remarkLeads: any[] = [];
   remarkLeadsLoading: boolean = false;
@@ -235,7 +238,7 @@ export abstract class AdminWorkspaceController implements OnInit {
   historyLogs: any[] = [];
   historyLoading = false;
   historyLead: Lead | null = null;
-  adminCompanyFullSection: 'details' | 'history' = 'details';
+  adminCompanyFullSection: 'overview' | 'contacts' | 'followups' | 'remarks' | 'invoices' | 'quotations' | 'notes' = 'overview';
 
   openHistory(lead: Lead): void {
     if (!this.dashboardCode || !lead.contactNumber) return;
@@ -246,7 +249,7 @@ export abstract class AdminWorkspaceController implements OnInit {
 
   openAdminCompanyFullHistory(lead: Lead): void {
     if (!this.dashboardCode || !lead.contactNumber) return;
-    this.adminCompanyFullSection = 'history';
+    this.adminCompanyFullSection = 'remarks';
     this.showHistoryModal = false;
     this.loadLeadHistoryLogs(lead);
   }
@@ -639,6 +642,12 @@ export abstract class AdminWorkspaceController implements OnInit {
   showBreakNotifPanel = false;
   private breakPollInterval: any;
 
+  profileMenuOpen = false;
+  readonly profilePhotoMaxFileSizeMb = 5;
+  adminProfilePhoto = '';
+  profilePhotoError = '';
+  profilePhotoSuccess = '';
+
   // ── Employee list ──────────────────────────────────────────
   employees: Employee[] = [];
   employeesLoading = false;
@@ -854,6 +863,7 @@ export abstract class AdminWorkspaceController implements OnInit {
         this.dashboardCompany = user.companyName || 'Your Company';
         this.dashboardCode = user.companyCode || '';
         this.dashboardTeamSize = parseInt(user.teamSize) || 0;
+        this.loadAdminProfilePhoto();
         this._loadDashboard();
       } catch { localStorage.removeItem('tracecall_user'); }
     }
@@ -1857,6 +1867,112 @@ export abstract class AdminWorkspaceController implements OnInit {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
+  toggleSidebarMinimized(): void {
+    this.sidebarMinimized = !this.sidebarMinimized;
+  }
+
+  sidebarFeatureMatches(label: string): boolean {
+    const query = this.sidebarFeatureSearch.trim().toLowerCase();
+    return !query || label.toLowerCase().includes(query);
+  }
+
+  sidebarSectionHas(labels: string[]): boolean {
+    return labels.some((label) => this.sidebarFeatureMatches(label));
+  }
+
+  get adminInitials(): string {
+    const name = String(this.dashboardCompany || 'Admin').trim();
+    if (!name) return 'A';
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
+    return `${parts[0][0] || ''}${parts[parts.length - 1][0] || ''}`.toUpperCase();
+  }
+
+  get hasAdminProfilePhoto(): boolean {
+    return !!this.adminProfilePhoto.trim();
+  }
+
+  loadAdminProfilePhoto(): void {
+    this.adminProfilePhoto = localStorage.getItem(this.adminProfilePhotoStorageKey()) || '';
+  }
+
+  toggleProfileMenu(event: Event): void {
+    event.stopPropagation();
+    this.profileMenuOpen = !this.profileMenuOpen;
+    this.profilePhotoError = '';
+    this.profilePhotoSuccess = '';
+  }
+
+  closeProfileMenu(): void {
+    this.profileMenuOpen = false;
+  }
+
+  openProfilePhotoPicker(input: HTMLInputElement): void {
+    this.profilePhotoError = '';
+    this.profilePhotoSuccess = '';
+    input.value = '';
+    input.click();
+  }
+
+  onProfilePhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    const file = input?.files?.[0];
+    if (!file) return;
+
+    this.profilePhotoError = '';
+    this.profilePhotoSuccess = '';
+
+    if (!file.type.startsWith('image/')) {
+      this.profilePhotoError = 'Please choose an image file.';
+      return;
+    }
+
+    if (file.size > this.profilePhotoMaxFileSizeMb * 1024 * 1024) {
+      this.profilePhotoError = `Max image size is ${this.profilePhotoMaxFileSizeMb} MB.`;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = typeof reader.result === 'string' ? reader.result : '';
+      if (!result) {
+        this.profilePhotoError = 'Unable to read the selected image.';
+        return;
+      }
+
+      this.adminProfilePhoto = result;
+      localStorage.setItem(this.adminProfilePhotoStorageKey(), result);
+      this.profilePhotoSuccess = 'Profile photo updated.';
+    };
+    reader.onerror = () => {
+      this.profilePhotoError = 'Unable to read the selected image.';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeProfilePhoto(): void {
+    this.adminProfilePhoto = '';
+    localStorage.removeItem(this.adminProfilePhotoStorageKey());
+    this.profilePhotoError = '';
+    this.profilePhotoSuccess = 'Profile photo removed.';
+  }
+
+  handleDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (this.profileMenuOpen && (!target || !target.closest('.profile-dropdown'))) {
+      this.closeProfileMenu();
+    }
+  }
+
+  handleGlobalEscape(): void {
+    this.closeProfileMenu();
+  }
+
+  private adminProfilePhotoStorageKey(): string {
+    const code = String(this.dashboardCode || 'default').trim() || 'default';
+    return `tracecall_admin_profile_photo:${code}`;
+  }
+
   toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
@@ -2177,14 +2293,17 @@ export abstract class AdminWorkspaceController implements OnInit {
     event?.stopPropagation();
     this.companyRemarkLead = null;
     this.adminAiSummaryOpen = false;
-    this.adminCompanyFullSection = 'details';
+    this.adminCompanyFullSection = 'overview';
     this.companyFullViewOpen = true;
+    if (!this.allBookmarks.length) this.fetchCompanyBookmarks();
+    if (!this.invoiceRecords.length) this.fetchInvoiceRecords();
+    if (!this.quotationRecords.length) this.fetchQuotationRecords();
   }
 
   closeCompanyFullView(): void {
     this.companyFullViewOpen = false;
     this.companyRemarkLead = null;
-    this.adminCompanyFullSection = 'details';
+    this.adminCompanyFullSection = 'overview';
   }
 
   openCompanyRemarkHistory(lead: Lead): void {
@@ -2453,6 +2572,210 @@ export abstract class AdminWorkspaceController implements OnInit {
     return this.companyFullViewRows()[0] || null;
   }
 
+  get adminCompanyFullSections(): Array<{ id: 'overview' | 'contacts' | 'followups' | 'remarks' | 'invoices' | 'quotations' | 'notes'; label: string }> {
+    return [
+      { id: 'overview', label: 'Overview' },
+      { id: 'contacts', label: 'Contacts' },
+      { id: 'followups', label: 'Followups' },
+      { id: 'remarks', label: 'Remarks' },
+      { id: 'invoices', label: 'Invoices' },
+      { id: 'quotations', label: 'Quotations' },
+      { id: 'notes', label: 'Notes' },
+    ];
+  }
+
+  adminCompanyFullSectionId(section: string): string {
+    return `admin-company-full-${section}`;
+  }
+
+  scrollAdminCompanyFullSection(section: 'overview' | 'contacts' | 'followups' | 'remarks' | 'invoices' | 'quotations' | 'notes'): void {
+    this.adminCompanyFullSection = section;
+    setTimeout(() => {
+      document.getElementById(this.adminCompanyFullSectionId(section))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
+  onAdminCompanyFullScroll(event: Event): void {
+    const container = event.target as HTMLElement | null;
+    if (!container) return;
+
+    const containerTop = container.getBoundingClientRect().top;
+    let active = this.adminCompanyFullSections[0]?.id || 'overview';
+    let closest = active;
+    let closestDistance = Number.POSITIVE_INFINITY;
+
+    for (const section of this.adminCompanyFullSections) {
+      const element = document.getElementById(this.adminCompanyFullSectionId(section.id));
+      if (!element) continue;
+      const distance = element.getBoundingClientRect().top - containerTop;
+      const absoluteDistance = Math.abs(distance);
+      if (absoluteDistance < closestDistance) {
+        closestDistance = absoluteDistance;
+        closest = section.id;
+      }
+      if (distance <= 120) {
+        active = section.id;
+      }
+    }
+
+    this.adminCompanyFullSection = active || closest;
+  }
+
+  companyFullCompanyName(): string {
+    return this.selectedLeadCompany
+      || this.selectedRemarksFilterCompany
+      || this.selectedGlobalFollowupCompany
+      || this.companyFullViewLead()?.leadCompanyName
+      || 'Company details';
+  }
+
+  companyFullPrimaryContact(): string {
+    return this.companyFullViewLead()?.contactName || 'Primary Contact';
+  }
+
+  companyFullPrimaryPhone(): string {
+    return this.companyFullViewLead()?.contactNumber || '-';
+  }
+
+  companyFullPrimaryEmail(): string {
+    return this.companyFullViewLead()?.directorEmailAddress || '-';
+  }
+
+  companyFullPrimaryStatus(): string {
+    return this.normalizedLeadStatus(this.companyFullViewLead()?.status);
+  }
+
+  companyFullLatestUpdate(): string {
+    return this.companyLeadLatestDate(this.companyFullViewLead());
+  }
+
+  companyFullSetSummary(): string {
+    const sets = Array.from(new Set(this.companyFullViewRows().map((lead) => String(lead.setLabel || '').trim()).filter(Boolean)));
+    return sets.length ? sets.join(', ') : '-';
+  }
+
+  companyFullCompanyCode(): string {
+    return this.companyFullViewLead()?.companyCode || this.dashboardCode || '-';
+  }
+
+  companyFullOverviewContacts(): Lead[] {
+    return this.companyFullViewRows();
+  }
+
+  companyFullContactEmail(lead: Lead): string {
+    return lead.directorEmailAddress || '-';
+  }
+
+  companyFullContactPhone(lead: Lead): string {
+    return lead.contactNumber || '-';
+  }
+
+  adminCompanyFullRemarkEntries(): Array<{ lead: Lead; remark: string; index: number }> {
+    return this.companyFullViewRows().flatMap((lead) =>
+      [...(lead.remarks || [])]
+        .map((remark, index) => ({ lead, remark: String(remark || '').trim(), index }))
+        .filter((entry) => !!entry.remark)
+        .reverse()
+    );
+  }
+
+  adminCompanyFullFollowups(): Bookmark[] {
+    const company = this.companyFullCompanyName().trim().toLowerCase();
+    const phones = new Set(this.companyFullViewRows().map((lead) => String(lead.contactNumber || '').trim()).filter(Boolean));
+    const source = this.dashTab === 'followups' && this.filteredBookmarksByGlobalCompany.length
+      ? this.filteredBookmarksByGlobalCompany
+      : this.allBookmarks;
+
+    return source.filter((bookmark: Bookmark) => {
+      const bookmarkCompany = String(bookmark.companyName || '').trim().toLowerCase();
+      const bookmarkPhone = String(bookmark.contactNumber || '').trim();
+      return (!!company && bookmarkCompany === company) || (!!bookmarkPhone && phones.has(bookmarkPhone));
+    });
+  }
+
+  adminCompanyFullFollowupFlagCount(flag: keyof Bookmark): number {
+    return this.adminCompanyFullFollowups().filter((bookmark: Bookmark) => !!bookmark[flag]).length;
+  }
+
+  adminCompanyFullFollowupRemarkCount(): number {
+    return this.adminCompanyFullFollowups().reduce((sum, bookmark: Bookmark) => (
+      sum + (bookmark.description ? 1 : 0) + (bookmark.remarks || []).filter(Boolean).length
+    ), 0);
+  }
+
+  adminCompanyFullFollowupReminderCount(): number {
+    return this.adminCompanyFullFollowups().filter((bookmark: Bookmark) => !!bookmark.reminderDate).length;
+  }
+
+  adminCompanyFullFollowupEntries(): Array<{ bookmark: Bookmark; employeeName: string; date: string; title: string; body: string }> {
+    return this.adminCompanyFullFollowups()
+      .map((bookmark: Bookmark) => {
+        const notes = [
+          String(bookmark.description || '').trim(),
+          ...(bookmark.remarks || []).map((remark) => String(remark || '').trim()).filter(Boolean),
+        ].filter(Boolean);
+        return {
+          bookmark,
+          employeeName: this.getEmployeeName(bookmark.employeePhone || ''),
+          date: this.fmtDate(bookmark.reminderDate || bookmark.updatedAt || bookmark.createdAt),
+          title: bookmark.contactName || 'Follow-up Contact',
+          body: notes.join(' · ') || 'Follow-up saved without notes.',
+        };
+      })
+      .sort((a, b) => new Date(b.bookmark.updatedAt || b.bookmark.createdAt || b.bookmark.reminderDate || 0).getTime() - new Date(a.bookmark.updatedAt || a.bookmark.createdAt || a.bookmark.reminderDate || 0).getTime());
+  }
+
+  adminCompanyFullNoteEntries(): Array<{ title: string; body: string; employeeName: string; date: string }> {
+    const followupNotes = this.adminCompanyFullFollowups().flatMap((bookmark: Bookmark) => {
+      const employeeName = this.getEmployeeName(bookmark.employeePhone || '');
+      const date = this.fmtDate(bookmark.updatedAt || bookmark.createdAt || bookmark.reminderDate);
+      const rows = [
+        String(bookmark.description || '').trim(),
+        ...(bookmark.remarks || []).map((remark) => String(remark || '').trim()),
+      ].filter(Boolean);
+      return rows.map((body) => ({
+        title: bookmark.contactName || 'Follow-up note',
+        body,
+        employeeName,
+        date,
+      }));
+    });
+
+    const leadNotes = this.companyFullViewRows().flatMap((lead: Lead) => {
+      const employeeName = this.getEmployeeName(lead.assignedEmployeePhone || '');
+      const date = this.fmtDate(lead.updatedAt || lead.createdAt);
+      return (lead.remarks || [])
+        .map((remark) => String(remark || '').trim())
+        .filter(Boolean)
+        .map((body) => ({
+          title: lead.contactName || 'Lead note',
+          body,
+          employeeName: employeeName || 'Lead record',
+          date,
+        }));
+    });
+
+    return [...followupNotes, ...leadNotes];
+  }
+
+  adminCompanyFullInvoiceItems(): any[] {
+    const company = this.companyFullCompanyName().toLowerCase();
+    const phones = new Set(this.companyFullViewRows().map((lead) => String(lead.contactNumber || '').trim()).filter(Boolean));
+    return this.invoiceRecords.filter((record) =>
+      String(record.leadCompanyName || '').toLowerCase() === company
+      || phones.has(String(record.contactNumber || '').trim())
+    );
+  }
+
+  adminCompanyFullQuotationItems(): any[] {
+    const company = this.companyFullCompanyName().toLowerCase();
+    const phones = new Set(this.companyFullViewRows().map((lead) => String(lead.contactNumber || '').trim()).filter(Boolean));
+    return this.quotationRecords.filter((record) =>
+      String(record.leadCompanyName || '').toLowerCase() === company
+      || phones.has(String(record.contactNumber || '').trim())
+    );
+  }
+
   companyFullViewContext(): string {
     const lead = this.companyFullViewLead();
     return String(lead?.mainDivisionDescription || lead?.companyDescription || '').trim();
@@ -2520,6 +2843,53 @@ export abstract class AdminWorkspaceController implements OnInit {
         alert('Failed to add remark.');
       }
     });
+  }
+
+  openAdminRemarkMenu(key: string): void {
+    if (!key) return;
+    if (this.adminRemarkMenuCloseTimer) {
+      clearTimeout(this.adminRemarkMenuCloseTimer);
+      this.adminRemarkMenuCloseTimer = null;
+    }
+    this.adminRemarkMenuOpenKey = key;
+  }
+
+  toggleAdminRemarkMenu(key: string): void {
+    if (!key) return;
+    if (this.adminRemarkMenuOpenKey === key) {
+      this.adminRemarkMenuOpenKey = '';
+      return;
+    }
+    this.openAdminRemarkMenu(key);
+  }
+
+  queueCloseAdminRemarkMenu(key: string): void {
+    if (!key) return;
+    if (this.adminRemarkMenuCloseTimer) clearTimeout(this.adminRemarkMenuCloseTimer);
+    this.adminRemarkMenuCloseTimer = setTimeout(() => {
+      if (this.adminRemarkMenuOpenKey === key) this.adminRemarkMenuOpenKey = '';
+      this.adminRemarkMenuCloseTimer = null;
+    }, 120);
+  }
+
+  isAdminRemarkMenuOpen(key: string): boolean {
+    return !!key && this.adminRemarkMenuOpenKey === key;
+  }
+
+  filteredAdminRemarkOptions(value: string | null | undefined): string[] {
+    const query = String(value || '').trim().toLowerCase();
+    return (this.settingsProductRemarks || [])
+      .filter((remark) => {
+        const normalized = String(remark || '').trim();
+        return normalized && (!query || normalized.toLowerCase().includes(query));
+      })
+      .slice(0, 8);
+  }
+
+  selectAdminRemark(key: string, remark: string): void {
+    if (!key) return;
+    this.leadRemarksInputs[key] = remark;
+    this.adminRemarkMenuOpenKey = '';
   }
 
   normalizeLead(lead: any): Lead {

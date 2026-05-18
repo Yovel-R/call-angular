@@ -226,19 +226,27 @@
                         </div>
                         <ng-template #noEmployeeLeadRemarks><div class="lead-card-empty">No remarks added.</div></ng-template>
                         <div class="lead-card-remark-entry">
-                          <input
-                            class="field-input lead-remark-input"
-                            type="text"
-                            [ngModel]="leadRemarksInputs[lead._id || ''] || ''"
-                            (ngModelChange)="leadRemarksInputs[lead._id || ''] = $event"
-                            [attr.list]="'employeeLeadRemarkOptions-' + lead._id"
-                            autocomplete="off"
-                            [placeholder]="adminLeadRemarkPreviewList(lead)[0] || 'Type remark...'"
-                            (keyup.enter)="addLeadRemark(lead)"
-                          />
-                          <datalist [id]="'employeeLeadRemarkOptions-' + lead._id">
-                            <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
-                          </datalist>
+                          <div class="lead-card-remark-combobox">
+                            <input
+                              class="field-input lead-remark-input lead-card-remark-input"
+                              type="text"
+                              [ngModel]="leadRemarksInputs[lead._id || ''] || ''"
+                              (ngModelChange)="leadRemarksInputs[lead._id || ''] = $event"
+                              (focus)="openAdminRemarkMenu(lead._id || '')"
+                              (blur)="queueCloseAdminRemarkMenu(lead._id || '')"
+                              autocomplete="off"
+                              [placeholder]="adminLeadRemarkPreviewList(lead)[0] || 'Type remark...'"
+                              (keyup.enter)="addLeadRemark(lead)"
+                            />
+                            <button class="lead-card-remark-toggle" type="button" aria-label="Show remark options" (mousedown)="$event.preventDefault()" (click)="toggleAdminRemarkMenu(lead._id || '')">
+                              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                            </button>
+                            <div class="lead-card-remark-options" *ngIf="isAdminRemarkMenuOpen(lead._id || '') && filteredAdminRemarkOptions(leadRemarksInputs[lead._id || '']).length > 0">
+                              <button class="lead-card-remark-option" type="button" *ngFor="let remark of filteredAdminRemarkOptions(leadRemarksInputs[lead._id || ''])" (mousedown)="$event.preventDefault()" (click)="selectAdminRemark(lead._id || '', remark)">
+                                {{ remark }}
+                              </button>
+                            </div>
+                          </div>
                           <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(lead)" [disabled]="remarkPostingIds.has(lead._id || '')" aria-label="Add remark">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
                           </button>
@@ -348,7 +356,14 @@
                         <div class="lead-record-line lead-record-email" [title]="lead.directorEmailAddress || ''"><span class="lead-record-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg></span><span>{{ lead.directorEmailAddress || '—' }}</span></div>
                       </ng-container>
                       <ng-template #employeeFollowupReminderLine>
+                        <button class="lead-card-invoice-action" type="button" disabled>
+                          <span aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><path d="M7 3h7l3 3v15H7z" /><path d="M14 3v4h4" /><path d="M9 12h6" /><path d="M9 16h4" /></svg>
+                          </span>
+                          <span>Generate Quote</span>
+                        </button>
                         <div class="lead-record-line"><span class="lead-record-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 10 12 4 4 10l8 6 8-6Z" /><path d="M4 14l8 6 8-6" /></svg></span><span>{{ b.reminderDate ? (b.reminderDate | date:'MMM d, y') : 'No reminder date' }}</span></div>
+                        <div class="lead-record-line lead-record-email"><span class="lead-record-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg></span><span>{{ b.companyName || 'Follow-up only' }}</span></div>
                       </ng-template>
                       <div class="lead-card-remarks">
                         <div class="lead-card-remarks-title">
@@ -364,19 +379,27 @@
                         </div>
                         <ng-template #noEmployeeFollowupRemarks><div class="lead-card-empty">No remarks added.</div></ng-template>
                         <div class="lead-card-remark-entry" *ngIf="getLeadByPhone(b.contactNumber) as lead">
-                          <input
-                            class="field-input lead-remark-input"
-                            type="text"
-                            [ngModel]="leadRemarksInputs[lead._id || ''] || ''"
-                            (ngModelChange)="leadRemarksInputs[lead._id || ''] = $event"
-                            [attr.list]="'employeeFollowupRemarkOptions-' + b._id"
-                            autocomplete="off"
-                            [placeholder]="adminLeadRemarkPreviewList(lead)[0] || 'Type remark...'"
-                            (keyup.enter)="addLeadRemark(lead)"
-                          />
-                          <datalist [id]="'employeeFollowupRemarkOptions-' + b._id">
-                            <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
-                          </datalist>
+                          <div class="lead-card-remark-combobox">
+                            <input
+                              class="field-input lead-remark-input lead-card-remark-input"
+                              type="text"
+                              [ngModel]="leadRemarksInputs[lead._id || ''] || ''"
+                              (ngModelChange)="leadRemarksInputs[lead._id || ''] = $event"
+                              (focus)="openAdminRemarkMenu(lead._id || '')"
+                              (blur)="queueCloseAdminRemarkMenu(lead._id || '')"
+                              autocomplete="off"
+                              [placeholder]="adminLeadRemarkPreviewList(lead)[0] || 'Type remark...'"
+                              (keyup.enter)="addLeadRemark(lead)"
+                            />
+                            <button class="lead-card-remark-toggle" type="button" aria-label="Show remark options" (mousedown)="$event.preventDefault()" (click)="toggleAdminRemarkMenu(lead._id || '')">
+                              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                            </button>
+                            <div class="lead-card-remark-options" *ngIf="isAdminRemarkMenuOpen(lead._id || '') && filteredAdminRemarkOptions(leadRemarksInputs[lead._id || '']).length > 0">
+                              <button class="lead-card-remark-option" type="button" *ngFor="let remark of filteredAdminRemarkOptions(leadRemarksInputs[lead._id || ''])" (mousedown)="$event.preventDefault()" (click)="selectAdminRemark(lead._id || '', remark)">
+                                {{ remark }}
+                              </button>
+                            </div>
+                          </div>
                           <button class="lead-card-add-remark" type="button" (click)="addLeadRemark(lead)" [disabled]="remarkPostingIds.has(lead._id || '')" aria-label="Add remark">
                             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
                           </button>
@@ -1442,5 +1465,3 @@
       </div>
 
       </div>
-
-

@@ -82,7 +82,8 @@
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.2; margin-bottom: 1rem;">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
-                Select a company to view details.
+                <h3>No Company Selected</h3>
+                <p>Select a company from the list to view leads</p>
               </div>
 
               <!-- Lead Cards Grid -->
@@ -151,20 +152,41 @@
                         <div class="lead-card-empty">No remarks added.</div>
                       </ng-template>
                       <div class="lead-card-remark-entry">
-                        <input
-                          class="field-input lead-remark-input"
-                          type="text"
-                          [ngModel]="leadRemarksInputs[matchedLead._id || b._id || ''] || ''"
-                          (ngModelChange)="leadRemarksInputs[matchedLead._id || b._id || ''] = $event"
-                          [attr.list]="'adminFollowupRemarkOptions-' + b._id"
-                          autocomplete="off"
-                          [disabled]="!matchedLead._id"
-                          placeholder="Type remark..."
-                          (keyup.enter)="matchedLead._id && addLeadRemark(matchedLead)"
-                        />
-                        <datalist [id]="'adminFollowupRemarkOptions-' + b._id">
-                          <option *ngFor="let remark of settingsProductRemarks" [value]="remark"></option>
-                        </datalist>
+                        <div class="lead-card-remark-combobox">
+                          <input
+                            class="field-input lead-remark-input lead-card-remark-input"
+                            type="text"
+                            [ngModel]="leadRemarksInputs[matchedLead._id || b._id || ''] || ''"
+                            (ngModelChange)="leadRemarksInputs[matchedLead._id || b._id || ''] = $event"
+                            (focus)="matchedLead._id && openAdminRemarkMenu(matchedLead._id || b._id || '')"
+                            (blur)="matchedLead._id && queueCloseAdminRemarkMenu(matchedLead._id || b._id || '')"
+                            autocomplete="off"
+                            [disabled]="!matchedLead._id"
+                            placeholder="Type remark..."
+                            (keyup.enter)="matchedLead._id && addLeadRemark(matchedLead)"
+                          />
+                          <button
+                            class="lead-card-remark-toggle"
+                            type="button"
+                            aria-label="Show remark options"
+                            [disabled]="!matchedLead._id"
+                            (mousedown)="$event.preventDefault()"
+                            (click)="matchedLead._id && toggleAdminRemarkMenu(matchedLead._id || b._id || '')"
+                          >
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                          </button>
+                          <div class="lead-card-remark-options" *ngIf="isAdminRemarkMenuOpen(matchedLead._id || b._id || '') && filteredAdminRemarkOptions(leadRemarksInputs[matchedLead._id || b._id || '']).length > 0">
+                            <button
+                              class="lead-card-remark-option"
+                              type="button"
+                              *ngFor="let remark of filteredAdminRemarkOptions(leadRemarksInputs[matchedLead._id || b._id || ''])"
+                              (mousedown)="$event.preventDefault()"
+                              (click)="selectAdminRemark(matchedLead._id || b._id || '', remark)"
+                            >
+                              {{ remark }}
+                            </button>
+                          </div>
+                        </div>
                         <button class="lead-card-add-remark" type="button" (click)="matchedLead._id && addLeadRemark(matchedLead)" [disabled]="!matchedLead._id || remarkPostingIds.has(matchedLead._id || '')" aria-label="Add remark">
                           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
                         </button>
@@ -174,9 +196,9 @@
                     <div class="lead-card-actions">
                       <select
                         class="field-select lead-card-status-select"
-                        [ngModel]="matchedLead.status || 'New'"
+                        [ngModel]="normalizedLeadStatus(matchedLead.status)"
                         (ngModelChange)="matchedLead._id && updateLeadStatus(matchedLead, $event)"
-                        [style.color]="leadStatusColor(matchedLead.status || 'New')"
+                        [style.color]="leadStatusColor(normalizedLeadStatus(matchedLead.status))"
                         [disabled]="!matchedLead._id || updatingLeadId===matchedLead._id"
                         aria-label="Lead status"
                       >

@@ -1,4 +1,4 @@
-<div class="dashboard-wrapper" *ngIf="vm.loggedIn" [class.ready]="!vm.showSplash">
+<div class="dashboard-wrapper" *ngIf="vm.loggedIn" [class.ready]="!vm.showSplash" [class.sidebar-minimized]="vm.sidebarMinimized">
   <app-admin-dashboard-nav [vm]="vm"></app-admin-dashboard-nav>
 
   <div class="dash-body">

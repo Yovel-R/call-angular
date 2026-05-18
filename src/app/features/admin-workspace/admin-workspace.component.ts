@@ -54,8 +54,8 @@ import { AdminWorkspaceController } from './state/admin-workspace.controller';
     './styles/admin-polish-overrides.css',
     '../invoices/presentation/styles/invoice-quotation-modals.css',
     '../employees/presentation/styles/record-layouts-employee-detail.css',
-    './styles/final-alignment-overrides.css',
-    './styles/admin-global-compat.css'
+    './styles/admin-global-compat.css',
+    './styles/final-alignment-overrides.css'
   ],
   encapsulation: ViewEncapsulation.None
 })
@@ -91,5 +91,15 @@ export class AdminWorkspaceComponent extends AdminWorkspaceController {
   @HostListener('window:scroll', [])
   override onWindowScroll(): void {
     super.onWindowScroll();
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    this.handleDocumentClick(event);
+  }
+
+  @HostListener('document:keydown.escape')
+  onDocumentEscape(): void {
+    this.handleGlobalEscape();
   }
 }

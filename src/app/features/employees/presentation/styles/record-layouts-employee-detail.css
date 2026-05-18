@@ -1084,6 +1084,55 @@
   border-radius: 18px !important;
 }
 
+/* Final employee-detail parity pass: keep detail cards fully visible and scrollable. */
+.dashboard-wrapper .admin-employee-assigned-frame,
+.dashboard-wrapper .admin-employee-followups-frame {
+  min-height: 680px !important;
+  height: min(760px, calc(100vh - 180px)) !important;
+}
+
+.dashboard-wrapper .admin-employee-assigned-frame .admin-employee-card-grid,
+.dashboard-wrapper .admin-employee-followups-frame .admin-employee-card-grid {
+  align-content: start !important;
+  grid-auto-rows: minmax(456px, auto) !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 24px 28px 40px !important;
+}
+
+.dashboard-wrapper .admin-employee-followups-frame .admin-employee-card-grid {
+  grid-auto-rows: minmax(516px, auto) !important;
+}
+
+.dashboard-wrapper .admin-employee-assigned-frame .admin-employee-style-card,
+.dashboard-wrapper .admin-employee-followups-frame .admin-employee-style-card {
+  min-height: 456px !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.dashboard-wrapper .admin-employee-followups-frame .employee-followup-record-card {
+  min-height: 516px !important;
+}
+
+.dashboard-wrapper .admin-employee-followups-frame .lead-card-invoice-action:disabled {
+  opacity: 0.72 !important;
+  cursor: not-allowed !important;
+}
+
+.dashboard-wrapper .admin-employee-followups-frame .followup-only-card-actions {
+  grid-template-columns: 1fr !important;
+}
+
+.dashboard-wrapper .admin-employee-followups-frame .followup-card-details {
+  width: 100% !important;
+  min-height: 44px !important;
+  justify-content: center !important;
+  border-radius: 12px !important;
+}
+
 @media (max-width: 1180px) {
   .dashboard-wrapper .admin-employee-list-section .workspace-controls {
     flex-wrap: wrap !important;
@@ -1107,4 +1156,3 @@
     grid-template-columns: 1fr !important;
   }
 }
-
