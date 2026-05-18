@@ -1,0 +1,298 @@
+<section *ngIf="vm.isCrmPage(vm.dashTab)" class="workspace record-workspace crm-admin-view">
+  <div class="crm-action-message" *ngIf="vm.crmActionMessage">
+    {{ vm.crmActionMessage }}
+    <button type="button" class="text-action" (click)="vm.crmActionMessage=''">Dismiss</button>
+  </div>
+
+  <ng-container *ngIf="vm.dashTab==='crm_clients'">
+    <div class="crm-kpi-strip">
+      <article class="premium-card crm-kpi-card">
+        <span>Clients</span>
+        <strong>{{ vm.crmClients.length }}</strong>
+        <em>Converted accounts</em>
+      </article>
+      <article class="premium-card crm-kpi-card">
+        <span>SLA</span>
+        <strong>{{ vm.crmContractsByType('SLA').length }}</strong>
+        <em>Generated records</em>
+      </article>
+      <article class="premium-card crm-kpi-card">
+        <span>NDA</span>
+        <strong>{{ vm.crmContractsByType('NDA').length }}</strong>
+        <em>Generated records</em>
+      </article>
+      <article class="premium-card crm-kpi-card">
+        <span>AMC</span>
+        <strong>{{ vm.crmAmcRows.length }}</strong>
+        <em>Tracked clients</em>
+      </article>
+    </div>
+
+    <div class="record-frame lead-record-frame admin-leads-record-frame crm-client-frame">
+      <aside class="company-rail lead-company-rail admin-leads-company-rail">
+        <div class="rail-header admin-leads-rail-header">
+          <div class="rail-heading">Clients</div>
+          <div class="rail-total">{{ vm.filteredCrmClients.length }} listed</div>
+        </div>
+        <div class="rail-list admin-leads-rail-list">
+          <button
+            type="button"
+            class="rail-item admin-leads-rail-item"
+            *ngFor="let client of vm.filteredCrmClients"
+            [class.active]="vm.selectedCrmClientCompany === client.companyName"
+            (click)="vm.selectCrmClient(client.companyName)"
+          >
+            <span class="rail-item-copy">
+              <span class="rail-item-name">{{ client.companyName || 'Unnamed Client' }}</span>
+              <span class="rail-item-meta">{{ client.contactCount }} contacts · {{ client.amcStatus }}</span>
+            </span>
+          </button>
+          <div *ngIf="vm.crmClientsLoading" class="scroll-page-state">Loading clients...</div>
+          <div *ngIf="!vm.crmClientsLoading && vm.filteredCrmClients.length === 0" class="empty-state-inline empty-state-inline-minimal">No converted clients found.</div>
+        </div>
+      </aside>
+
+      <section class="record-table-pane lead-table-pane lead-table-pane-full lead-company-pane admin-leads-company-pane">
+        <ng-container *ngIf="vm.selectedCrmClient as client; else emptyCrmClient">
+          <div class="table-pane-header lead-company-pane-header admin-leads-company-header">
+            <div>
+              <h3>{{ client.companyName }}</h3>
+              <div class="lead-company-pane-subtitle">{{ client.description || 'Converted client account' }}</div>
+            </div>
+            <div class="admin-leads-pane-actions">
+              <button class="ai-summary-button ai-summary-anchor admin-ai-summary-button" type="button" (click)="vm.openCrmClientAiSummary(client, $event)">
+                <span aria-hidden="true">✦</span>
+                <span>AI Summary</span>
+              </button>
+              <button class="toolbar-button invoice-date-filter-button" type="button" (click)="vm.openCrmClientFullView(client, $event)">Full View</button>
+            </div>
+          </div>
+
+          <div class="crm-status-grid">
+            <div class="lead-detail-field"><span>SLA</span><strong>{{ client.slaStatus }}</strong></div>
+            <div class="lead-detail-field"><span>NDA</span><strong>{{ client.ndaStatus }}</strong></div>
+            <div class="lead-detail-field"><span>AMC</span><strong>{{ client.amcStatus }}</strong></div>
+            <div class="lead-detail-field"><span>Managers</span><strong>{{ client.managers.join(', ') || '-' }}</strong></div>
+          </div>
+
+          <div class="lead-company-pane-scroll admin-leads-card-scroll">
+            <div class="lead-card-grid admin-leads-card-grid admin-employee-style-grid">
+              <article class="lead-record-card admin-lead-record-card admin-employee-style-card" *ngFor="let contact of client.contacts">
+                <div class="lead-record-card-head admin-lead-card-head">
+                  <div class="lead-record-title-row">
+                    <h4>{{ contact.contactName || 'Primary Contact' }}</h4>
+                    <span class="crm-status-pill">{{ contact.status || 'Converted' }}</span>
+                  </div>
+                </div>
+                <div class="lead-record-line">
+                  <span class="lead-record-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.29 18a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-7.71A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91A16 16 0 0 0 14 15.82l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" /></svg></span>
+                  <span>{{ contact.contactNumber || '-' }}</span>
+                </div>
+                <div class="lead-record-line lead-record-email" [title]="contact.directorEmailAddress || ''">
+                  <span class="lead-record-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" /><path d="m4 7 8 6 8-6" /></svg></span>
+                  <span>{{ contact.directorEmailAddress || '-' }}</span>
+                </div>
+                <div class="lead-record-line">
+                  <span class="lead-record-line-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 10 12 4 4 10l8 6 8-6Z" /><path d="M4 14l8 6 8-6" /></svg></span>
+                  <span>{{ contact.assignedEmployeePhone || '-' }}</span>
+                </div>
+                <div class="lead-card-remarks">
+                  <div class="lead-card-remarks-title">Latest Notes</div>
+                  <div class="lead-card-remark-list" *ngIf="contact.remarks?.length; else emptyCrmNotes">
+                    <div class="lead-card-remark-item" *ngFor="let remark of contact.remarks.slice(-3).reverse()">{{ remark }}</div>
+                  </div>
+                  <ng-template #emptyCrmNotes><div class="lead-card-empty">No notes recorded.</div></ng-template>
+                </div>
+                <div class="lead-card-actions">
+                  <button class="secondary-action company-remarks-button" type="button" (click)="vm.openCompanyRemarkHistory(contact)">History</button>
+                  <button class="secondary-action company-remarks-button" type="button" (click)="vm.openQuotationModal(contact)">Quote</button>
+                </div>
+              </article>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #emptyCrmClient>
+          <div class="empty-state-inline empty-state-inline-pane">Select a converted client from the list.</div>
+        </ng-template>
+      </section>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="vm.dashTab==='crm_sla' || vm.dashTab==='crm_nda'">
+    <ng-container *ngIf="vm.dashTab==='crm_sla'; else ndaDocMode">
+      <ng-template [ngTemplateOutlet]="contractPanel" [ngTemplateOutletContext]="{ type: 'SLA', title: 'SLA' }"></ng-template>
+    </ng-container>
+    <ng-template #ndaDocMode>
+      <ng-template [ngTemplateOutlet]="contractPanel" [ngTemplateOutletContext]="{ type: 'NDA', title: 'NDA' }"></ng-template>
+    </ng-template>
+  </ng-container>
+
+  <ng-template #contractPanel let-type="type" let-title="title">
+    <div class="crm-document-layout">
+      <section class="premium-card crm-document-generate">
+        <div class="settings-section-title">{{ title }} Generation</div>
+        <div class="crm-client-picker">
+          <button class="rail-item admin-leads-rail-item" type="button" *ngFor="let client of vm.filteredCrmClients" [class.active]="vm.selectedCrmClientCompany===client.companyName" (click)="vm.selectCrmClient(client.companyName)">
+            <span class="rail-item-copy">
+              <span class="rail-item-name">{{ client.companyName }}</span>
+              <span class="rail-item-meta">{{ client.primaryContact || 'Primary Contact' }}</span>
+            </span>
+          </button>
+        </div>
+        <div class="crm-selected-client-card" *ngIf="vm.selectedCrmClient as client">
+          <h3>{{ client.companyName }}</h3>
+          <p>{{ client.primaryContact }} · {{ client.primaryEmail || client.primaryPhone || '-' }}</p>
+          <button class="cta-primary" type="button" (click)="vm.generateCrmContract(type, client)" [disabled]="vm.crmContractsLoading">
+            {{ vm.crmContractsLoading ? 'Generating...' : 'Generate ' + title }}
+          </button>
+        </div>
+      </section>
+
+      <section class="premium-card crm-document-history">
+        <div class="crm-panel-head">
+          <div>
+            <div class="settings-section-title">{{ title }} History</div>
+            <p>{{ vm.crmContractsByType(type).length }} records</p>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="data-table compact-table">
+            <thead>
+              <tr><th>Document</th><th>Client</th><th>Status</th><th>Generated</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let contract of vm.crmContractsByType(type)">
+                <td>{{ contract.documentNumber }}</td>
+                <td>{{ contract.clientCompanyName }}</td>
+                <td><span class="crm-status-pill">{{ contract.status }}</span></td>
+                <td>{{ vm.fmtDate(contract.createdAt) }}</td>
+              </tr>
+              <tr *ngIf="!vm.crmContractsLoading && vm.crmContractsByType(type).length===0">
+                <td colspan="4" class="empty-cell">No {{ title }} history yet.</td>
+              </tr>
+              <tr *ngIf="vm.crmContractsLoading">
+                <td colspan="4" class="empty-cell">Loading {{ title }} records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </ng-template>
+
+  <ng-container *ngIf="vm.dashTab==='crm_amc'">
+    <section class="premium-card crm-table-card">
+      <div class="crm-panel-head">
+        <div>
+          <div class="settings-section-title">AMC Tracking</div>
+          <p>{{ vm.crmAmcRows.length }} client records</p>
+        </div>
+        <button class="toolbar-button invoice-date-filter-button" type="button" (click)="vm.fetchCrmAmc()">Refresh</button>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table compact-table">
+          <thead><tr><th>Client</th><th>Status</th><th>Renewal</th><th>Outstanding</th><th>Owner</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of vm.crmAmcRows">
+              <td>{{ row.clientCompanyName }}</td>
+              <td><span class="crm-status-pill">{{ row.status }}</span></td>
+              <td>{{ row.renewalDate ? vm.fmtDate(row.renewalDate) : '-' }}</td>
+              <td>{{ vm.formatInvoiceMoney(row.outstandingAmount || 0) }}</td>
+              <td>{{ row.owner || '-' }}</td>
+            </tr>
+            <tr *ngIf="!vm.crmAmcLoading && vm.crmAmcRows.length===0"><td colspan="5" class="empty-cell">No AMC records yet.</td></tr>
+            <tr *ngIf="vm.crmAmcLoading"><td colspan="5" class="empty-cell">Loading AMC tracking...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+
+  <ng-container *ngIf="vm.dashTab==='crm_payments'">
+    <div class="crm-kpi-strip">
+      <article class="premium-card crm-kpi-card"><span>Invoice Amount</span><strong>{{ vm.formatInvoiceMoney(vm.crmPaymentAnalytics?.totalInvoiceAmount || 0) }}</strong><em>Total raised</em></article>
+      <article class="premium-card crm-kpi-card"><span>Paid</span><strong>{{ vm.formatInvoiceMoney(vm.crmPaymentAnalytics?.paidAmount || 0) }}</strong><em>Collected</em></article>
+      <article class="premium-card crm-kpi-card"><span>Outstanding</span><strong>{{ vm.formatInvoiceMoney(vm.crmPaymentAnalytics?.outstandingAmount || 0) }}</strong><em>Pending</em></article>
+    </div>
+    <div class="crm-document-layout">
+      <section class="premium-card crm-document-generate">
+        <div class="settings-section-title">Paid Invoice</div>
+        <label class="mini-field">
+          <span>Client</span>
+          <select class="field-select" [(ngModel)]="vm.selectedCrmClientCompany">
+            <option value="">Select client</option>
+            <option *ngFor="let client of vm.crmClients" [value]="client.companyName">{{ client.companyName }}</option>
+          </select>
+        </label>
+        <label class="mini-field">
+          <span>Paid Amount</span>
+          <input class="field-input" type="number" [(ngModel)]="vm.crmPaidInvoiceAmount" placeholder="0">
+        </label>
+        <button class="cta-primary" type="button" (click)="vm.generateCrmPaidInvoice()" [disabled]="vm.crmPaymentsLoading">Generate Paid Invoice</button>
+      </section>
+      <section class="premium-card crm-document-history">
+        <div class="settings-section-title">Payment History</div>
+        <div class="table-scroll">
+          <table class="data-table compact-table">
+            <thead><tr><th>Invoice</th><th>Client</th><th>Status</th><th>Paid</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let payment of vm.crmPaymentRows">
+                <td>{{ payment.invoiceNumber }}</td>
+                <td>{{ payment.clientCompanyName }}</td>
+                <td><span class="crm-status-pill">{{ payment.status }}</span></td>
+                <td>{{ vm.formatInvoiceMoney(payment.paidAmount || 0) }}</td>
+              </tr>
+              <tr *ngIf="!vm.crmPaymentsLoading && vm.crmPaymentRows.length===0"><td colspan="4" class="empty-cell">No payments recorded yet.</td></tr>
+              <tr *ngIf="vm.crmPaymentsLoading"><td colspan="4" class="empty-cell">Loading payments...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="vm.dashTab==='crm_tickets'">
+    <div class="crm-document-layout">
+      <section class="premium-card crm-document-generate">
+        <div class="settings-section-title">Raise Ticket</div>
+        <label class="mini-field">
+          <span>Client</span>
+          <select class="field-select" [(ngModel)]="vm.selectedCrmClientCompany">
+            <option value="">Select client</option>
+            <option *ngFor="let client of vm.crmClients" [value]="client.companyName">{{ client.companyName }}</option>
+          </select>
+        </label>
+        <label class="mini-field"><span>Subject</span><input class="field-input" type="text" [(ngModel)]="vm.crmTicketDraft.subject"></label>
+        <label class="mini-field"><span>Priority</span><select class="field-select" [(ngModel)]="vm.crmTicketDraft.priority"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></label>
+        <label class="mini-field"><span>Query</span><textarea class="field-input" rows="4" [(ngModel)]="vm.crmTicketDraft.query"></textarea></label>
+        <button class="cta-primary" type="button" (click)="vm.createCrmTicket()" [disabled]="vm.crmTicketsLoading">Create Ticket</button>
+      </section>
+      <section class="premium-card crm-document-history">
+        <div class="settings-section-title">Ticket History</div>
+        <div class="table-scroll">
+          <table class="data-table compact-table">
+            <thead><tr><th>Client</th><th>Subject</th><th>Priority</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let ticket of vm.crmTicketRows">
+                <td>{{ ticket.clientCompanyName }}</td>
+                <td>{{ ticket.subject }}</td>
+                <td>{{ ticket.priority }}</td>
+                <td><span class="crm-status-pill">{{ ticket.status }}</span></td>
+              </tr>
+              <tr *ngIf="!vm.crmTicketsLoading && vm.crmTicketRows.length===0"><td colspan="4" class="empty-cell">No tickets recorded yet.</td></tr>
+              <tr *ngIf="vm.crmTicketsLoading"><td colspan="4" class="empty-cell">Loading tickets...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </ng-container>
+
+  <ng-container *ngIf="vm.dashTab==='crm_projects'">
+    <section class="premium-card crm-project-placeholder">
+      <div class="settings-section-title">Project Management</div>
+      <p>Reserved for the next CRM phase.</p>
+    </section>
+  </ng-container>
+</section>

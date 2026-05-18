@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { PaymentService } from '../../../services/payment.service';
+import { CrmService } from '../../../services/crm.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminAuthPaymentWorkflow {
   constructor(
     private authService: AuthService,
-    private paymentService: PaymentService
+    private paymentService: PaymentService,
+    private crmService: CrmService
   ) {}
 
   minToDate(vm: any): string {
@@ -636,12 +638,43 @@ export class AdminAuthPaymentWorkflow {
     event.preventDefault();
     vm.loginError = '';
     vm.loginLoading = true;
+    if (vm.loginPortal === 'crm_admin') {
+      this.crmService.login(vm.loginForm).subscribe({
+        next: (res) => {
+          vm.loginLoading = false;
+          if (res.success && res.user && res.token) {
+            const crmUser = { ...res.user, role: 'crm_admin' };
+            vm.closeModals();
+            vm.loggedIn = true;
+            vm.userRole = 'crm_admin';
+            vm.dashboardCompany = res.user.companyName || 'Softrate CRM';
+            vm.dashboardCode = res.user.companyCode || '';
+            vm.dashboardTeamSize = parseInt(res.user.teamSize || '0', 10) || 0;
+            vm.dashTab = 'crm_clients';
+            localStorage.setItem('tracecall_user', JSON.stringify(crmUser));
+            localStorage.setItem('tracecall_crm_token', res.token);
+            setTimeout(() => window.scrollTo(0, 0), 0);
+            vm.loadCrmDashboard();
+            if (vm.dashboardCode) vm._loadDashboard();
+          } else {
+            vm.loginError = res.message;
+          }
+        },
+        error: (err) => {
+          vm.loginLoading = false;
+          vm.loginError = err?.error?.message || 'Invalid CRM credentials or server error.';
+        },
+      });
+      return;
+    }
+
     this.authService.login(vm.loginForm).subscribe({
       next: (res) => {
         vm.loginLoading = false;
         if (res.success && res.user) {
           vm.closeModals();
           vm.loggedIn = true;
+          vm.userRole = 'admin';
           vm.dashboardCompany = res.user.companyName || 'Your Company';
           vm.dashboardCode = res.user.companyCode || 'N/A';
           vm.dashboardTeamSize = parseInt(res.user.teamSize) || 0;
@@ -689,6 +722,7 @@ export class AdminAuthPaymentWorkflow {
     if (vm.timelineChart) { vm.timelineChart.destroy(); vm.timelineChart = null; }
     if (vm.donutChart) { vm.donutChart.destroy(); vm.donutChart = null; }
     localStorage.removeItem('tracecall_user');
+    localStorage.removeItem('tracecall_crm_token');
     window.scrollTo(0, 0);
   }
 

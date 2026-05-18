@@ -16,6 +16,7 @@ import { AdminRemarksSectionComponent } from '../../../leads/presentation/admin-
 import { AdminReportsSectionComponent } from '../../../reports/presentation/admin-reports-section/admin-reports-section.component';
 import { AdminSettingsSectionComponent } from '../../../settings/presentation/admin-settings-section/admin-settings-section.component';
 import { AdminSupportSectionComponent } from '../../../settings/presentation/admin-support-section/admin-support-section.component';
+import { CrmAdminSectionComponent } from '../../../crm/presentation/crm-admin-section.component';
 
 @Component({
   selector: 'app-admin-dashboard-shell',
@@ -35,6 +36,7 @@ import { AdminSupportSectionComponent } from '../../../settings/presentation/adm
     AdminSupportSectionComponent,
     AdminInvoiceSectionComponent,
     AdminQuotationSectionComponent,
+    CrmAdminSectionComponent,
     AdminEmployeeDrilldownComponent
   ],
   templateUrl: './admin-dashboard-shell.component.html'

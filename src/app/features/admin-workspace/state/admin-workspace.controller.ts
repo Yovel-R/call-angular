@@ -7,6 +7,7 @@ import { CallLogService, CallStats } from '../../../services/calllog.service';
 import { LeadService, Lead } from '../../../services/lead.service';
 import { Bookmark } from '../../../services/bookmark.service';
 import { AiBrief, AiBriefService } from '../../../services/ai-brief.service';
+import { CrmClient, CrmService } from '../../../services/crm.service';
 import { AdminPageId } from '../../../core/layout/admin-pages';
 import { DashboardCacheService } from '../../../core/cache/dashboard-cache.service';
 import * as XLSX from 'xlsx';
@@ -159,6 +160,7 @@ export abstract class AdminWorkspaceController implements OnInit {
   openTrialSignup(): void { this.authPaymentWorkflow.openTrialSignup(this); }
 
   loginForm: LoginPayload = { email: '', password: '' };
+  loginPortal: 'admin' | 'crm_admin' = 'admin';
   loginError = '';
   loginLoading = false;
 
@@ -168,6 +170,7 @@ export abstract class AdminWorkspaceController implements OnInit {
 
   // ── Dashboard session ──────────────────────────────────────
   loggedIn = false;
+  userRole: 'admin' | 'crm_admin' = 'admin';
   dashboardCompany = '';
   dashboardCode = '';
   dashboardTeamSize = 0;
@@ -734,6 +737,25 @@ export abstract class AdminWorkspaceController implements OnInit {
   adminLeadContactsPage = 1;
   adminLeadContactsHasMore = false;
   adminLeadContactsLoadingMore = false;
+  crmFeatureOpen = true;
+  adminFeatureOpen = true;
+  crmClients: CrmClient[] = [];
+  crmClientsLoading = false;
+  crmClientSearch = '';
+  selectedCrmClientCompany = '';
+  crmContractView: 'generate' | 'history' = 'generate';
+  crmContractsLoading = false;
+  crmContracts: any[] = [];
+  crmActionMessage = '';
+  crmAmcRows: any[] = [];
+  crmAmcLoading = false;
+  crmPaymentRows: any[] = [];
+  crmPaymentsLoading = false;
+  crmPaymentAnalytics: any = null;
+  crmPaidInvoiceAmount = 0;
+  crmTicketRows: any[] = [];
+  crmTicketsLoading = false;
+  crmTicketDraft = { subject: '', query: '', priority: 'Medium' };
   private readonly adminDashboardCacheTtlMs = 24 * 60 * 60 * 1000;
   private readonly adminDashboardRefreshAfterMs = 5 * 60 * 1000;
   private readonly adminLeadCompanyCachePrefix = 'admin-lead-companies|';
@@ -836,6 +858,7 @@ export abstract class AdminWorkspaceController implements OnInit {
     private callLogService: CallLogService,
     private leadService: LeadService,
     private aiBriefService: AiBriefService,
+    private crmService: CrmService,
     private api: ApiService,
     private dashboardCache: DashboardCacheService,
     protected authPaymentWorkflow: AdminAuthPaymentWorkflow,
@@ -860,11 +883,18 @@ export abstract class AdminWorkspaceController implements OnInit {
       try {
         const user = JSON.parse(raw);
         this.loggedIn = true;
+        this.userRole = user.role === 'crm_admin' ? 'crm_admin' : 'admin';
         this.dashboardCompany = user.companyName || 'Your Company';
         this.dashboardCode = user.companyCode || '';
         this.dashboardTeamSize = parseInt(user.teamSize) || 0;
         this.loadAdminProfilePhoto();
-        this._loadDashboard();
+        if (this.userRole === 'crm_admin') {
+          this.dashTab = 'crm_clients';
+          this.loadCrmDashboard();
+          if (this.dashboardCode) this._loadDashboard();
+        } else {
+          this._loadDashboard();
+        }
       } catch { localStorage.removeItem('tracecall_user'); }
     }
 
@@ -891,6 +921,11 @@ export abstract class AdminWorkspaceController implements OnInit {
 
     this.dashTab = tab;
     this.sidebarOpen = false;
+
+    if (this.isCrmPage(tab)) {
+      this.loadCrmTab(tab);
+      return;
+    }
 
     // Reset period to 'today' when moving from Reports back to Overview/Employees
     // unless specifically requested otherwise. This prevents getting stuck in 'custom' filters.
@@ -947,6 +982,13 @@ export abstract class AdminWorkspaceController implements OnInit {
       case 'invoice': return 'Invoice';
       case 'invoice_settings': return 'Invoice Settings';
       case 'quotation': return 'Quotation';
+      case 'crm_clients': return 'CRM Clients';
+      case 'crm_sla': return 'SLA';
+      case 'crm_nda': return 'NDA';
+      case 'crm_amc': return 'AMC Tracking';
+      case 'crm_payments': return 'Payments';
+      case 'crm_tickets': return 'Tickets';
+      case 'crm_projects': return 'Project Management';
       default: return 'Dashboard';
     }
   }
@@ -960,6 +1002,12 @@ export abstract class AdminWorkspaceController implements OnInit {
       case 'invoice_settings': return 'Search leads, phone, or company...';
       case 'employees': return 'Search employees, phone, or tag...';
       case 'emp_dashboard': return 'Search assigned leads or follow-ups...';
+      case 'crm_clients': return 'Search CRM clients, contacts, or managers...';
+      case 'crm_sla': return 'Search SLA history or clients...';
+      case 'crm_nda': return 'Search NDA history or clients...';
+      case 'crm_amc': return 'Search AMC clients...';
+      case 'crm_payments': return 'Search payment history...';
+      case 'crm_tickets': return 'Search tickets or client queries...';
       default: return 'Search leads, phone, or company...';
     }
   }
@@ -970,6 +1018,7 @@ export abstract class AdminWorkspaceController implements OnInit {
     if (this.dashTab === 'invoice') return this.invoiceSearch;
     if (this.dashTab === 'quotation') return this.quotationSearch;
     if (this.dashTab === 'employees') return this.employeeSearchQuery;
+    if (this.isCrmPage(this.dashTab)) return this.crmClientSearch;
     return this.leadSearchQuery;
   }
 
@@ -994,6 +1043,11 @@ export abstract class AdminWorkspaceController implements OnInit {
       this.employeeSearchQuery = value;
       return;
     }
+    if (this.isCrmPage(this.dashTab)) {
+      this.crmClientSearch = value;
+      this.loadCrmTab(this.dashTab);
+      return;
+    }
     this.leadSearchQuery = value;
     if (this.dashTab !== 'leads') {
       this.switchTab('leads');
@@ -1004,7 +1058,7 @@ export abstract class AdminWorkspaceController implements OnInit {
   onAdminGlobalSearchEnter(): void {
     const query = this.adminGlobalSearch.trim();
     if (!query) return;
-    if (!['leads', 'remarks_filter', 'followups', 'employees', 'emp_dashboard', 'invoice', 'quotation'].includes(this.dashTab)) {
+    if (!['leads', 'remarks_filter', 'followups', 'employees', 'emp_dashboard', 'invoice', 'quotation', 'crm_clients', 'crm_sla', 'crm_nda', 'crm_amc', 'crm_payments', 'crm_tickets'].includes(this.dashTab)) {
       this.leadSearchQuery = query;
       this.switchTab('leads');
       this.onAdminLeadSearchChange();
@@ -1161,6 +1215,241 @@ export abstract class AdminWorkspaceController implements OnInit {
     this.startBreakNotifPolling();
     // Load Settings data
     this.fetchSettings();
+  }
+
+  get isCrmAdmin(): boolean {
+    return this.userRole === 'crm_admin';
+  }
+
+  isCrmPage(tab: AdminPageId): boolean {
+    return ['crm_clients', 'crm_sla', 'crm_nda', 'crm_amc', 'crm_payments', 'crm_tickets', 'crm_projects'].includes(tab);
+  }
+
+  loadCrmDashboard(): void {
+    this.fetchCrmClients();
+    this.fetchCrmContracts('SLA');
+    this.fetchCrmContracts('NDA');
+    this.fetchCrmAmc();
+    this.fetchCrmPayments();
+    this.fetchCrmTickets();
+  }
+
+  loadCrmTab(tab: AdminPageId): void {
+    if (tab === 'crm_clients') this.fetchCrmClients();
+    if (tab === 'crm_sla') this.fetchCrmContracts('SLA');
+    if (tab === 'crm_nda') this.fetchCrmContracts('NDA');
+    if (tab === 'crm_amc') this.fetchCrmAmc();
+    if (tab === 'crm_payments') this.fetchCrmPayments();
+    if (tab === 'crm_tickets') this.fetchCrmTickets();
+  }
+
+  fetchCrmClients(): void {
+    this.crmClientsLoading = true;
+    this.crmService.getClients({ search: this.crmClientSearch, companyCode: this.dashboardCode }).subscribe({
+      next: (res) => {
+        this.crmClientsLoading = false;
+        this.crmClients = res?.clients || [];
+        this.hydrateCrmContactsIntoLeadStore();
+        if (!this.selectedCrmClientCompany || !this.crmClients.some((client) => client.companyName === this.selectedCrmClientCompany)) {
+          this.selectCrmClient(this.crmClients[0]?.companyName || '');
+        }
+      },
+      error: (err) => {
+        this.crmClientsLoading = false;
+        this.crmActionMessage = err?.error?.message || 'Unable to load CRM clients.';
+      },
+    });
+  }
+
+  hydrateCrmContactsIntoLeadStore(): void {
+    const contacts = this.crmClients.flatMap((client) => client.contacts || []).map((lead) => this.normalizeLead(lead));
+    if (!contacts.length) return;
+    this.upsertAdminHydratedLeadRecords(contacts);
+  }
+
+  selectCrmClient(companyName: string): void {
+    this.selectedCrmClientCompany = companyName;
+    this.selectedLeadCompany = companyName;
+    this.closeAdminLeadPanels();
+  }
+
+  get selectedCrmClient(): CrmClient | null {
+    return this.crmClients.find((client) => client.companyName === this.selectedCrmClientCompany) || null;
+  }
+
+  get filteredCrmClients(): CrmClient[] {
+    const query = this.crmClientSearch.trim().toLowerCase();
+    if (!query) return this.crmClients;
+    return this.crmClients.filter((client) => [
+      client.companyName,
+      client.primaryContact,
+      client.primaryPhone,
+      client.primaryEmail,
+      ...(client.managers || []),
+    ].some((value) => String(value || '').toLowerCase().includes(query)));
+  }
+
+  crmClientContacts(client: CrmClient | null = this.selectedCrmClient): any[] {
+    return (client?.contacts || []).map((lead) => this.normalizeLead(lead));
+  }
+
+  openCrmClientFullView(client = this.selectedCrmClient, event?: Event): void {
+    event?.stopPropagation();
+    if (!client) return;
+    this.selectCrmClient(client.companyName);
+    this.upsertAdminHydratedLeadRecords(this.crmClientContacts(client));
+    this.openCompanyFullView(event);
+  }
+
+  openCrmClientAiSummary(client = this.selectedCrmClient, event?: Event): void {
+    event?.stopPropagation();
+    if (!client) return;
+    this.selectCrmClient(client.companyName);
+    this.upsertAdminHydratedLeadRecords(this.crmClientContacts(client));
+    this.openAdminAiSummary(event);
+  }
+
+  fetchCrmContracts(type: 'SLA' | 'NDA'): void {
+    this.crmContractsLoading = true;
+    this.crmService.getContracts(type, { companyCode: this.dashboardCode }).subscribe({
+      next: (res) => {
+        this.crmContractsLoading = false;
+        const otherType = this.crmContracts.filter((item) => item.type !== type);
+        this.crmContracts = [...otherType, ...(res?.contracts || [])];
+      },
+      error: (err) => {
+        this.crmContractsLoading = false;
+        this.crmActionMessage = err?.error?.message || `Unable to load ${type} history.`;
+      },
+    });
+  }
+
+  crmContractsByType(type: 'SLA' | 'NDA'): any[] {
+    const query = this.crmClientSearch.trim().toLowerCase();
+    return this.crmContracts
+      .filter((item) => item.type === type)
+      .filter((item) => !query || String(item.clientCompanyName || '').toLowerCase().includes(query) || String(item.documentNumber || '').toLowerCase().includes(query));
+  }
+
+  generateCrmContract(type: 'SLA' | 'NDA', client = this.selectedCrmClient): void {
+    if (!client) {
+      this.crmActionMessage = 'Select a CRM client before generating a document.';
+      return;
+    }
+    this.crmContractsLoading = true;
+    this.crmService.generateContract({
+      type,
+      companyCode: client.companyCode || this.dashboardCode,
+      clientCompanyName: client.companyName,
+      contactName: client.primaryContact,
+      contactEmail: client.primaryEmail,
+    }).subscribe({
+      next: (res) => {
+        this.crmContractsLoading = false;
+        if (res?.success && res.contract) {
+          this.crmContracts = [res.contract, ...this.crmContracts.filter((item) => item._id !== res.contract._id)];
+          this.crmActionMessage = `${type} generated for ${client.companyName}.`;
+          this.fetchCrmClients();
+        }
+      },
+      error: (err) => {
+        this.crmContractsLoading = false;
+        this.crmActionMessage = err?.error?.message || `Unable to generate ${type}.`;
+      },
+    });
+  }
+
+  fetchCrmAmc(): void {
+    this.crmAmcLoading = true;
+    this.crmService.getAmc({ search: this.crmClientSearch, companyCode: this.dashboardCode }).subscribe({
+      next: (res) => {
+        this.crmAmcLoading = false;
+        this.crmAmcRows = res?.amc || [];
+      },
+      error: (err) => {
+        this.crmAmcLoading = false;
+        this.crmActionMessage = err?.error?.message || 'Unable to load AMC tracking.';
+      },
+    });
+  }
+
+  fetchCrmPayments(): void {
+    this.crmPaymentsLoading = true;
+    this.crmService.getPayments({ companyCode: this.dashboardCode }).subscribe({
+      next: (res) => {
+        this.crmPaymentsLoading = false;
+        this.crmPaymentRows = res?.payments || [];
+        this.crmPaymentAnalytics = res?.analytics || null;
+      },
+      error: (err) => {
+        this.crmPaymentsLoading = false;
+        this.crmActionMessage = err?.error?.message || 'Unable to load CRM payments.';
+      },
+    });
+  }
+
+  generateCrmPaidInvoice(client = this.selectedCrmClient): void {
+    if (!client || !this.crmPaidInvoiceAmount) {
+      this.crmActionMessage = 'Select a client and enter a paid amount.';
+      return;
+    }
+    this.crmPaymentsLoading = true;
+    this.crmService.generatePaidInvoice({
+      companyCode: client.companyCode || this.dashboardCode,
+      clientCompanyName: client.companyName,
+      amount: this.crmPaidInvoiceAmount,
+      paidAmount: this.crmPaidInvoiceAmount,
+      paymentMode: 'Manual',
+    }).subscribe({
+      next: () => {
+        this.crmPaidInvoiceAmount = 0;
+        this.crmActionMessage = `Paid invoice generated for ${client.companyName}.`;
+        this.fetchCrmPayments();
+      },
+      error: (err) => {
+        this.crmPaymentsLoading = false;
+        this.crmActionMessage = err?.error?.message || 'Unable to generate paid invoice.';
+      },
+    });
+  }
+
+  fetchCrmTickets(): void {
+    this.crmTicketsLoading = true;
+    this.crmService.getTickets({ companyCode: this.dashboardCode }).subscribe({
+      next: (res) => {
+        this.crmTicketsLoading = false;
+        this.crmTicketRows = res?.tickets || [];
+      },
+      error: (err) => {
+        this.crmTicketsLoading = false;
+        this.crmActionMessage = err?.error?.message || 'Unable to load tickets.';
+      },
+    });
+  }
+
+  createCrmTicket(client = this.selectedCrmClient): void {
+    if (!client || !this.crmTicketDraft.subject.trim()) {
+      this.crmActionMessage = 'Select a client and add a ticket subject.';
+      return;
+    }
+    this.crmTicketsLoading = true;
+    this.crmService.createTicket({
+      companyCode: client.companyCode || this.dashboardCode,
+      clientCompanyName: client.companyName,
+      subject: this.crmTicketDraft.subject,
+      query: this.crmTicketDraft.query,
+      priority: this.crmTicketDraft.priority,
+    }).subscribe({
+      next: () => {
+        this.crmTicketDraft = { subject: '', query: '', priority: 'Medium' };
+        this.crmActionMessage = `Ticket created for ${client.companyName}.`;
+        this.fetchCrmTickets();
+      },
+      error: (err) => {
+        this.crmTicketsLoading = false;
+        this.crmActionMessage = err?.error?.message || 'Unable to create ticket.';
+      },
+    });
   }
 
   preloadDashboardData(): void {

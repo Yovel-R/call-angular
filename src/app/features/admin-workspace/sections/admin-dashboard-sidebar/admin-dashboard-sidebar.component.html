@@ -40,6 +40,85 @@
       />
     </label>
 
+    <div class="sidebar-folder" *ngIf="vm.isCrmAdmin">
+      <button
+        class="sidebar-folder-toggle"
+        type="button"
+        (click)="vm.crmFeatureOpen=!vm.crmFeatureOpen"
+        [attr.aria-expanded]="vm.crmFeatureOpen"
+      >
+        <span class="sidebar-folder-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h6l2 2h10v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+        </span>
+        <span class="sidebar-label">CRM Features</span>
+        <span class="sidebar-folder-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+        </span>
+      </button>
+
+      <div class="sidebar-folder-children" *ngIf="vm.crmFeatureOpen">
+        <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_clients'" (click)="vm.switchTab('crm_clients')" *ngIf="vm.sidebarFeatureMatches('Clients')" [title]="vm.sidebarMinimized ? 'Clients' : ''">
+          <span class="sidebar-tree-branch" aria-hidden="true"></span>
+          <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h9l5 5v13" /><path d="M14 3v6h6" /><path d="M8 13h8" /><path d="M8 17h6" /></svg></span>
+          <span class="sidebar-label">Clients</span>
+        </button>
+
+        <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_sla'" (click)="vm.switchTab('crm_sla')" *ngIf="vm.sidebarFeatureMatches('SLA')" [title]="vm.sidebarMinimized ? 'SLA' : ''">
+          <span class="sidebar-tree-branch" aria-hidden="true"></span>
+          <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4" /><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg></span>
+          <span class="sidebar-label">SLA</span>
+        </button>
+
+        <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_nda'" (click)="vm.switchTab('crm_nda')" *ngIf="vm.sidebarFeatureMatches('NDA')" [title]="vm.sidebarMinimized ? 'NDA' : ''">
+          <span class="sidebar-tree-branch" aria-hidden="true"></span>
+          <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z" /><path d="M9 12l2 2 4-4" /></svg></span>
+          <span class="sidebar-label">NDA</span>
+        </button>
+
+        <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_amc'" (click)="vm.switchTab('crm_amc')" *ngIf="vm.sidebarFeatureMatches('AMC Tracking')" [title]="vm.sidebarMinimized ? 'AMC Tracking' : ''">
+          <span class="sidebar-tree-branch" aria-hidden="true"></span>
+          <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 4v16h16" /><path d="m7 15 4-4 3 3 5-6" /></svg></span>
+          <span class="sidebar-label">AMC Tracking</span>
+        </button>
+
+        <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_payments'" (click)="vm.switchTab('crm_payments')" *ngIf="vm.sidebarFeatureMatches('Payments')" [title]="vm.sidebarMinimized ? 'Payments' : ''">
+          <span class="sidebar-tree-branch" aria-hidden="true"></span>
+          <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18" /><path d="M7 15h3" /></svg></span>
+          <span class="sidebar-label">Payments</span>
+        </button>
+
+        <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_tickets'" (click)="vm.switchTab('crm_tickets')" *ngIf="vm.sidebarFeatureMatches('Tickets')" [title]="vm.sidebarMinimized ? 'Tickets' : ''">
+          <span class="sidebar-tree-branch" aria-hidden="true"></span>
+          <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 1 0 0 4v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 1 0 0-4z" /></svg></span>
+          <span class="sidebar-label">Tickets</span>
+        </button>
+
+        <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_projects'" (click)="vm.switchTab('crm_projects')" *ngIf="vm.sidebarFeatureMatches('Project Management')" [title]="vm.sidebarMinimized ? 'Project Management' : ''">
+          <span class="sidebar-tree-branch" aria-hidden="true"></span>
+          <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 7h18" /><path d="M3 12h18" /><path d="M3 17h18" /><path d="M7 4v16" /></svg></span>
+          <span class="sidebar-label">Project Management</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-folder" *ngIf="vm.isCrmAdmin">
+      <button
+        class="sidebar-folder-toggle"
+        type="button"
+        (click)="vm.adminFeatureOpen=!vm.adminFeatureOpen"
+        [attr.aria-expanded]="vm.adminFeatureOpen"
+      >
+        <span class="sidebar-folder-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3 6h6l2 2h10v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></svg>
+        </span>
+        <span class="sidebar-label">Admin Features</span>
+        <span class="sidebar-folder-caret" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg>
+        </span>
+      </button>
+    </div>
+
+    <ng-container *ngIf="!vm.isCrmAdmin || vm.adminFeatureOpen">
     <div class="sidebar-group-label" *ngIf="vm.sidebarSectionHas(['Import Leads', 'Add Employee', 'Invoice', 'Quotation'])">Quick Access</div>
 
     <button
@@ -292,6 +371,7 @@
       </span>
       <span class="sidebar-label">Help & Support</span>
     </button>
+    </ng-container>
   </nav>
 
   <button

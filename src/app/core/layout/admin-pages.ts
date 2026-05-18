@@ -14,7 +14,14 @@ export type AdminPageId =
   | 'invoice'
   | 'invoice_settings'
   | 'quotation'
-  | 'remarks_filter';
+  | 'remarks_filter'
+  | 'crm_clients'
+  | 'crm_sla'
+  | 'crm_nda'
+  | 'crm_amc'
+  | 'crm_payments'
+  | 'crm_tickets'
+  | 'crm_projects';
 
 export const ADMIN_PAGES: readonly AdminPageId[] = [
   'overview',
@@ -28,6 +35,13 @@ export const ADMIN_PAGES: readonly AdminPageId[] = [
   'settings',
   'invoice_settings',
   'remarks_filter',
+  'crm_clients',
+  'crm_sla',
+  'crm_nda',
+  'crm_amc',
+  'crm_payments',
+  'crm_tickets',
+  'crm_projects',
 ];
 
 export const ADMIN_ROUTES: Routes = [

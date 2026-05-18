@@ -4,6 +4,7 @@ import { ApiService } from '../../services/api.service';
 import { CallLogService } from '../../services/calllog.service';
 import { LeadService } from '../../services/lead.service';
 import { AiBriefService } from '../../services/ai-brief.service';
+import { CrmService } from '../../services/crm.service';
 import { DashboardCacheService } from '../../core/cache/dashboard-cache.service';
 import { AdminDashboardShellComponent } from './sections/admin-dashboard-shell/admin-dashboard-shell.component';
 import { AdminLandingComponent } from '../auth/presentation/admin-landing/admin-landing.component';
@@ -64,6 +65,7 @@ export class AdminWorkspaceComponent extends AdminWorkspaceController {
     callLogService: CallLogService,
     leadService: LeadService,
     aiBriefService: AiBriefService,
+    crmService: CrmService,
     api: ApiService,
     dashboardCache: DashboardCacheService,
     authPaymentWorkflow: AdminAuthPaymentWorkflow,
@@ -77,6 +79,7 @@ export class AdminWorkspaceComponent extends AdminWorkspaceController {
       callLogService,
       leadService,
       aiBriefService,
+      crmService,
       api,
       dashboardCache,
       authPaymentWorkflow,
