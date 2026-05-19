@@ -57,11 +57,15 @@
       </button>
 
       <div class="sidebar-folder-children" *ngIf="vm.crmFeatureOpen">
+        <div class="sidebar-group-label" *ngIf="vm.sidebarSectionHas(['Clients'])">Client Views</div>
+
         <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_clients'" (click)="vm.switchTab('crm_clients')" *ngIf="vm.sidebarFeatureMatches('Clients')" [title]="vm.sidebarMinimized ? 'Clients' : ''">
           <span class="sidebar-tree-branch" aria-hidden="true"></span>
           <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 21V5a2 2 0 0 1 2-2h9l5 5v13" /><path d="M14 3v6h6" /><path d="M8 13h8" /><path d="M8 17h6" /></svg></span>
           <span class="sidebar-label">Clients</span>
         </button>
+
+        <div class="sidebar-group-label" *ngIf="vm.sidebarSectionHas(['SLA', 'NDA'])">Documents</div>
 
         <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_sla'" (click)="vm.switchTab('crm_sla')" *ngIf="vm.sidebarFeatureMatches('SLA')" [title]="vm.sidebarMinimized ? 'SLA' : ''">
           <span class="sidebar-tree-branch" aria-hidden="true"></span>
@@ -74,6 +78,8 @@
           <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5z" /><path d="M9 12l2 2 4-4" /></svg></span>
           <span class="sidebar-label">NDA</span>
         </button>
+
+        <div class="sidebar-group-label" *ngIf="vm.sidebarSectionHas(['AMC Tracking', 'Payments', 'Tickets'])">Operations</div>
 
         <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_amc'" (click)="vm.switchTab('crm_amc')" *ngIf="vm.sidebarFeatureMatches('AMC Tracking')" [title]="vm.sidebarMinimized ? 'AMC Tracking' : ''">
           <span class="sidebar-tree-branch" aria-hidden="true"></span>
@@ -92,6 +98,8 @@
           <span class="sidebar-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 1 0 0 4v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 1 0 0-4z" /></svg></span>
           <span class="sidebar-label">Tickets</span>
         </button>
+
+        <div class="sidebar-group-label" *ngIf="vm.sidebarSectionHas(['Project Management'])">Delivery</div>
 
         <button class="sidebar-link sidebar-tree-link" type="button" [class.active]="vm.dashTab==='crm_projects'" (click)="vm.switchTab('crm_projects')" *ngIf="vm.sidebarFeatureMatches('Project Management')" [title]="vm.sidebarMinimized ? 'Project Management' : ''">
           <span class="sidebar-tree-branch" aria-hidden="true"></span>
