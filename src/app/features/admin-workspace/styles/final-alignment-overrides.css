@@ -1926,3 +1926,102 @@ body:has(.dashboard-wrapper .admin-employee-fullview) {
     flex-wrap: wrap !important;
   }
 }
+
+/* CRM client detail pane: keep status metadata and contact cards compact. */
+.dashboard-wrapper .crm-client-frame .admin-leads-company-pane {
+  grid-template-rows: auto auto minmax(0, 1fr) !important;
+}
+
+.dashboard-wrapper .crm-client-frame .crm-status-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 14px 28px !important;
+  border-bottom: 1px solid #e7ebf1 !important;
+  background: #ffffff !important;
+}
+
+.dashboard-wrapper .crm-client-frame .crm-status-grid .lead-detail-field {
+  display: grid !important;
+  align-content: start !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid #e7ebf1 !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+}
+
+.dashboard-wrapper .crm-client-frame .crm-status-grid .lead-detail-field span {
+  display: block !important;
+  color: #667085 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.dashboard-wrapper .crm-client-frame .crm-status-grid .lead-detail-field strong {
+  display: block !important;
+  min-width: 0 !important;
+  color: #111827 !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  overflow-wrap: anywhere !important;
+}
+
+.dashboard-wrapper .crm-client-frame .lead-company-pane-scroll {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+.dashboard-wrapper .crm-client-frame .admin-leads-card-scroll .admin-employee-style-grid {
+  align-content: start !important;
+  grid-auto-rows: auto !important;
+  gap: 16px !important;
+  padding: 18px 28px 24px !important;
+}
+
+.dashboard-wrapper .crm-client-frame .admin-leads-card-scroll .admin-employee-style-card {
+  grid-template-rows: auto !important;
+  gap: 12px !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 18px !important;
+}
+
+.dashboard-wrapper .crm-client-frame .admin-leads-card-scroll .lead-card-remarks {
+  min-height: 0 !important;
+}
+
+.dashboard-wrapper .crm-client-frame .admin-leads-card-scroll .lead-card-actions {
+  display: flex !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+}
+
+.dashboard-wrapper .crm-client-frame .admin-leads-card-scroll .lead-card-actions .company-remarks-button {
+  min-width: 74px !important;
+  min-height: 40px !important;
+  padding: 0 14px !important;
+}
+
+@media (max-width: 1120px) {
+  .dashboard-wrapper .crm-client-frame .crm-status-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-wrapper .crm-client-frame .crm-status-grid {
+    grid-template-columns: 1fr !important;
+    padding: 14px 18px !important;
+  }
+
+  .dashboard-wrapper .crm-client-frame .admin-leads-card-scroll .admin-employee-style-grid {
+    padding: 16px 18px 22px !important;
+  }
+}
