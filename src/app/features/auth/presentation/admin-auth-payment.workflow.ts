@@ -643,14 +643,19 @@ export class AdminAuthPaymentWorkflow {
       next: (res) => {
         vm.loginLoading = false;
         if (res.success && res.user) {
+          const adminUser = { ...res.user, role: 'admin' };
           vm.closeModals();
           vm.loggedIn = true;
           vm.userRole = 'admin';
+          vm.dashTab = 'overview';
           vm.dashboardCompany = res.user.companyName || 'Your Company';
           vm.dashboardCode = res.user.companyCode || 'N/A';
           vm.dashboardTeamSize = parseInt(res.user.teamSize) || 0;
+          vm.crmActionMessage = '';
+          vm.selectedCrmClientCompany = '';
           vm.loadAdminProfilePhoto?.();
-          localStorage.setItem('tracecall_user', JSON.stringify(res.user));
+          localStorage.removeItem('tracecall_crm_token');
+          localStorage.setItem('tracecall_user', JSON.stringify(adminUser));
           setTimeout(() => window.scrollTo(0, 0), 0);
           vm._loadDashboard();
         } else {
@@ -711,6 +716,8 @@ export class AdminAuthPaymentWorkflow {
 
   logout(vm: any): void {
     vm.loggedIn = false;
+    vm.userRole = 'admin';
+    vm.dashTab = 'overview';
     vm.dashboardCompany = '';
     vm.dashboardCode = '';
     vm.adminProfilePhoto = '';
@@ -718,6 +725,8 @@ export class AdminAuthPaymentWorkflow {
     vm.employees = [];
     vm.summaryStats = null;
     vm.selectedEmployee = null;
+    vm.selectedCrmClientCompany = '';
+    vm.crmActionMessage = '';
     vm.isLogoutConfirmOpen = false;
     if (vm.timelineChart) { vm.timelineChart.destroy(); vm.timelineChart = null; }
     if (vm.donutChart) { vm.donutChart.destroy(); vm.donutChart = null; }

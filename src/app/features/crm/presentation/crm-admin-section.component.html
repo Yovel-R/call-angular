@@ -1,4 +1,4 @@
-<section *ngIf="vm.isCrmPage(vm.dashTab)" class="workspace record-workspace crm-admin-view">
+<section *ngIf="vm.isCrmAdmin && vm.isCrmPage(vm.dashTab)" class="workspace record-workspace crm-admin-view">
   <div class="crm-action-message" *ngIf="vm.crmActionMessage">
     {{ vm.crmActionMessage }}
     <button type="button" class="text-action" (click)="vm.crmActionMessage=''">Dismiss</button>
