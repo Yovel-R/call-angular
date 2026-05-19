@@ -188,7 +188,12 @@
           <div class="settings-section-title">AMC Tracking</div>
           <p>{{ vm.crmAmcRows.length }} client records</p>
         </div>
-        <button class="toolbar-button invoice-date-filter-button" type="button" (click)="vm.fetchCrmAmc()">Refresh</button>
+        <button class="toolbar-button crm-icon-refresh" type="button" (click)="vm.fetchCrmAmc()" aria-label="Refresh AMC tracking" title="Refresh">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+            <path d="M21 3v6h-6" />
+          </svg>
+        </button>
       </div>
       <div class="table-scroll">
         <table class="data-table compact-table">
