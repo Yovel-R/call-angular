@@ -3576,34 +3576,6 @@ body,
   box-shadow: none;
 }
 /* CRM admin extension: uses existing admin shell tokens and spacing. */
-.login-role-switch {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  padding: 4px;
-  margin: 0 0 1rem;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 10px;
-  background: #f8fafc;
-}
-
-.login-role-switch button {
-  border: 0;
-  border-radius: 8px;
-  padding: 0.68rem 0.75rem;
-  background: transparent;
-  color: #64748b;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.login-role-switch button.active {
-  background: #fff;
-  color: #0f172a;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
-}
-
 .sidebar-folder {
   margin: 0.35rem 0;
 }
@@ -3658,46 +3630,21 @@ body,
 }
 
 .sidebar-folder-children {
-  position: relative;
-  margin: 0.2rem 0 0.45rem 1.05rem;
-  padding-left: 0.65rem;
-}
-
-.sidebar-folder-children::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 8px;
-  left: 0;
-  width: 1px;
-  background: rgba(148, 163, 184, 0.45);
+  margin: 0.2rem 0 0.45rem;
 }
 
 .sidebar-tree-link {
   position: relative;
-  padding-left: 0.55rem;
 }
 
 .sidebar-tree-branch {
-  position: absolute;
-  left: -0.65rem;
-  top: 50%;
-  width: 0.65rem;
-  height: 1px;
-  background: rgba(148, 163, 184, 0.55);
+  display: none;
 }
 
 .dashboard-wrapper.sidebar-minimized .sidebar-folder-toggle {
   justify-content: center;
 }
 
-.dashboard-wrapper.sidebar-minimized .sidebar-folder-children {
-  margin-left: 0;
-  padding-left: 0;
-}
-
-.dashboard-wrapper.sidebar-minimized .sidebar-folder-children::before,
-.dashboard-wrapper.sidebar-minimized .sidebar-tree-branch,
 .dashboard-wrapper.sidebar-minimized .sidebar-folder-caret {
   display: none;
 }

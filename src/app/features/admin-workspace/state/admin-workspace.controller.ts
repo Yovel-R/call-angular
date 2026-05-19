@@ -160,7 +160,6 @@ export abstract class AdminWorkspaceController implements OnInit {
   openTrialSignup(): void { this.authPaymentWorkflow.openTrialSignup(this); }
 
   loginForm: LoginPayload = { email: '', password: '' };
-  loginPortal: 'admin' | 'crm_admin' = 'admin';
   loginError = '';
   loginLoading = false;
 

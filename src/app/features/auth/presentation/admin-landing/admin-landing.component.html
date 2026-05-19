@@ -881,26 +881,6 @@
     <h2 class="modal-title">Welcome back</h2>
     <p class="modal-subtitle">Sign in to your account</p>
     <div class="form-error" *ngIf="vm.loginError">{{ vm.loginError }}</div>
-    <div class="login-role-switch" role="tablist" aria-label="Login portal">
-      <button
-        type="button"
-        role="tab"
-        [class.active]="vm.loginPortal==='admin'"
-        [attr.aria-selected]="vm.loginPortal==='admin'"
-        (click)="vm.loginPortal='admin'; vm.loginError=''"
-      >
-        Sales Admin
-      </button>
-      <button
-        type="button"
-        role="tab"
-        [class.active]="vm.loginPortal==='crm_admin'"
-        [attr.aria-selected]="vm.loginPortal==='crm_admin'"
-        (click)="vm.loginPortal='crm_admin'; vm.loginError=''"
-      >
-        CRM Admin
-      </button>
-    </div>
     <form class="modal-form" (submit)="vm.onLoginSubmit($event)">
       <div class="form-group">
         <label for="login-email">Email</label>

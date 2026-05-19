@@ -638,35 +638,6 @@ export class AdminAuthPaymentWorkflow {
     event.preventDefault();
     vm.loginError = '';
     vm.loginLoading = true;
-    if (vm.loginPortal === 'crm_admin') {
-      this.crmService.login(vm.loginForm).subscribe({
-        next: (res) => {
-          vm.loginLoading = false;
-          if (res.success && res.user && res.token) {
-            const crmUser = { ...res.user, role: 'crm_admin' };
-            vm.closeModals();
-            vm.loggedIn = true;
-            vm.userRole = 'crm_admin';
-            vm.dashboardCompany = res.user.companyName || 'Softrate CRM';
-            vm.dashboardCode = res.user.companyCode || '';
-            vm.dashboardTeamSize = parseInt(res.user.teamSize || '0', 10) || 0;
-            vm.dashTab = 'crm_clients';
-            localStorage.setItem('tracecall_user', JSON.stringify(crmUser));
-            localStorage.setItem('tracecall_crm_token', res.token);
-            setTimeout(() => window.scrollTo(0, 0), 0);
-            vm.loadCrmDashboard();
-            if (vm.dashboardCode) vm._loadDashboard();
-          } else {
-            vm.loginError = res.message;
-          }
-        },
-        error: (err) => {
-          vm.loginLoading = false;
-          vm.loginError = err?.error?.message || 'Invalid CRM credentials or server error.';
-        },
-      });
-      return;
-    }
 
     this.authService.login(vm.loginForm).subscribe({
       next: (res) => {
@@ -687,13 +658,42 @@ export class AdminAuthPaymentWorkflow {
         }
       },
       error: (err) => {
-        vm.loginLoading = false;
         // Handle pending approval status
         if (err.status === 403) {
+          vm.loginLoading = false;
           vm.loginError = err.error?.message || 'Account pending approval.';
         } else {
-          vm.loginError = err?.error?.message || 'Invalid credentials or server error.';
+          this.loginAsCrmAdmin(vm, err?.error?.message);
         }
+      },
+    });
+  }
+
+  private loginAsCrmAdmin(vm: any, adminErrorMessage = ''): void {
+    this.crmService.login(vm.loginForm).subscribe({
+      next: (res) => {
+        vm.loginLoading = false;
+        if (res.success && res.user && res.token) {
+          const crmUser = { ...res.user, role: 'crm_admin' };
+          vm.closeModals();
+          vm.loggedIn = true;
+          vm.userRole = 'crm_admin';
+          vm.dashboardCompany = res.user.companyName || 'Softrate CRM';
+          vm.dashboardCode = res.user.companyCode || '';
+          vm.dashboardTeamSize = parseInt(res.user.teamSize || '0', 10) || 0;
+          vm.dashTab = 'crm_clients';
+          localStorage.setItem('tracecall_user', JSON.stringify(crmUser));
+          localStorage.setItem('tracecall_crm_token', res.token);
+          setTimeout(() => window.scrollTo(0, 0), 0);
+          vm.loadCrmDashboard();
+          if (vm.dashboardCode) vm._loadDashboard();
+        } else {
+          vm.loginError = adminErrorMessage || res.message || 'Invalid credentials or server error.';
+        }
+      },
+      error: (err) => {
+        vm.loginLoading = false;
+        vm.loginError = adminErrorMessage || err?.error?.message || 'Invalid credentials or server error.';
       },
     });
   }
